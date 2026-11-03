@@ -137,13 +137,24 @@ class RoomHost:
     connect it to.
     """
 
-    def __init__(self, room_code: str, game_port: int) -> None:
+    def __init__(self, room_code: str, game_port: int,
+                 discovery_port: int = DISCOVERY_PORT) -> None:
+        """Raises OSError if ``discovery_port`` can't be bound. On
+        Windows that includes a port inside a range Hyper-V, WSL or
+        Docker has reserved (WinError 10013), which varies from machine
+        to machine. Pass 0 to let the OS pick a free port, then read
+        the one it chose from :attr:`discovery_port`."""
         self._room_code = room_code
         self._game_port = game_port
         self._closing = False
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._socket.bind(("0.0.0.0", DISCOVERY_PORT))
+        try:
+            self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self._socket.bind(("0.0.0.0", discovery_port))
+        except OSError:
+            self._socket.close()
+            raise
+        self.discovery_port: int = self._socket.getsockname()[1]
         # A short timeout so the listener thread wakes up on its own to
         # check ``_closing`` — closing a socket from another thread
         # doesn't reliably unblock a pending recvfrom() on every
@@ -186,9 +197,11 @@ class RoomHost:
             pass
 
 
-def find_room(room_code: str, timeout: float = 4.0) -> tuple[str, int] | None:
+def find_room(room_code: str, timeout: float = 4.0,
+              discovery_port: int = DISCOVERY_PORT) -> tuple[str, int] | None:
     """Broadcast a discovery request for ``room_code`` on the LAN and
-    wait up to ``timeout`` seconds for its host to answer.
+    wait up to ``timeout`` seconds for its host to answer on
+    ``discovery_port``, the port its :class:`RoomHost` listens on.
 
     Returns the ``(host, port)`` to connect to — meant to be handed
     straight to :meth:`NetworkSession.join
@@ -213,7 +226,7 @@ def find_room(room_code: str, timeout: float = 4.0) -> tuple[str, int] | None:
         sent = False
         for destination in destinations:
             try:
-                probe.sendto(request, (destination, DISCOVERY_PORT))
+                probe.sendto(request, (destination, discovery_port))
                 sent = True
             except OSError:
                 continue

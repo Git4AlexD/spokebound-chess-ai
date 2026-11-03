@@ -8,7 +8,7 @@ a packaged Windows build.
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Runtime dependencies: none](https://img.shields.io/badge/runtime%20dependencies-none-2ea44f)
-![Tests: 244 passing](https://img.shields.io/badge/tests-244%20passing-2ea44f)
+[![Tests](https://github.com/Git4AlexD/spokebound-chess-ai/actions/workflows/tests.yml/badge.svg)](https://github.com/Git4AlexD/spokebound-chess-ai/actions/workflows/tests.yml)
 ![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6)
 
 ![A game in progress: a selected piece with its legal moves marked, the fleet tracker on the left and the upgrade terminal on the right](docs/screenshots/gameplay.png)
@@ -110,7 +110,7 @@ machines. The full rules are on the in-game Instructions screen.
 
 ### Testing, CI and packaging
 
-- **244 automated tests** covering the rules, the AI, networking over a
+- **246 automated tests** covering the rules, the AI, networking over a
   real loopback connection, and the UI (Tk screens built and driven from
   the tests).
 - **Continuous integration** with GitHub Actions

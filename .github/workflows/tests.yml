@@ -22,16 +22,17 @@ jobs:
         python-version: ["3.10", "3.12"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
-      # The game itself needs nothing beyond the standard library;
-      # pytest is only the test runner.
-      - name: Install pytest
-        run: python -m pip install --upgrade pip pytest
+      # The game itself needs nothing beyond the standard library; these
+      # are only test tooling. The annotate plugin reports each failing
+      # test by file and line on the run's summary page.
+      - name: Install test tools
+        run: python -m pip install --upgrade pip pytest pytest-github-actions-annotate-failures
 
       - name: Run the test suite
-        run: python -m pytest tests -q
+        run: python -m pytest tests -q -rfE --tb=short

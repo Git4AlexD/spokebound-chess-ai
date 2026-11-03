@@ -291,7 +291,14 @@ class NetworkLobbyScreen(tk.Frame):
         # friend's Join screen can find this device without either of
         # us ever having to read out an address — the actual game
         # connection above is untouched by any of this.
-        self._room_host = RoomHost(self._room_code, DEFAULT_PORT)
+        try:
+            self._room_host = RoomHost(self._room_code, DEFAULT_PORT)
+        except OSError:
+            # The discovery port is taken or reserved on this machine
+            # (see RoomHost). Host anyway: the relay and address-code
+            # paths below don't need it, only a LAN friend typing the
+            # room code does.
+            self._room_host = None
         # Races alongside the LAN session above when a relay's
         # configured — a friend on the LAN still connects the fast,
         # direct way, one elsewhere connects through the relay, and

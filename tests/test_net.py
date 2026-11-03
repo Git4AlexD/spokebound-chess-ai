@@ -5,18 +5,29 @@ mocking the socket here would only test the mock, not the framing and
 threading this module exists to get right.
 """
 
+import functools
+import socket
 import time
 import unittest
+from unittest import mock
 
 from spokebound.model.pieces import Piece, Player
 from spokebound.net import directory, protocol, session
 
-# A high, unlikely-to-collide port range for these tests' own loopback
-# connections — each test picks a fresh one so a slow-closing socket
-# from a previous test can never make the next one flaky.
-_BASE_PORT = 58631
 _CONNECT_TIMEOUT = 2.0
 _POLL_INTERVAL = 0.02
+
+
+def _free_port() -> int:
+    """Return a TCP port the OS says is free right now, for one test's
+    own loopback connection. Asking the OS, rather than picking from a
+    fixed range, means a fresh port every test (so a slow-closing socket
+    from the last one can't make the next flaky) and never one inside a
+    range Windows has reserved for Hyper-V, WSL or Docker, which bind()
+    refuses with WinError 10013."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.bind(("0.0.0.0", 0))
+        return probe.getsockname()[1]
 
 
 def _wait_for(get_session, kind: str, timeout: float = _CONNECT_TIMEOUT):
@@ -71,7 +82,7 @@ class NetworkSessionTests(unittest.TestCase):
     right."""
 
     def setUp(self) -> None:
-        self._port = _BASE_PORT + self._testMethodName.__hash__() % 500
+        self._port = _free_port()
         self._sessions: list[session.NetworkSession] = []
 
     def tearDown(self) -> None:
@@ -155,25 +166,37 @@ class RoomCodeTests(unittest.TestCase):
         codes = {directory.generate_room_code() for _ in range(20)}
         self.assertGreater(len(codes), 1)
 
+    # Each RoomHost below listens on an OS-assigned port (discovery_port=0)
+    # rather than the real DISCOVERY_PORT, which can sit inside a range
+    # Windows has reserved on whichever machine runs the tests.
+
     def test_find_room_locates_a_hosted_room_by_its_code(self) -> None:
         code = directory.generate_room_code()
-        host = directory.RoomHost(code, game_port=54321)
+        host = directory.RoomHost(code, game_port=54321, discovery_port=0)
         self.addCleanup(host.close)
-        found = directory.find_room(code, timeout=2.0)
+        found = directory.find_room(code, timeout=2.0,
+                                    discovery_port=host.discovery_port)
         self.assertIsNotNone(found)
         _, port = found
         self.assertEqual(port, 54321)
 
     def test_find_room_ignores_a_room_hosted_under_another_code(self) -> None:
         host = directory.RoomHost(directory.generate_room_code(),
-                                  game_port=54322)
+                                  game_port=54322, discovery_port=0)
         self.addCleanup(host.close)
         # A code that's (almost certainly) not the one just hosted —
         # generated the same way, so a real collision is vanishingly
         # unlikely without needing to hand-pick a "wrong" value.
         other_code = directory.generate_room_code()
-        found = directory.find_room(other_code, timeout=1.0)
+        found = directory.find_room(other_code, timeout=1.0,
+                                    discovery_port=host.discovery_port)
         self.assertIsNone(found)
+
+    def test_room_host_reports_the_port_the_os_assigned(self) -> None:
+        host = directory.RoomHost(directory.generate_room_code(),
+                                  game_port=54323, discovery_port=0)
+        self.addCleanup(host.close)
+        self.assertNotEqual(host.discovery_port, 0)
 
     def test_find_room_returns_none_when_nobody_is_hosting(self) -> None:
         found = directory.find_room(directory.generate_room_code(),
@@ -181,10 +204,17 @@ class RoomCodeTests(unittest.TestCase):
         self.assertIsNone(found)
 
     def test_join_by_room_code_connects_once_the_room_is_found(self) -> None:
-        port = _BASE_PORT + self._testMethodName.__hash__() % 500
+        port = _free_port()
         code = directory.generate_room_code()
-        room_host = directory.RoomHost(code, game_port=port)
+        room_host = directory.RoomHost(code, game_port=port, discovery_port=0)
         self.addCleanup(room_host.close)
+        # The real lookup, pointed at this test's own discovery port.
+        finder = mock.patch.object(
+            session, "find_room",
+            functools.partial(directory.find_room,
+                              discovery_port=room_host.discovery_port))
+        finder.start()
+        self.addCleanup(finder.stop)
         host = session.NetworkSession.host(port)
         client = session.NetworkSession.join_by_room_code(code, 3.0)
         self.addCleanup(host.close)
