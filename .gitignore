@@ -1,0 +1,32 @@
+# Private per-install settings (relay server address etc.).
+# Copy spokebound/secrets.example.json to spokebound/secrets.json.
+spokebound/secrets.json
+.env
+
+# Your own saved custom fleets - created by the game on first save.
+spokebound/data/custom_fleets.json
+
+# In-progress AI training state - written while evolve/evolve_fleet run.
+spokebound/ai/cma_es_state.json
+spokebound/ai/cma_es_fleet_state.json
+spokebound/ai/hall_of_fame.json
+spokebound/ai/hall_of_fame_fleet.json
+
+# PyInstaller output - publish the .exe as a GitHub Release instead.
+build/
+dist/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

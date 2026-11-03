@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} on Windows
+    # Windows, because that's the platform the game targets (winsound/MCI
+    # audio, the PyInstaller .exe), and its runners can open real Tk
+    # windows for the UI tests without a virtual display.
+    runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest version the README promises, and the one it's
+        # developed on.
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # The game itself needs nothing beyond the standard library;
+      # pytest is only the test runner.
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Run the test suite
+        run: python -m pytest tests -q

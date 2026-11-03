@@ -1,0 +1,9 @@
+# Store text files with consistent (LF) line endings in the repository,
+# whatever each machine's own git settings are.
+* text=auto
+
+# Assets are binary: never touch their bytes.
+*.png binary
+*.ico binary
+*.wav binary
+*.mp3 binary

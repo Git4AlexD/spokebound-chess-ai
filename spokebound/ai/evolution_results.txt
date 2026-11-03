@@ -1,0 +1,62 @@
+############################################################
+  CMA-ES — WEIGHT
+  6 candidates/generation, 20 generations, sigma0=0.5
+############################################################
+Generation 1/20: best this gen scored 26.45, sigma=0.4777 (51m 51s — ~16h 25m left)
+Generation 2/20: best this gen scored 27.33, sigma=0.4618 (56m 16s — ~16h 12m left)
+Generation 3/20: best this gen scored 25.32, sigma=0.4332 (44m 5s — ~14h 22m left)
+Generation 4/20: best this gen scored 25.39, sigma=0.4094 (44m 8s — ~13h 5m left)
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        6W- 0L- 0D  (100%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   5W- 1L- 0D  (83%)
+Generation 5/20: best this gen scored 24.49, sigma=0.3896 (1h 12m — ~13h 27m left)
+Generation 6/20: best this gen scored 29.74, sigma=0.3531 (1h 9m — ~13h 9m left)
+Generation 7/20: best this gen scored 29.63, sigma=0.3390 (1h 1m — ~12h 23m left)
+Generation 8/20: best this gen scored 27.40, sigma=0.3239 (1h 4m — ~11h 36m left)
+Generation 9/20: best this gen scored 27.02, sigma=0.3163 (1h 3m — ~10h 44m left)
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        6W- 0L- 0D  (100%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   6W- 0L- 0D  (100%)
+Generation 10/20: best this gen scored 26.13, sigma=0.3225 (1h 25m — ~10h 12m left)
+Generation 11/20: best this gen scored 30.47, sigma=0.3230 (1h 13m — ~9h 21m left)
+
+Resuming CMA-ES — WEIGHT from generation 11 (of 20 total)
+
+Resuming CMA-ES — WEIGHT from generation 11 (of 20 total)
+Generation 12/20: best this gen scored 31.49, sigma=0.3232 (1h 7m — ~9h 3m left)
+Generation 13/20: best this gen scored 30.32, sigma=0.3278 (1h 11m — ~8h 7m left)
+Generation 14/20: best this gen scored 31.58, sigma=0.3228 (1h 10m — ~7h 0m left)
+Generation 15/20: best this gen scored 33.88, sigma=0.3229 (1h 14m — ~5h 56m left)
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        6W- 0L- 0D  (100%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   6W- 0L- 0D  (100%)
+Generation 16/20: best this gen scored 36.89, sigma=0.3260 (1h 34m — ~5h 4m left)
+Generation 17/20: best this gen scored 32.14, sigma=0.3171 (1h 11m — ~3h 45m left)
+Generation 18/20: best this gen scored 35.82, sigma=0.3062 (1h 15m — ~2h 30m left)
+Generation 19/20: best this gen scored 37.80, sigma=0.2864 (1h 25m — ~1h 16m left)
+
+Resuming CMA-ES — WEIGHT from generation 19 (of 20 total)
+Generation 20/20: best this gen scored 35.50, sigma=0.2754 (1h 26m — done)
+
+CMA-ES finished in 1h 26m.
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        6W- 0L- 0D  (100%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   6W- 0L- 0D  (100%)
+
+Incumbent promoted into DEFAULT_WEIGHTS.

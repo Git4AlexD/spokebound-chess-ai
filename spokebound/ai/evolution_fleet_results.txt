@@ -1,0 +1,58 @@
+############################################################
+  CMA-ES — FLEET-BUILDING RULES
+  6 candidates/generation, 20 generations, sigma0=0.5
+############################################################
+Generation 1/20: best this gen scored 25.37, sigma=0.4739 (45m 35s — ~14h 26m left)
+Generation 2/20: best this gen scored 25.24, sigma=0.4908 (39m 8s — ~12h 42m left)
+Generation 3/20: best this gen scored 25.72, sigma=0.4948 (33m 1s — ~11h 7m left)
+Generation 4/20: best this gen scored 25.27, sigma=0.4954 (33m 6s — ~10h 3m left)
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        5W- 1L- 0D  (83%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   5W- 1L- 0D  (83%)
+Generation 5/20: best this gen scored 26.19, sigma=0.4858 (56m 44s — ~10h 22m left)
+Generation 6/20: best this gen scored 32.46, sigma=0.4718 (50m 30s — ~10h 2m left)
+Generation 7/20: best this gen scored 27.08, sigma=0.4665 (50m 41s — ~9h 33m left)
+Generation 8/20: best this gen scored 30.63, sigma=0.4298 (43m 16s — ~8h 48m left)
+Generation 9/20: best this gen scored 28.13, sigma=0.4262 (50m 34s — ~8h 12m left)
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        5W- 1L- 0D  (83%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   5W- 1L- 0D  (83%)
+Generation 10/20: best this gen scored 27.82, sigma=0.3975 (1h 10m — ~7h 53m left)
+Generation 11/20: best this gen scored 31.43, sigma=0.3880 (1h 6m — ~7h 21m left)
+Generation 12/20: best this gen scored 27.75, sigma=0.3917 (53m 8s — ~6h 35m left)
+Generation 13/20: best this gen scored 30.18, sigma=0.4216 (59m 10s — ~5h 51m left)
+Generation 14/20: best this gen scored 32.20, sigma=0.4321 (55m 22s — ~5h 3m left)
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        4W- 2L- 0D  (67%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   6W- 0L- 0D  (100%)
+Generation 15/20: best this gen scored 32.55, sigma=0.4207 (1h 19m — ~4h 22m left)
+Generation 16/20: best this gen scored 33.21, sigma=0.4343 (50m 44s — ~3h 29m left)
+
+Resuming CMA-ES — FLEET-BUILDING RULES from generation 16 (of 20 total)
+Generation 17/20: best this gen scored 39.16, sigma=0.4479 (1h 4m — ~3h 14m left)
+Generation 18/20: best this gen scored 33.43, sigma=0.4463 (52m 48s — ~1h 57m left)
+Generation 19/20: best this gen scored 39.21, sigma=0.4420 (1h 3m — ~1h 0m left)
+Generation 20/20: best this gen scored 31.74, sigma=0.4498 (1h 1m — done)
+
+CMA-ES finished in 4h 2m.
+
+Checkpoint — incumbent vs every benchmark (6 games each):
+  vs rusher        5W- 1L- 0D  (83%)
+  vs grabber       6W- 0L- 0D  (100%)
+  vs turtle        6W- 0L- 0D  (100%)
+  vs hoarder       6W- 0L- 0D  (100%)
+  vs opportunist   6W- 0L- 0D  (100%)
+
+Incumbent promoted into DEFAULT_FLEET_RULES.
