@@ -3,9 +3,19 @@
 import unittest
 
 from spokebound.config import (
-    FLEET_SIZE, BOARD_ROWS, BOUNTIES, BUILD_BUDGET, CAPTAIN_COLUMN,
-    GOAL_SQUARES, LEVEL_COSTS, MIN_PIECE_COST, PIECE_CAP, PROMOTION_BONUS,
-    SANCTUARY_DEPTH, TURN_LIMIT, UNLIMITED,
+    BOARD_ROWS,
+    BOUNTIES,
+    BUILD_BUDGET,
+    CAPTAIN_COLUMN,
+    FLEET_SIZE,
+    GOAL_SQUARES,
+    LEVEL_COSTS,
+    MIN_PIECE_COST,
+    PIECE_CAP,
+    PROMOTION_BONUS,
+    SANCTUARY_DEPTH,
+    TURN_LIMIT,
+    UNLIMITED,
 )
 from spokebound.model.board import Board, Square
 from spokebound.model.deployment import Deployment
@@ -153,7 +163,7 @@ class SpendingTests(unittest.TestCase):
         builder.adjust(0, N, 1)  # a manual edit that loading should undo
         preset = next(iter(PRESETS.values()))
         builder.load_preset(preset)
-        for piece, levels in zip(builder.pieces, preset):
+        for piece, levels in zip(builder.pieces, preset, strict=True):
             self.assertEqual(piece.spokes, levels)
         self.assertFalse(builder.problems())
 

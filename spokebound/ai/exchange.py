@@ -9,7 +9,7 @@ searching.
 from spokebound.ai.config import Weights
 from spokebound.config import UNLIMITED
 from spokebound.model.board import Board, Square
-from spokebound.model.pieces import Player, SPOKE_COUNT, board_delta
+from spokebound.model.pieces import SPOKE_COUNT, Player, board_delta
 
 Move = tuple[Square, Square]
 

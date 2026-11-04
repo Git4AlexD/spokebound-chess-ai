@@ -115,7 +115,7 @@ def mix_hex(colour_a: str, colour_b: str, t: float = 0.5) -> str:
     a = tuple(int(colour_a[i:i + 2], 16) for i in (1, 3, 5))
     b = tuple(int(colour_b[i:i + 2], 16) for i in (1, 3, 5))
     return "#" + "".join(f"{round(ac + (bc - ac) * t):02X}"
-                         for ac, bc in zip(a, b))
+                         for ac, bc in zip(a, b, strict=True))
 
 
 def _blend_hex(colour_a: str, colour_b: str) -> str:

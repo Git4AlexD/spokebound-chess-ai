@@ -23,6 +23,8 @@ Two separate playback paths, deliberately:
   the game is open — see :func:`keep_output_awake`.
 """
 
+import contextlib
+
 from spokebound.resources import package_dir
 
 try:
@@ -61,11 +63,9 @@ _keepalive_playing = False
 def _play(filename: str) -> None:
     if not _effects_enabled or winsound is None:
         return
-    try:
+    with contextlib.suppress(RuntimeError):  # no audio device, headless CI, etc.
         winsound.PlaySound(str(ASSETS / filename),
                            winsound.SND_FILENAME | winsound.SND_ASYNC)
-    except RuntimeError:
-        pass  # no audio device, headless CI, etc.
 
 
 def _mci_command(command: str) -> None:
@@ -75,10 +75,8 @@ def _mci_command(command: str) -> None:
     muting actually silence something already playing."""
     if _winmm is None:
         return
-    try:
+    with contextlib.suppress(OSError):  # no audio device, headless CI, etc.
         _winmm.mciSendStringW(command, None, 0, None)
-    except OSError:
-        pass  # no audio device, headless CI, etc.
 
 
 def play_move() -> None:

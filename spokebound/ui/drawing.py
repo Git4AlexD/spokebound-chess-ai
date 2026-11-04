@@ -176,7 +176,7 @@ def _scaled_polygon(points: list[float], factor: float) -> list[float]:
     rendering involved. See :func:`_regular_dilator`."""
     xs, ys = points[0::2], points[1::2]
     cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
-    return [coord for x, y in zip(xs, ys)
+    return [coord for x, y in zip(xs, ys, strict=True)
            for coord in (cx + (x - cx) * factor, cy + (y - cy) * factor)]
 
 

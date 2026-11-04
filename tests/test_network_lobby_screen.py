@@ -6,8 +6,7 @@ from unittest import mock
 
 from spokebound.net.address import DEFAULT_PORT
 from spokebound.ui import network_lobby_screen as lobby
-from spokebound.ui.network_lobby_screen import (
-    _looks_like_address, _parse_address)
+from spokebound.ui.network_lobby_screen import _looks_like_address, _parse_address
 from tests.tk_support import new_tk_root
 
 

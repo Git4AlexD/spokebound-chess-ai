@@ -3,11 +3,11 @@ own point of view — positive is good for ``player``, negative is good
 for their opponent.
 """
 
+from spokebound.ai.config import CRITICAL_PIECE_VALUE, DEFAULT_WEIGHTS, Weights
 from spokebound.config import GOAL_SQUARES
 from spokebound.model.board import Board, Square
 from spokebound.model.game import Game
 from spokebound.model.pieces import Player
-from spokebound.ai.config import CRITICAL_PIECE_VALUE, DEFAULT_WEIGHTS, Weights
 
 # A decisive game (win, loss or the game not being over yet doesn't reach
 # this) dwarfs anything the weighted features alone could add up to, so

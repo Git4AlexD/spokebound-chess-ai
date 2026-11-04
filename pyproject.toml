@@ -1,0 +1,10 @@
+[tool.ruff]
+line-length = 110
+target-version = "py310"  # the oldest version the README supports
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # ×, – and similar characters are intentional
+
+[tool.ruff.lint.isort]
+known-first-party = ["spokebound"]

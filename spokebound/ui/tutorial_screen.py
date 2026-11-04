@@ -19,8 +19,17 @@ from tkinter import ttk
 
 from spokebound.ai.levels import LEVELS
 from spokebound.config import (
-    BOARD_COLS, BOARD_ROWS, BOUNTIES, BUILD_BUDGET, FLEET_SIZE, LEVEL_COSTS,
-    MIN_PIECE_COST, PIECE_CAP, PROMOTION_BONUS, SANCTUARY_DEPTH, TURN_LIMIT,
+    BOARD_COLS,
+    BOARD_ROWS,
+    BOUNTIES,
+    BUILD_BUDGET,
+    FLEET_SIZE,
+    LEVEL_COSTS,
+    MIN_PIECE_COST,
+    PIECE_CAP,
+    PROMOTION_BONUS,
+    SANCTUARY_DEPTH,
+    TURN_LIMIT,
     UNLIMITED,
 )
 from spokebound.model.pieces import Piece, Player, make_captain

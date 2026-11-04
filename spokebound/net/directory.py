@@ -23,6 +23,7 @@ being shared instead of hidden — see
 :mod:`spokebound.ui.network_lobby_screen` for where each is used.
 """
 
+import contextlib
 import json
 import secrets
 import socket
@@ -167,7 +168,7 @@ class RoomHost:
         while not self._closing:
             try:
                 data, addr = self._socket.recvfrom(1024)
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except OSError:
                 return  # closed — see close()
@@ -182,19 +183,15 @@ class RoomHost:
                     "room_code": self._room_code,
                     "port": self._game_port,
                 }).encode("utf-8")
-                try:
+                with contextlib.suppress(OSError):
                     self._socket.sendto(reply, addr)
-                except OSError:
-                    pass
 
     def close(self) -> None:
         """Stop answering — the room code's done its job once a friend
         has actually connected, or the host gave up waiting."""
         self._closing = True
-        try:
+        with contextlib.suppress(OSError):
             self._socket.close()
-        except OSError:
-            pass
 
 
 def find_room(room_code: str, timeout: float = 4.0,

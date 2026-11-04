@@ -4,7 +4,11 @@ import copy
 from dataclasses import dataclass
 
 from spokebound.config import (
-    BOARD_ROWS, BOUNTIES, GOAL_SQUARES, PROMOTION_BONUS, TURN_LIMIT,
+    BOARD_ROWS,
+    BOUNTIES,
+    GOAL_SQUARES,
+    PROMOTION_BONUS,
+    TURN_LIMIT,
 )
 from spokebound.model.board import Board, Square
 from spokebound.model.pieces import Piece, Player
@@ -19,7 +23,8 @@ def assign_bounties(fleet: list[Piece]) -> None:
     Ties go to the piece further left from the owner's point of view.
     """
     ranked = sorted(fleet, key=lambda piece: piece.cost, reverse=True)
-    for piece, bounty in zip(ranked, BOUNTIES):
+    # Fewer bounties than pieces: zip stops once they run out.
+    for piece, bounty in zip(ranked, BOUNTIES, strict=False):
         piece.bounty = bounty
 
 

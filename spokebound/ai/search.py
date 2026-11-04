@@ -16,9 +16,9 @@ import time
 from collections.abc import Iterator
 
 from spokebound.ai.config import DEFAULT_WEIGHTS, QUIESCENCE_MAX_PLIES, Weights
-from spokebound.ai.levels import LEVELS, Level
 from spokebound.ai.evaluate import DECISIVE_SCORE, evaluate, is_critical
 from spokebound.ai.exchange import prune_quiescence, see
+from spokebound.ai.levels import LEVELS, Level
 from spokebound.ai.upgrade import spend_candidates, spend_upgrade
 from spokebound.model.board import Board, Square
 from spokebound.model.game import Game
@@ -67,10 +67,20 @@ class _Features:
     detached-from-the-ladder one — see choose_move_at) without
     duplicating the code."""
 
-    __slots__ = ("quiescence", "quiescence_max_plies", "move_ordering",
-                 "pvs", "reductions", "aspiration", "iid", "see",
-                 "check_extensions", "quiescence_pruning", "futility",
-                 "history_pruning")
+    __slots__ = (
+        "aspiration",
+        "check_extensions",
+        "futility",
+        "history_pruning",
+        "iid",
+        "move_ordering",
+        "pvs",
+        "quiescence",
+        "quiescence_max_plies",
+        "quiescence_pruning",
+        "reductions",
+        "see",
+    )
 
     def __init__(self, quiescence: bool, quiescence_max_plies: int,
                 move_ordering: bool, pvs: bool = True,

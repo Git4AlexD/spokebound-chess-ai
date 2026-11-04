@@ -81,10 +81,8 @@ def run(levels=LEVELS_TO_TEST, games_per_matchup: int = GAMES_PER_MATCHUP,
     ``{(a, b): (a_wins, b_wins, draws)}`` for every pair, ``a < b``.
     """
     ordered = sorted(levels)
-    if adjacent_only:
-        pairs = list(zip(ordered, ordered[1:]))
-    else:
-        pairs = list(itertools.combinations(ordered, 2))
+    pairs = (list(itertools.pairwise(ordered)) if adjacent_only
+             else list(itertools.combinations(ordered, 2)))
     print(f"Tournament: {len(pairs)} matchups x {games_per_matchup} games "
          f"= {len(pairs) * games_per_matchup} games total, one at a time",
          flush=True)

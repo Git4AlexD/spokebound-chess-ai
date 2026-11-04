@@ -37,15 +37,14 @@ from spokebound.model.game import Game
 from spokebound.model.pieces import Piece, Player
 from spokebound.net import protocol
 from spokebound.net.session import NetworkSession
-from spokebound.ui import sound, upgrade_terminal, theme
-from spokebound.ui.fleet_panel import FleetPanel
+from spokebound.ui import sound, theme, upgrade_terminal
 from spokebound.ui.board_view import available_board_size
-from spokebound.ui.window_frame import create_window_board
+from spokebound.ui.fleet_panel import FleetPanel
 from spokebound.ui.layout import fit_height, freeze_height, watch_resize
 from spokebound.ui.network_poll import NetworkPoller
+from spokebound.ui.score_panel import BASE_CARD_HEIGHT, BASE_CARD_WIDTH, ScorePanel
 from spokebound.ui.settings_gear import add_gear
-from spokebound.ui.score_panel import BASE_CARD_HEIGHT, BASE_CARD_WIDTH
-from spokebound.ui.score_panel import ScorePanel
+from spokebound.ui.window_frame import create_window_board
 
 # The left (turn/fleets) and right (Piece Upgrade terminal) columns
 # either side of the board — shared by both phases, so the board ends

@@ -1,6 +1,7 @@
 """Helpers for scaling a screen's content to fit the real window, instead
 of letting it overflow or scroll."""
 
+import contextlib
 import tkinter as tk
 from collections.abc import Callable
 
@@ -203,10 +204,8 @@ def watch_resize(widget: tk.Misc, on_resize: Callable[[], None],
             return
         if not widget.winfo_exists():
             if state["id"] is not None:
-                try:
+                with contextlib.suppress(tk.TclError):
                     root.unbind("<Configure>", state["id"])
-                except tk.TclError:
-                    pass
             return
         if state["job"] is not None:
             root.after_cancel(state["job"])

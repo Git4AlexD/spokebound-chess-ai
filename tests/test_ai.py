@@ -11,32 +11,63 @@ import unittest
 from pathlib import Path
 
 from spokebound.ai.benchmarks import (
-    grabber_move, hoarder_move, opportunist_move, rusher_move, turtle_move,
+    grabber_move,
+    hoarder_move,
+    opportunist_move,
+    rusher_move,
+    turtle_move,
 )
 from spokebound.ai.build import build_fleet, build_fleet_spec, materialize_fleet
 from spokebound.ai.cma_es import (
-    CMAES, _restore, _to_vector, jacobi_eigh, load_state, run_cma_es,
+    CMAES,
+    _restore,
+    _to_vector,
+    jacobi_eigh,
+    load_state,
+    run_cma_es,
     save_state,
 )
 from spokebound.ai.config import (
-    DEFAULT_FLEET_RULES, DEFAULT_WEIGHTS, FleetRules, QUIESCENCE_MAX_PLIES,
+    DEFAULT_FLEET_RULES,
+    DEFAULT_WEIGHTS,
+    QUIESCENCE_MAX_PLIES,
+    FleetRules,
     Weights,
 )
-from spokebound.ai.selfplay import play_round
 from spokebound.ai.deploy import choose_deploy_square
 from spokebound.ai.evaluate import (
-    DECISIVE_SCORE, _captain_distance, _captain_escape, _goal_area_control,
-    _is_defended, evaluate, is_critical,
+    DECISIVE_SCORE,
+    _captain_distance,
+    _captain_escape,
+    _goal_area_control,
+    _is_defended,
+    evaluate,
+    is_critical,
 )
 from spokebound.ai.levels import Level
 from spokebound.ai.search import (
-    apply_move, choose_move, choose_move_at, _Features, _extended_depth,
-    _KILLERS_PER_DEPTH, _MAX_CHECK_EXTENSIONS, _gives_check, _order_moves,
-    _quiescence, _record_cutoff, _state_key, _terminal_score,
+    _KILLERS_PER_DEPTH,
+    _MAX_CHECK_EXTENSIONS,
+    _extended_depth,
+    _Features,
+    _gives_check,
+    _order_moves,
+    _quiescence,
+    _record_cutoff,
+    _state_key,
+    _terminal_score,
+    apply_move,
+    choose_move,
+    choose_move_at,
 )
+from spokebound.ai.selfplay import play_round
 from spokebound.ai.upgrade import spend_upgrade
 from spokebound.config import (
-    FLEET_SIZE, BUILD_BUDGET, GOAL_SQUARES, LEVEL_COSTS, MIN_PIECE_COST,
+    BUILD_BUDGET,
+    FLEET_SIZE,
+    GOAL_SQUARES,
+    LEVEL_COSTS,
+    MIN_PIECE_COST,
     UNLIMITED,
 )
 from spokebound.model.board import Board, Square
@@ -479,7 +510,7 @@ class BenchmarkTests(unittest.TestCase):
             (4, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
         })
         game = Game(board)
-        src, dst = turtle_move(game)
+        src, _dst = turtle_move(game)
         self.assertNotEqual(src, (5, 3))
 
     def test_turtle_falls_back_to_the_captain_with_nothing_else_to_move(self):
@@ -499,7 +530,7 @@ class BenchmarkTests(unittest.TestCase):
             (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
         })
         game = Game(board)
-        src, dst = hoarder_move(game)
+        _src, dst = hoarder_move(game)
         self.assertIsNone(game.board.get(dst))
 
     def test_hoarder_still_returns_a_legal_move_with_nothing_to_avoid(self):
@@ -560,7 +591,7 @@ class CMAESTests(unittest.TestCase):
             v = [vectors[i][k] for i in range(n)]
             av = [sum(known[i][j] * v[j] for j in range(n)) for i in range(n)]
             lv = [values[k] * x for x in v]
-            for a, b in zip(av, lv):
+            for a, b in zip(av, lv, strict=True):
                 self.assertAlmostEqual(a, b, places=9)
 
     def test_cma_es_converges_on_a_simple_offset_quadratic(self):
@@ -570,7 +601,7 @@ class CMAESTests(unittest.TestCase):
         target = [3.0, -2.0, 5.0, 0.5]
 
         def fitness(x):
-            return -sum((xi - ti) ** 2 for xi, ti in zip(x, target))
+            return -sum((xi - ti) ** 2 for xi, ti in zip(x, target, strict=True))
 
         es = CMAES([0.0] * len(target), sigma0=2.0, population_size=10,
                    rng=random.Random(0))
@@ -578,7 +609,7 @@ class CMAESTests(unittest.TestCase):
             candidates = es.ask()
             es.tell(candidates, [fitness(c) for c in candidates])
         distance = math.sqrt(sum((m - t) ** 2
-                                 for m, t in zip(es.mean, target)))
+                                 for m, t in zip(es.mean, target, strict=True)))
         self.assertLess(distance, 0.05)
 
     def test_run_cma_es_returns_the_right_genome_type_and_converges(self):
@@ -593,7 +624,7 @@ class CMAESTests(unittest.TestCase):
         def evaluate_population(genomes, incumbent):
             del incumbent  # unused — this test isn't exercising it
             return [-sum((getattr(genome, f) - t) ** 2
-                        for f, t in zip(genome.field_names(), target_vec))
+                        for f, t in zip(genome.field_names(), target_vec, strict=True))
                    for genome in genomes]
 
         result = run_cma_es(
@@ -601,7 +632,7 @@ class CMAESTests(unittest.TestCase):
             evaluate_population=evaluate_population, generations=40,
             population_size=10, seed=0)
         self.assertIsInstance(result, Weights)
-        for field, expected in zip(target.field_names(), target_vec):
+        for field, expected in zip(target.field_names(), target_vec, strict=True):
             self.assertAlmostEqual(getattr(result, field), expected, places=1)
 
     def test_run_cma_es_passes_the_pre_update_mean_as_incumbent(self):
@@ -640,7 +671,7 @@ class CMAESTests(unittest.TestCase):
         for _ in range(2):
             candidates = es.ask()
             es.tell(candidates, self._toy_evaluate(
-                [Weights(**dict(zip(field_names, c))) for c in candidates],
+                [Weights(**dict(zip(field_names, c, strict=True))) for c in candidates],
                 None))
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -881,6 +912,7 @@ class FleetSpecTests(unittest.TestCase):
         # place) — N should still be picked the great majority of the
         # time.
         import random
+
         from spokebound.ai.build import _weighted_direction
         rng_state = random.getstate()
         random.seed(0)

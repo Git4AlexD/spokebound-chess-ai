@@ -51,8 +51,7 @@ from collections.abc import Callable
 from spokebound import secret_config
 from spokebound.net import relay
 from spokebound.net.address import DEFAULT_PORT, local_ip, public_ip
-from spokebound.net.directory import (
-    RoomHost, decode_address, encode_address, generate_room_code)
+from spokebound.net.directory import RoomHost, decode_address, encode_address, generate_room_code
 from spokebound.net.session import CONNECTED, ERROR, NetworkSession
 from spokebound.ui import sound, starfield, theme
 from spokebound.ui.layout import watch_resize, window_scale

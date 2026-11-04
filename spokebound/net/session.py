@@ -15,6 +15,7 @@ already uses for the AI's own delayed moves, just fed by a queue
 instead of a timer.
 """
 
+import contextlib
 import json
 import queue
 import socket
@@ -22,8 +23,8 @@ import threading
 from dataclasses import dataclass
 from typing import Any
 
-from spokebound.net.directory import find_room
 from spokebound.net import relay
+from spokebound.net.directory import find_room
 
 CONNECTED = "connected"
 MESSAGE = "message"
@@ -132,10 +133,8 @@ class NetworkSession:
         poll()."""
         if self._socket is None:
             return
-        try:
+        with contextlib.suppress(OSError):
             self._socket.sendall((json.dumps(message) + "\n").encode("utf-8"))
-        except OSError:
-            pass
 
     def poll(self) -> list[Event]:
         """Drain and return every event queued since the last call.
@@ -160,10 +159,8 @@ class NetworkSession:
         self._closing = True
         for sock in (self._listener, self._socket):
             if sock is not None:
-                try:
+                with contextlib.suppress(OSError):
                     sock.close()
-                except OSError:
-                    pass
 
     def _accept(self, port: int) -> None:
         try:
@@ -181,7 +178,7 @@ class NetworkSession:
                 try:
                     sock, addr = listener.accept()
                     break
-                except socket.timeout:
+                except TimeoutError:
                     if self._closing:
                         return
         except OSError as exc:
@@ -240,10 +237,8 @@ class NetworkSession:
                                should_continue=lambda: not self._closing)
         except relay.RelayError as exc:
             self._listener = None
-            try:
+            with contextlib.suppress(OSError):
                 sock.close()
-            except OSError:
-                pass
             if not self._closing:
                 self._events.put(Event(ERROR, str(exc)))
             return
@@ -265,7 +260,7 @@ class NetworkSession:
         while True:
             try:
                 chunk = self._socket.recv(_RECV_BUFFER)
-            except socket.timeout:
+            except TimeoutError:
                 if self._closing:
                     break
                 continue

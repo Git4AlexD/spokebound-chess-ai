@@ -56,7 +56,10 @@ from spokebound.ai.benchmarks import BENCHMARK_WEIGHTS, BENCHMARKS, RULES_FOR_BO
 from spokebound.ai.build import build_fleet_spec, materialize_fleet
 from spokebound.ai.cma_es import run_cma_es
 from spokebound.ai.config import (
-    DEFAULT_FLEET_RULES, DEFAULT_WEIGHTS, FleetRules, Weights,
+    DEFAULT_FLEET_RULES,
+    DEFAULT_WEIGHTS,
+    FleetRules,
+    Weights,
 )
 from spokebound.ai.evolve import BEST_WEIGHTS_PATH as _EVOLVED_WEIGHTS_PATH
 from spokebound.ai.levels import LEVELS
@@ -188,7 +191,7 @@ def _evaluate_population(genomes: list[FleetRules], incumbent: FleetRules,
     every CPU core in one shared pool for the whole generation. Returns
     each genome's total fitness (see _score), same order as ``genomes``
     — this *is* the fitness CMA-ES searches on."""
-    opponents = list(BENCHMARKS.values()) + [incumbent] + hall_of_fame
+    opponents = [*BENCHMARKS.values(), incumbent, *hall_of_fame]
     tasks = []
     for genome_index, genome in enumerate(genomes):
         for opponent in opponents:

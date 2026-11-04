@@ -550,8 +550,7 @@ class SettingsDialogTests(unittest.TestCase):
         dialog.destroy()
 
     def test_every_rebuild_keeps_the_same_fixed_size(self) -> None:
-        from spokebound.ui.settings_dialog import SettingsDialog
-        from spokebound.ui.settings_dialog import BUTTON_HEIGHT, BUTTON_WIDTH
+        from spokebound.ui.settings_dialog import BUTTON_HEIGHT, BUTTON_WIDTH, SettingsDialog
 
         dialog = SettingsDialog(self._root)
         for holder in dialog._buttons_row.winfo_children():

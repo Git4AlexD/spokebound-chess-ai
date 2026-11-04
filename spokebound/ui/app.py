@@ -1,20 +1,18 @@
 """Top-level window and the flow between screens."""
 
+import contextlib
+import ctypes
+import sys
 import tkinter as tk
 from collections.abc import Callable
 from tkinter import messagebox
-
-import ctypes
-import sys
 
 if sys.platform == "win32":
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
     except (AttributeError, OSError):
-        try:
+        with contextlib.suppress(AttributeError, OSError):
             ctypes.windll.user32.SetProcessDPIAware()
-        except (AttributeError, OSError):
-            pass
 
 from spokebound.ai.build import build_fleet
 from spokebound.model.pieces import Piece, Player

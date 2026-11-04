@@ -71,11 +71,11 @@ def _identity(n: int) -> Matrix:
 
 
 def _vec_add(a: Vector, b: Vector) -> Vector:
-    return [x + y for x, y in zip(a, b)]
+    return [x + y for x, y in zip(a, b, strict=True)]
 
 
 def _vec_sub(a: Vector, b: Vector) -> Vector:
-    return [x - y for x, y in zip(a, b)]
+    return [x - y for x, y in zip(a, b, strict=True)]
 
 
 def _vec_scale(a: Vector, s: float) -> Vector:
@@ -83,7 +83,7 @@ def _vec_scale(a: Vector, s: float) -> Vector:
 
 
 def _dot(a: Vector, b: Vector) -> float:
-    return sum(x * y for x, y in zip(a, b))
+    return sum(x * y for x, y in zip(a, b, strict=True))
 
 
 def _norm(a: Vector) -> float:
@@ -229,13 +229,13 @@ class CMAES:
         ``candidates`` (as returned by :meth:`ask`, in any order — this
         does its own ranking)."""
         p = self.params
-        ranked = sorted(zip(fitnesses, candidates), key=lambda fc: -fc[0])
+        ranked = sorted(zip(fitnesses, candidates, strict=True), key=lambda fc: -fc[0])
         selected = [genome for _, genome in ranked[:p.mu]]
         old_mean = self.mean
         y_selected = [_vec_scale(_vec_sub(x, old_mean), 1 / self.sigma)
                      for x in selected]
         y_w = _zeros(p.n)
-        for w, y in zip(p.weights, y_selected):
+        for w, y in zip(p.weights, y_selected, strict=True):
             y_w = _vec_add(y_w, _vec_scale(y, w))
         self.mean = _vec_add(old_mean, _vec_scale(y_w, self.sigma))
 
@@ -261,7 +261,7 @@ class CMAES:
         rank_one = _outer(self.p_c, self.p_c)
         delta_h = (1 - h_sigma) * p.c_c * (2 - p.c_c)
         rank_mu = [[0.0] * p.n for _ in range(p.n)]
-        for w, y in zip(p.weights, y_selected):
+        for w, y in zip(p.weights, y_selected, strict=True):
             rank_mu = _mat_add(rank_mu, _mat_scale(_outer(y, y), w))
         self.C = _mat_add(
             _mat_add(_mat_scale(self.C, 1 - p.c_1 - p.c_mu),
@@ -331,7 +331,7 @@ def _to_vector(genome, field_names: tuple[str, ...]) -> Vector:
 
 
 def _from_vector(cls: type, field_names: tuple[str, ...], vector: Vector):
-    return cls(**dict(zip(field_names, vector)))
+    return cls(**dict(zip(field_names, vector, strict=True)))
 
 
 def run_cma_es(
@@ -440,9 +440,9 @@ def run_cma_es(
             record = {
                 "time": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "generation": generation, "sigma": es.sigma,
-                "mean": dict(zip(field_names, es.mean)),
+                "mean": dict(zip(field_names, es.mean, strict=True)),
                 "fitnesses": fitnesses,
-                "candidates": [dict(zip(field_names, v)) for v in vectors],
+                "candidates": [dict(zip(field_names, v, strict=True)) for v in vectors],
             }
             with log_path.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(record) + "\n")

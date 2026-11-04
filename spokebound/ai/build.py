@@ -24,7 +24,9 @@ the top few levels do that is gone.
 import random
 
 from spokebound.ai.config import (
-    DEFAULT_FLEET_RULES, FleetRules, NEUTRAL_FLEET_RULES,
+    DEFAULT_FLEET_RULES,
+    NEUTRAL_FLEET_RULES,
+    FleetRules,
 )
 from spokebound.ai.levels import LEVELS
 from spokebound.config import FLEET_SIZE

@@ -1,7 +1,11 @@
 """Spending points on pieces: the build phase and in-game upgrades."""
 
 from spokebound.config import (
-    FLEET_SIZE, BUILD_BUDGET, LEVEL_COSTS, MIN_PIECE_COST, PIECE_CAP,
+    BUILD_BUDGET,
+    FLEET_SIZE,
+    LEVEL_COSTS,
+    MIN_PIECE_COST,
+    PIECE_CAP,
 )
 from spokebound.model.pieces import Piece, Player
 
@@ -37,7 +41,7 @@ class FleetBuilder:
         if sum(sum(LEVEL_COSTS[level] for level in piece)
               for piece in fleet) > BUILD_BUDGET:
             raise ValueError("Preset costs more than the build budget")
-        for piece, levels in zip(self.pieces, fleet):
+        for piece, levels in zip(self.pieces, fleet, strict=True):
             piece.spokes = list(levels)
 
     def problems(self) -> list[str]:

@@ -92,7 +92,7 @@ def await_pairing(sock: socket.socket, role: str,
             raise RelayError("No one is hosting that room code right now.")
         try:
             byte = sock.recv(1)
-        except socket.timeout:
+        except TimeoutError:
             continue
         except OSError as exc:
             raise RelayError(str(exc)) from exc

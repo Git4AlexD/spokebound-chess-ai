@@ -247,7 +247,7 @@ def _evaluate_population(genomes: list[Weights], incumbent: Weights,
     fitness (see _score — outcome plus a margin-of-victory refinement,
     not flat win/loss/draw points), same order as ``genomes`` — this
     *is* the fitness CMA-ES searches on."""
-    opponents = list(BENCHMARKS.values()) + [incumbent] + hall_of_fame
+    opponents = [*BENCHMARKS.values(), incumbent, *hall_of_fame]
     tasks = []
     for genome_index, genome in enumerate(genomes):
         for opponent in opponents:

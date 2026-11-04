@@ -9,7 +9,6 @@ from spokebound.model.game import Game
 from spokebound.model.pieces import SPOKE_COUNT
 from spokebound.model.spending import PendingUpgrade
 
-
 SPEND_CANDIDATES = 3
 
 
@@ -40,7 +39,7 @@ def spend_candidates(game: Game, upgrade: PendingUpgrade,
                 if delta > points or cost + delta > PIECE_CAP:
                     continue
                 extended = True
-                raised = spokes[:spoke] + (level + 1,) + spokes[spoke + 1:]
+                raised = (*spokes[:spoke], level + 1, *spokes[spoke + 1:])
                 successors[(raised, points - delta, cost + delta)] = None
             if not extended:
                 finished.add(spokes)

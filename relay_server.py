@@ -27,6 +27,7 @@ once, unattended, on a server, serving any number of matches over
 time, restarted only if the machine itself reboots.
 """
 
+import contextlib
 import json
 import socket
 import sys
@@ -67,10 +68,8 @@ def _relay(a: socket.socket, b: socket.socket) -> None:
         pass
     finally:
         for sock in (a, b):
-            try:
+            with contextlib.suppress(OSError):
                 sock.shutdown(socket.SHUT_RDWR)
-            except OSError:
-                pass
 
 
 class _Rooms:
@@ -124,20 +123,16 @@ def _handle(conn: socket.socket, rooms: _Rooms) -> None:
             conn.sendall(paired)
         except OSError:
             for sock in (host_conn, conn):
-                try:
+                with contextlib.suppress(OSError):
                     sock.close()
-                except OSError:
-                    pass
             return
 
         threading.Thread(target=_relay, args=(host_conn, conn),
                          daemon=True).start()
         _relay(conn, host_conn)
     except (OSError, ValueError, ConnectionError):
-        try:
+        with contextlib.suppress(OSError):
             conn.close()
-        except OSError:
-            pass
 
 
 def main() -> None:
@@ -152,7 +147,7 @@ def main() -> None:
 
     try:
         while True:
-            conn, addr = listener.accept()
+            conn, _addr = listener.accept()
             threading.Thread(target=_handle, args=(conn, rooms),
                              daemon=True).start()
     except KeyboardInterrupt:

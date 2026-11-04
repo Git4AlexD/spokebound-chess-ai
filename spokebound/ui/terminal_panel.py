@@ -146,7 +146,7 @@ def _draw_speaker(canvas: tk.Canvas, cx: float, cy: float) -> None:
                        fill=theme.TERMINAL_CASE_OUTER,
                        outline=theme.TERMINAL_BEZEL_EDGE)
     for ring_radius, hole_count in zip(SPEAKER_HOLE_RINGS,
-                                       SPEAKER_HOLES_PER_RING):
+                                       SPEAKER_HOLES_PER_RING, strict=True):
         for h in range(hole_count):
             angle = 2 * math.pi * h / max(1, hole_count)
             hx = cx + ring_radius * math.cos(angle)
