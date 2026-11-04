@@ -6,9 +6,12 @@ project covering game-playing AI, evolutionary optimisation, peer-to-peer
 networking and desktop UI engineering, with an automated test suite and
 a packaged Windows build.
 
+Development began in July 2026, and the project moved to GitHub in
+November 2026, which is why the commit history starts there.
+
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Runtime dependencies: none](https://img.shields.io/badge/runtime%20dependencies-none-2ea44f)
-[![Tests](https://github.com/Git4AlexD/spokebound-chess-ai/actions/workflows/tests.yml/badge.svg)](https://github.com/Git4AlexD/spokebound-chess-ai/actions/workflows/tests.yml)
+[![CI](https://github.com/Git4AlexD/spokebound-chess-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Git4AlexD/spokebound-chess-ai/actions/workflows/ci.yml)
 ![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6)
 
 ![A game in progress: a selected piece with its legal moves marked, the fleet tracker on the left and the upgrade terminal on the right](docs/screenshots/gameplay.png)
@@ -114,8 +117,9 @@ machines. The full rules are on the in-game Instructions screen.
   real loopback connection, and the UI (Tk screens built and driven from
   the tests).
 - **Continuous integration** with GitHub Actions
-  ([`tests.yml`](.github/workflows/tests.yml)) runs the full suite on
-  Windows under Python 3.10 and 3.12 on every push and pull request.
+  ([`ci.yml`](.github/workflows/ci.yml)) lints and format-checks the
+  code with [ruff](https://docs.astral.sh/ruff/) and runs the full suite
+  on Windows under Python 3.10 and 3.12 on every push and pull request.
 - **Packaged as a single-file Windows executable** with PyInstaller
   ([`package.py`](package.py)), with bundled-asset path resolution and
   user data stored under `%APPDATA%` in the packaged build.
@@ -163,6 +167,7 @@ From the repository folder:
 ```bash
 python -m spokebound        # run the game
 python -m unittest          # run the tests (or: pytest)
+ruff check . && ruff format --check .   # lint (pip install ruff)
 ```
 
 ### Online play across the internet (optional)
@@ -236,6 +241,7 @@ tests/                 unit, integration and UI tests
 .github/workflows/     CI configuration
 relay_server.py        standalone relay server
 package.py             PyInstaller build script
+pyproject.toml         ruff lint and format settings
 ```
 
 ## Limitations and next steps

@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -7,6 +7,24 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # Pinned so a new ruff release can't start failing CI on its own.
+      - name: Install ruff
+        run: python -m pip install ruff==0.17.3
+
+      - name: Lint
+        run: ruff check . && ruff format --check .
+
   test:
     name: Python ${{ matrix.python-version }} on Windows
     # Windows, because that's the platform the game targets (winsound/MCI
