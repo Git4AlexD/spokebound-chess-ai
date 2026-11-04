@@ -159,6 +159,23 @@ The game is about 11,600 lines of Python, with about 3,300 lines of tests.
 
 ## Running the project
 
+### Windows download
+
+A packaged Windows build, which doesn't need Python installed, is on the
+[Releases page](https://github.com/Git4AlexD/spokebound-chess-ai/releases).
+It isn't code-signed, so Windows may show "Windows protected your PC" the
+first time: choose **More info**, then **Run anyway**.
+
+Playing against the AI, two players on one computer, and online play
+between two computers on the same network all work in the download.
+**Joining a friend over the internet by room code does not.** That goes
+through a relay server, and the release doesn't include a relay address
+because the project's own relay server is private and isn't shared
+publicly. To play over the internet, run your own relay (see below) and
+run the game from source.
+
+### From source
+
 Requires **Python 3.10 or newer** with Tkinter (included in the standard
 python.org installers). There are no packages to install.
 
@@ -248,6 +265,9 @@ pyproject.toml         ruff lint and format settings
 
 - Sound uses Windows APIs and is silent on other systems. The game should
   otherwise run on macOS and Linux, but they haven't been tested.
+- The Windows download has no relay address built in, so internet play
+  by room code needs your own relay and a source install (see
+  [Windows download](#windows-download)).
 - Online games use plain, unauthenticated TCP: a room code is the only
   access control. That suits playing with friends, not a public service.
 - Story Mode and competitive matchmaking appear in the menus as "coming
