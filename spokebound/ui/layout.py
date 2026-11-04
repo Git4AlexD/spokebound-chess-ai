@@ -35,9 +35,13 @@ def freeze_height(widget: tk.Misc) -> None:
     widget.pack_propagate(False)
 
 
-def fit_height(container: tk.Misc, build: Callable[[float], tk.Widget],
-              available_height: int, min_scale: float = 0.55,
-              probe_scale: float = 0.7) -> tk.Widget:
+def fit_height(
+    container: tk.Misc,
+    build: Callable[[float], tk.Widget],
+    available_height: int,
+    min_scale: float = 0.55,
+    probe_scale: float = 0.7,
+) -> tk.Widget:
     """Build content sized to fit ``available_height``, given a
     ``build(scale)`` that returns a freshly built, not-yet-packed widget
     (1.0 = full size).
@@ -99,10 +103,15 @@ def fit_height(container: tk.Misc, build: Callable[[float], tk.Widget],
     return content
 
 
-def fit_to_window(container: tk.Misc, build: Callable[[float], tk.Widget],
-                  available_width: int, available_height: int,
-                  min_scale: float = 0.55, max_scale: float = 1.0,
-                  probe_scale: float = 0.7) -> tk.Widget:
+def fit_to_window(
+    container: tk.Misc,
+    build: Callable[[float], tk.Widget],
+    available_width: int,
+    available_height: int,
+    min_scale: float = 0.55,
+    max_scale: float = 1.0,
+    probe_scale: float = 0.7,
+) -> tk.Widget:
     """Like :func:`fit_height`, but sized against both dimensions of an
     ``available_width`` x ``available_height`` box, and — when
     ``max_scale`` allows it — free to grow past 1.0 to fill extra room
@@ -117,6 +126,7 @@ def fit_to_window(container: tk.Misc, build: Callable[[float], tk.Widget],
     scales is more constraining, so growing to fill height can never
     overflow width or vice versa.
     """
+
     def measure(scale: float) -> tuple[int, int]:
         content = build(scale)
         content.pack(fill=tk.BOTH, expand=True)
@@ -134,8 +144,7 @@ def fit_to_window(container: tk.Misc, build: Callable[[float], tk.Widget],
         return (budget - fixed) / slope
 
     width_at_full, height_at_full = measure(1.0)
-    if (max_scale <= 1.0 and width_at_full <= available_width
-           and height_at_full <= available_height):
+    if max_scale <= 1.0 and width_at_full <= available_width and height_at_full <= available_height:
         content = build(1.0)
         content.pack(fill=tk.BOTH, expand=True)
         return content
@@ -150,9 +159,13 @@ def fit_to_window(container: tk.Misc, build: Callable[[float], tk.Widget],
     return content
 
 
-def window_scale(widget: tk.Misc, base_width: int = 1280,
-                 base_height: int = 720, min_scale: float = 1.0,
-                 max_scale: float = 2.2) -> float:
+def window_scale(
+    widget: tk.Misc,
+    base_width: int = 1280,
+    base_height: int = 720,
+    min_scale: float = 1.0,
+    max_scale: float = 2.2,
+) -> float:
     """Return how far past its own designed-at-``base_width`` x
     ``base_height`` size a screen's content should grow to suit the
     real window it's actually in — 1.0 (never smaller; these screens
@@ -166,12 +179,10 @@ def window_scale(widget: tk.Misc, base_width: int = 1280,
     width, height = window_size(widget)
     if width <= 1 or height <= 1:
         return min_scale
-    return max(min_scale, min(max_scale,
-                              min(width / base_width, height / base_height)))
+    return max(min_scale, min(max_scale, min(width / base_width, height / base_height)))
 
 
-def watch_resize(widget: tk.Misc, on_resize: Callable[[], None],
-                 debounce_ms: int = 150) -> None:
+def watch_resize(widget: tk.Misc, on_resize: Callable[[], None], debounce_ms: int = 150) -> None:
     """Call ``on_resize`` whenever the window ``widget`` lives in actually
     changes size, so a fit-to-window screen stays fitted after the user
     resizes or un-maximizes the window, not just at the moment it was
@@ -186,8 +197,7 @@ def watch_resize(widget: tk.Misc, on_resize: Callable[[], None],
     replaced doesn't need to unbind this itself.
     """
     root = widget.winfo_toplevel()
-    state = {"job": None, "id": None,
-            "size": (root.winfo_width(), root.winfo_height())}
+    state = {"job": None, "id": None, "size": (root.winfo_width(), root.winfo_height())}
 
     def fire() -> None:
         state["job"] = None

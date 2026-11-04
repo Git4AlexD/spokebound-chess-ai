@@ -96,24 +96,25 @@ class EvaluateTests(unittest.TestCase):
     def test_more_material_scores_higher(self):
         # Captains sit at equal distance from goal either way, so this
         # isolates material as the only thing that differs.
-        board = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
-            (1, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (6, 3): make_captain(Player.ORANGE),
-            (0, 3): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
+                (1, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (6, 3): make_captain(Player.ORANGE),
+                (0, 3): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
-        self.assertGreater(evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS),
-                           evaluate(game, Player.WHITE, DEFAULT_WEIGHTS))
+        self.assertGreater(
+            evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS), evaluate(game, Player.WHITE, DEFAULT_WEIGHTS)
+        )
 
     def test_a_decisive_outcome_dwarfs_the_weighted_features(self):
         board = place_all({(8, 3): make_captain(Player.ORANGE)})
         game = Game(board)
         game.outcome = Outcome(winner=Player.ORANGE, reason="test")
-        self.assertEqual(evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS),
-                         DECISIVE_SCORE)
-        self.assertEqual(evaluate(game, Player.WHITE, DEFAULT_WEIGHTS),
-                         -DECISIVE_SCORE)
+        self.assertEqual(evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS), DECISIVE_SCORE)
+        self.assertEqual(evaluate(game, Player.WHITE, DEFAULT_WEIGHTS), -DECISIVE_SCORE)
 
     def test_a_drawn_outcome_scores_zero(self):
         board = place_all({(8, 3): make_captain(Player.ORANGE)})
@@ -125,20 +126,20 @@ class EvaluateTests(unittest.TestCase):
         board = place_all({(8, 3): make_captain(Player.ORANGE)})
         game = Game(board)
         game.outcome = Outcome(winner=Player.ORANGE, reason="test")
-        self.assertEqual(evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS),
-                         10_000.0)
-        self.assertEqual(evaluate(game, Player.WHITE, DEFAULT_WEIGHTS),
-                         -10_000.0)
+        self.assertEqual(evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS), 10_000.0)
+        self.assertEqual(evaluate(game, Player.WHITE, DEFAULT_WEIGHTS), -10_000.0)
 
     def test_an_unguarded_enemy_captain_one_step_from_goal_scores_badly(self):
         # Nothing defends the centre, and White's Captain is one move
         # from an instant win next turn — this has to score strongly
         # negative for Orange well before any search would otherwise see
         # the win coming on its own.
-        board = place_all({
-            (8, 6): make_captain(Player.ORANGE),
-            (2, 3): make_captain(Player.WHITE),  # one move from (3, 3)
-        })
+        board = place_all(
+            {
+                (8, 6): make_captain(Player.ORANGE),
+                (2, 3): make_captain(Player.WHITE),  # one move from (3, 3)
+            }
+        )
         score = evaluate(Game(board), Player.ORANGE, DEFAULT_WEIGHTS)
         self.assertLess(score, -20)
 
@@ -148,19 +149,22 @@ class EvaluateTests(unittest.TestCase):
         # threat has to matter enough on its own that the AI steers
         # toward blocking it long before a shallow search would
         # otherwise see the win coming.
-        near_goal = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
-            (8, 6): make_captain(Player.ORANGE),
-            (2, 3): make_captain(Player.WHITE),  # one move from (3, 3)
-        })
-        far_from_goal = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        near_goal = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
+                (8, 6): make_captain(Player.ORANGE),
+                (2, 3): make_captain(Player.WHITE),  # one move from (3, 3)
+            }
+        )
+        far_from_goal = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         near_score = evaluate(Game(near_goal), Player.ORANGE, DEFAULT_WEIGHTS)
-        far_score = evaluate(Game(far_from_goal), Player.ORANGE,
-                             DEFAULT_WEIGHTS)
+        far_score = evaluate(Game(far_from_goal), Player.ORANGE, DEFAULT_WEIGHTS)
         self.assertLess(near_score, far_score)
 
     def test_controlling_the_goal_square_scores_higher(self):
@@ -168,24 +172,24 @@ class EvaluateTests(unittest.TestCase):
         # opponent's Captain to move there at all (the same way moving a
         # king into check is illegal in chess), so holding it should
         # score clearly better than not.
-        controlled = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        uncontrolled = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        self.assertIn((3, 3),
-                      Game(controlled).board.legal_moves((5, 3)))
-        self.assertNotIn((3, 3),
-                         Game(uncontrolled).board.legal_moves((5, 3)))
-        controlled_score = evaluate(Game(controlled), Player.ORANGE,
-                                    DEFAULT_WEIGHTS)
-        uncontrolled_score = evaluate(Game(uncontrolled), Player.ORANGE,
-                                      DEFAULT_WEIGHTS)
+        controlled = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        uncontrolled = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        self.assertIn((3, 3), Game(controlled).board.legal_moves((5, 3)))
+        self.assertNotIn((3, 3), Game(uncontrolled).board.legal_moves((5, 3)))
+        controlled_score = evaluate(Game(controlled), Player.ORANGE, DEFAULT_WEIGHTS)
+        uncontrolled_score = evaluate(Game(uncontrolled), Player.ORANGE, DEFAULT_WEIGHTS)
         self.assertGreater(controlled_score, uncontrolled_score)
 
     def test_piece_safety_favours_a_defended_piece_over_undefended(self):
@@ -197,8 +201,7 @@ class EvaluateTests(unittest.TestCase):
                 (0, 0): make_captain(Player.WHITE),
             }
             if include_defender:
-                pieces[(5, 5)] = Piece(Player.ORANGE,
-                                       spokes=[UNLIMITED] * SPOKE_COUNT)
+                pieces[(5, 5)] = Piece(Player.ORANGE, spokes=[UNLIMITED] * SPOKE_COUNT)
             return place_all(pieces)
 
         defended = Game(board_with_defender(True))
@@ -207,48 +210,51 @@ class EvaluateTests(unittest.TestCase):
         self.assertTrue(_is_defended(defended.board, (5, 3)))
         self.assertFalse(_is_defended(undefended.board, (5, 3)))
         defended_score = evaluate(defended, Player.ORANGE, DEFAULT_WEIGHTS)
-        undefended_score = evaluate(undefended, Player.ORANGE,
-                                    DEFAULT_WEIGHTS)
+        undefended_score = evaluate(undefended, Player.ORANGE, DEFAULT_WEIGHTS)
         self.assertGreater(defended_score, undefended_score)
 
     def test_goal_area_control_rewards_holding_the_ring_around_the_goal(self):
-        holding = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=[UNLIMITED] * SPOKE_COUNT),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        not_holding = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        holding = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=[UNLIMITED] * SPOKE_COUNT),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        not_holding = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         self.assertIn((4, 3), Game(holding).board.legal_moves((5, 3)))
-        holding_area = _goal_area_control(Game(holding), Player.ORANGE,
-                                          Player.WHITE)
-        not_holding_area = _goal_area_control(Game(not_holding),
-                                              Player.ORANGE, Player.WHITE)
+        holding_area = _goal_area_control(Game(holding), Player.ORANGE, Player.WHITE)
+        not_holding_area = _goal_area_control(Game(not_holding), Player.ORANGE, Player.WHITE)
         self.assertGreater(holding_area, not_holding_area)
 
     def test_captain_escape_rewards_more_safe_squares(self):
-        boxed = place_all({
-            (5, 5): make_captain(Player.ORANGE),
-            (4, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (4, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (4, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (5, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (5, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (6, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (6, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        open_board = place_all({
-            (5, 5): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        boxed_escape = _captain_escape(Game(boxed), Player.ORANGE,
-                                       Player.WHITE)
-        open_escape = _captain_escape(Game(open_board), Player.ORANGE,
-                                      Player.WHITE)
+        boxed = place_all(
+            {
+                (5, 5): make_captain(Player.ORANGE),
+                (4, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (4, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (4, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (5, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (5, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (6, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (6, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        open_board = place_all(
+            {
+                (5, 5): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        boxed_escape = _captain_escape(Game(boxed), Player.ORANGE, Player.WHITE)
+        open_escape = _captain_escape(Game(open_board), Player.ORANGE, Player.WHITE)
         self.assertGreater(open_escape, boxed_escape)
 
     def test_diagonal_distance_to_goal_counts_the_same_as_orthogonal(self):
@@ -262,18 +268,20 @@ class EvaluateTests(unittest.TestCase):
         # overlaps more of the surrounding ring than one adjacent
         # diagonally), which isn't a Manhattan-vs-Chebyshev bug, just a
         # different feature answering a different question.
-        diagonal = place_all({
-            (2, 2): make_captain(Player.WHITE),
-            (8, 6): make_captain(Player.ORANGE),
-        })
-        orthogonal = place_all({
-            (2, 3): make_captain(Player.WHITE),
-            (8, 6): make_captain(Player.ORANGE),
-        })
-        diagonal_score = _captain_distance(Game(diagonal), Player.ORANGE,
-                                           Player.WHITE)
-        orthogonal_score = _captain_distance(Game(orthogonal), Player.ORANGE,
-                                             Player.WHITE)
+        diagonal = place_all(
+            {
+                (2, 2): make_captain(Player.WHITE),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
+        orthogonal = place_all(
+            {
+                (2, 3): make_captain(Player.WHITE),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
+        diagonal_score = _captain_distance(Game(diagonal), Player.ORANGE, Player.WHITE)
+        orthogonal_score = _captain_distance(Game(orthogonal), Player.ORANGE, Player.WHITE)
         self.assertEqual(diagonal_score, orthogonal_score)
 
 
@@ -282,12 +290,14 @@ class SearchTests(unittest.TestCase):
         """Orange can capture White's only piece for free, or make a
         pointless sideways move instead — an easy position to check the
         AI actually prefers the capture."""
-        board = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         return Game(board)
 
     def test_the_easiest_level_still_takes_the_free_capture(self):
@@ -305,17 +315,19 @@ class SearchTests(unittest.TestCase):
         # The Captain (at (5, 5), well away from the goal) is boxed in
         # by its own immobile pieces on every side, so it's the only
         # piece with any move at all, and only one move at that.
-        board = place_all({
-            (5, 5): make_captain(Player.ORANGE),
-            (4, 4): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
-            (4, 5): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
-            (4, 6): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
-            (5, 4): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
-            (5, 6): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
-            (6, 4): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
-            (6, 5): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 5): make_captain(Player.ORANGE),
+                (4, 4): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
+                (4, 5): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
+                (4, 6): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
+                (5, 4): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
+                (5, 6): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
+                (6, 4): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
+                (6, 5): Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         moves = game.all_legal_moves(Player.ORANGE)
         self.assertEqual(len(moves), 1)
@@ -332,11 +344,13 @@ class SearchTests(unittest.TestCase):
         # the single-legal-move shortcut above.
         goal_row, goal_col = next(iter(GOAL_SQUARES))
         start = (goal_row - 1, goal_col)
-        board = place_all({
-            start: make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-            (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-        })
+        board = place_all(
+            {
+                start: make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+                (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+            }
+        )
         game = Game(board)
         started = time.monotonic()
         move = choose_move(game, 10)
@@ -359,37 +373,43 @@ class SearchTests(unittest.TestCase):
 
 class LevelTests(unittest.TestCase):
     def _free_capture_position(self) -> Game:
-        board = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         return Game(board)
 
     def test_every_level_returns_a_legal_move(self):
         for number in range(1, 11):
             game = self._free_capture_position()
             move = choose_move(game, number)
-            self.assertIn(move, game.all_legal_moves(Player.ORANGE),
-                          f"level {number} returned an illegal move")
+            self.assertIn(
+                move, game.all_legal_moves(Player.ORANGE), f"level {number} returned an illegal move"
+            )
 
     def test_every_level_reliably_takes_the_free_capture(self):
         # No randomness at any level — this is completely deterministic
         # from level 1 up (see levels.py).
         for number in range(1, 11):
             game = self._free_capture_position()
-            self.assertEqual(choose_move(game, number), ((5, 3), (3, 3)),
-                             f"level {number} missed the free capture")
+            self.assertEqual(
+                choose_move(game, number), ((5, 3), (3, 3)), f"level {number} missed the free capture"
+            )
 
     def test_level_ten_stops_early_on_a_forced_win(self):
         goal_row, goal_col = next(iter(GOAL_SQUARES))
         start = (goal_row - 1, goal_col)
-        board = place_all({
-            start: make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-            (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-        })
+        board = place_all(
+            {
+                start: make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+                (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+            }
+        )
         game = Game(board)
         started = time.monotonic()
         move = choose_move(game, 10)
@@ -402,11 +422,14 @@ class UpgradeTests(unittest.TestCase):
     def test_spends_every_point_it_can(self):
         mover = Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED))
         target = Piece(Player.WHITE, spokes=one_spoke(N, 1), bounty=8)
-        board = place_all({
-            (5, 3): mover, (3, 3): target,
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (3, 3): target,
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         game.move((5, 3), (3, 3))
         self.assertIsNotNone(game.upgrade)
@@ -430,11 +453,15 @@ class UpgradeTests(unittest.TestCase):
         ally = Piece(Player.ORANGE, spokes=one_spoke(N, 1))
         attacker = Piece(Player.WHITE, spokes=one_spoke(N, UNLIMITED))
         mover = Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT)
-        board = place_all({
-            (5, 3): ally, (1, 3): attacker, (5, 4): mover,
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): ally,
+                (1, 3): attacker,
+                (5, 4): mover,
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         self.assertFalse(_is_defended(board, (5, 3)))
         game.upgrade = PendingUpgrade(mover, 1)
@@ -446,10 +473,12 @@ class UpgradeTests(unittest.TestCase):
 
 class BenchmarkTests(unittest.TestCase):
     def test_rusher_always_advances_the_captain_when_it_can(self):
-        board = place_all({
-            (6, 3): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (6, 3): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         src, dst = rusher_move(game)
         self.assertEqual(src, (6, 3))
@@ -462,18 +491,20 @@ class BenchmarkTests(unittest.TestCase):
         # boxed in on every side by its own pieces, so rushing it is
         # impossible; the rusher should still return some legal move
         # rather than raising.
-        board = place_all({
-            (5, 5): make_captain(Player.ORANGE),
-            (4, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (4, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (4, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (5, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (5, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (6, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (6, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (6, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 5): make_captain(Player.ORANGE),
+                (4, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (4, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (4, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (5, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (5, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (6, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (6, 5): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (6, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         src, dst = rusher_move(game)
         self.assertIn((src, dst), game.all_legal_moves(Player.ORANGE))
@@ -482,73 +513,87 @@ class BenchmarkTests(unittest.TestCase):
         # Two separate captures available, of clearly different value —
         # grabber should take the more expensive target, not just the
         # first one found.
-        board = place_all({
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),  # cheap
-            (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 5): Piece(Player.WHITE, spokes=one_spoke(N, UNLIMITED)),  # expensive
-        })
+        board = place_all(
+            {
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),  # cheap
+                (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 5): Piece(Player.WHITE, spokes=one_spoke(N, UNLIMITED)),  # expensive
+            }
+        )
         game = Game(board)
         src, dst = grabber_move(game)
         self.assertEqual((src, dst), ((5, 5), (3, 5)))
 
     def test_grabber_falls_back_to_search_with_nothing_to_take(self):
-        board = place_all({
-            (5, 3): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         src, dst = grabber_move(game)
         self.assertIn((src, dst), game.all_legal_moves(Player.ORANGE))
 
     def test_turtle_never_moves_the_captain_while_anything_else_can(self):
-        board = place_all({
-            (5, 3): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-            (4, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-        })
+        board = place_all(
+            {
+                (5, 3): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+                (4, 4): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+            }
+        )
         game = Game(board)
         src, _dst = turtle_move(game)
         self.assertNotEqual(src, (5, 3))
 
     def test_turtle_falls_back_to_the_captain_with_nothing_else_to_move(self):
-        board = place_all({
-            (5, 3): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         src, dst = turtle_move(game)
         self.assertIn((src, dst), game.all_legal_moves(Player.ORANGE))
 
     def test_hoarder_never_captures_while_a_quiet_move_exists(self):
-        board = place_all({
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-        })
+        board = place_all(
+            {
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+            }
+        )
         game = Game(board)
         _src, dst = hoarder_move(game)
         self.assertIsNone(game.board.get(dst))
 
     def test_hoarder_still_returns_a_legal_move_with_nothing_to_avoid(self):
-        board = place_all({
-            (5, 3): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         src, dst = hoarder_move(game)
         self.assertIn((src, dst), game.all_legal_moves(Player.ORANGE))
 
     def test_opportunist_takes_a_free_capture_over_racing(self):
-        board = place_all({
-            (6, 1): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-            (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 5): Piece(Player.WHITE, spokes=one_spoke(N, 1)),  # undefended
-        })
+        board = place_all(
+            {
+                (6, 1): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+                (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 5): Piece(Player.WHITE, spokes=one_spoke(N, 1)),  # undefended
+            }
+        )
         game = Game(board)
         src, dst = opportunist_move(game)
         self.assertEqual((src, dst), ((5, 5), (3, 5)))
@@ -557,13 +602,15 @@ class BenchmarkTests(unittest.TestCase):
         # (3, 5) is now defended by the all-directions piece at (3, 6) —
         # not a free capture any more, so opportunist should fall
         # through to exactly what rusher_move would do here.
-        board = place_all({
-            (6, 1): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-            (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 5): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (3, 6): Piece(Player.WHITE, spokes=[UNLIMITED] * SPOKE_COUNT),
-        })
+        board = place_all(
+            {
+                (6, 1): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+                (5, 5): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 5): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (3, 6): Piece(Player.WHITE, spokes=[UNLIMITED] * SPOKE_COUNT),
+            }
+        )
         game = Game(board)
         self.assertEqual(opportunist_move(game), rusher_move(game))
 
@@ -603,13 +650,11 @@ class CMAESTests(unittest.TestCase):
         def fitness(x):
             return -sum((xi - ti) ** 2 for xi, ti in zip(x, target, strict=True))
 
-        es = CMAES([0.0] * len(target), sigma0=2.0, population_size=10,
-                   rng=random.Random(0))
+        es = CMAES([0.0] * len(target), sigma0=2.0, population_size=10, rng=random.Random(0))
         for _ in range(60):
             candidates = es.ask()
             es.tell(candidates, [fitness(c) for c in candidates])
-        distance = math.sqrt(sum((m - t) ** 2
-                                 for m, t in zip(es.mean, target, strict=True)))
+        distance = math.sqrt(sum((m - t) ** 2 for m, t in zip(es.mean, target, strict=True)))
         self.assertLess(distance, 0.05)
 
     def test_run_cma_es_returns_the_right_genome_type_and_converges(self):
@@ -617,20 +662,28 @@ class CMAESTests(unittest.TestCase):
         # fast, synthetic fitness (distance from an arbitrary target
         # Weights) rather than real games — this is testing the
         # plumbing, not asking CMA-ES to play chess.
-        target = DEFAULT_WEIGHTS.nudged("material", 1.5).nudged(
-            "mobility", 0.5)
+        target = DEFAULT_WEIGHTS.nudged("material", 1.5).nudged("mobility", 0.5)
         target_vec = [getattr(target, f) for f in target.field_names()]
 
         def evaluate_population(genomes, incumbent):
             del incumbent  # unused — this test isn't exercising it
-            return [-sum((getattr(genome, f) - t) ** 2
-                        for f, t in zip(genome.field_names(), target_vec, strict=True))
-                   for genome in genomes]
+            return [
+                -sum(
+                    (getattr(genome, f) - t) ** 2
+                    for f, t in zip(genome.field_names(), target_vec, strict=True)
+                )
+                for genome in genomes
+            ]
 
         result = run_cma_es(
-            label="test", seed_genome=DEFAULT_WEIGHTS, sigma0=0.5,
-            evaluate_population=evaluate_population, generations=40,
-            population_size=10, seed=0)
+            label="test",
+            seed_genome=DEFAULT_WEIGHTS,
+            sigma0=0.5,
+            evaluate_population=evaluate_population,
+            generations=40,
+            population_size=10,
+            seed=0,
+        )
         self.assertIsInstance(result, Weights)
         for field, expected in zip(target.field_names(), target_vec, strict=True):
             self.assertAlmostEqual(getattr(result, field), expected, places=1)
@@ -647,32 +700,46 @@ class CMAESTests(unittest.TestCase):
 
         def evaluate_population(genomes, incumbent):
             seen_incumbents.append(incumbent)
-            return [-sum((getattr(genome, f) - getattr(DEFAULT_WEIGHTS, f) - 1) ** 2
-                        for f in genome.field_names())
-                   for genome in genomes]
+            return [
+                -sum(
+                    (getattr(genome, f) - getattr(DEFAULT_WEIGHTS, f) - 1) ** 2 for f in genome.field_names()
+                )
+                for genome in genomes
+            ]
 
-        run_cma_es(label="test", seed_genome=DEFAULT_WEIGHTS, sigma0=0.5,
-                  evaluate_population=evaluate_population, generations=2,
-                  population_size=6, seed=0)
+        run_cma_es(
+            label="test",
+            seed_genome=DEFAULT_WEIGHTS,
+            sigma0=0.5,
+            evaluate_population=evaluate_population,
+            generations=2,
+            population_size=6,
+            seed=0,
+        )
         self.assertEqual(seen_incumbents[0], DEFAULT_WEIGHTS)
         self.assertNotEqual(seen_incumbents[1], DEFAULT_WEIGHTS)
         self.assertNotEqual(seen_incumbents[0], seen_incumbents[1])
 
     def _toy_evaluate(self, genomes, incumbent):
         del incumbent
-        return [-sum((getattr(genome, f) - getattr(DEFAULT_WEIGHTS, f)) ** 2
-                    for f in genome.field_names())
-               for genome in genomes]
+        return [
+            -sum((getattr(genome, f) - getattr(DEFAULT_WEIGHTS, f)) ** 2 for f in genome.field_names())
+            for genome in genomes
+        ]
 
     def test_save_state_and_restore_round_trips_exactly(self):
         field_names = DEFAULT_WEIGHTS.field_names()
-        es = CMAES(_to_vector(DEFAULT_WEIGHTS, field_names), sigma0=0.5,
-                  population_size=6, rng=random.Random(0))
+        es = CMAES(
+            _to_vector(DEFAULT_WEIGHTS, field_names), sigma0=0.5, population_size=6, rng=random.Random(0)
+        )
         for _ in range(2):
             candidates = es.ask()
-            es.tell(candidates, self._toy_evaluate(
-                [Weights(**dict(zip(field_names, c, strict=True))) for c in candidates],
-                None))
+            es.tell(
+                candidates,
+                self._toy_evaluate(
+                    [Weights(**dict(zip(field_names, c, strict=True))) for c in candidates], None
+                ),
+            )
 
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "state.json"
@@ -685,8 +752,7 @@ class CMAESTests(unittest.TestCase):
         self.assertEqual(restored.p_sigma, es.p_sigma)
         self.assertEqual(restored.p_c, es.p_c)
         self.assertEqual(restored.generation, es.generation)
-        self.assertEqual(restored.params.population_size,
-                         es.params.population_size)
+        self.assertEqual(restored.params.population_size, es.params.population_size)
 
     def test_run_cma_es_resume_continues_instead_of_restarting(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -697,15 +763,29 @@ class CMAESTests(unittest.TestCase):
                 calls.append(incumbent)
                 return self._toy_evaluate(genomes, incumbent)
 
-            run_cma_es(label="test", seed_genome=DEFAULT_WEIGHTS, sigma0=0.5,
-                      evaluate_population=counting_evaluate, generations=3,
-                      population_size=6, state_path=state_path, seed=0)
+            run_cma_es(
+                label="test",
+                seed_genome=DEFAULT_WEIGHTS,
+                sigma0=0.5,
+                evaluate_population=counting_evaluate,
+                generations=3,
+                population_size=6,
+                state_path=state_path,
+                seed=0,
+            )
             self.assertEqual(len(calls), 3)
 
             calls.clear()
-            run_cma_es(label="test", seed_genome=DEFAULT_WEIGHTS, sigma0=0.5,
-                      evaluate_population=counting_evaluate, generations=6,
-                      population_size=6, state_path=state_path, seed=0)
+            run_cma_es(
+                label="test",
+                seed_genome=DEFAULT_WEIGHTS,
+                sigma0=0.5,
+                evaluate_population=counting_evaluate,
+                generations=6,
+                population_size=6,
+                state_path=state_path,
+                seed=0,
+            )
             # Only the 3 remaining generations (4, 5, 6) get evaluated —
             # not 6 fresh ones — and the resumed run continues from
             # wherever generation 3 actually left off, not the seed.
@@ -721,14 +801,28 @@ class CMAESTests(unittest.TestCase):
                 calls.append(incumbent)
                 return self._toy_evaluate(genomes, incumbent)
 
-            run_cma_es(label="test", seed_genome=DEFAULT_WEIGHTS, sigma0=0.5,
-                      evaluate_population=counting_evaluate, generations=3,
-                      population_size=6, state_path=state_path, seed=0)
+            run_cma_es(
+                label="test",
+                seed_genome=DEFAULT_WEIGHTS,
+                sigma0=0.5,
+                evaluate_population=counting_evaluate,
+                generations=3,
+                population_size=6,
+                state_path=state_path,
+                seed=0,
+            )
             calls.clear()
-            run_cma_es(label="test", seed_genome=DEFAULT_WEIGHTS, sigma0=0.5,
-                      evaluate_population=counting_evaluate, generations=2,
-                      population_size=6, state_path=state_path, resume=False,
-                      seed=0)
+            run_cma_es(
+                label="test",
+                seed_genome=DEFAULT_WEIGHTS,
+                sigma0=0.5,
+                evaluate_population=counting_evaluate,
+                generations=2,
+                population_size=6,
+                state_path=state_path,
+                resume=False,
+                seed=0,
+            )
             # Starts over from generation 1 (2 fresh generations), not
             # from the 3 already saved — and the first incumbent it
             # sees is the seed again, not wherever the old run got to.
@@ -739,15 +833,30 @@ class CMAESTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             state_path = Path(tmp) / "state.json"
             with state_path.open("w", encoding="utf-8") as f:
-                json.dump({"field_names": ["not", "a", "real", "shape"],
-                          "seed": 0, "population_size": 6, "generation": 1,
-                          "sigma": 0.5, "mean": [0, 0, 0, 0],
-                          "C": [[1]], "p_sigma": [0], "p_c": [0]}, f)
+                json.dump(
+                    {
+                        "field_names": ["not", "a", "real", "shape"],
+                        "seed": 0,
+                        "population_size": 6,
+                        "generation": 1,
+                        "sigma": 0.5,
+                        "mean": [0, 0, 0, 0],
+                        "C": [[1]],
+                        "p_sigma": [0],
+                        "p_c": [0],
+                    },
+                    f,
+                )
             with self.assertRaises(ValueError):
-                run_cma_es(label="test", seed_genome=DEFAULT_WEIGHTS,
-                          sigma0=0.5, evaluate_population=self._toy_evaluate,
-                          generations=1, population_size=6,
-                          state_path=state_path)
+                run_cma_es(
+                    label="test",
+                    seed_genome=DEFAULT_WEIGHTS,
+                    sigma0=0.5,
+                    evaluate_population=self._toy_evaluate,
+                    generations=1,
+                    population_size=6,
+                    state_path=state_path,
+                )
 
 
 class EvolveScoringTests(unittest.TestCase):
@@ -758,6 +867,7 @@ class EvolveScoringTests(unittest.TestCase):
 
     def test_score_outcome_always_dominates_margin(self):
         import spokebound.ai.evolve as evolve
+
         # However lopsided the margin, a win never scores below a draw,
         # and a draw never scores below a loss.
         self.assertGreater(evolve._score("win", -1000), evolve._score("draw", 1000))
@@ -765,29 +875,31 @@ class EvolveScoringTests(unittest.TestCase):
 
     def test_score_margin_refines_within_the_same_outcome(self):
         import spokebound.ai.evolve as evolve
+
         self.assertGreater(evolve._score("win", 20), evolve._score("win", 5))
         self.assertGreater(evolve._score("loss", -5), evolve._score("loss", -20))
 
     def test_score_matches_between_evolve_and_evolve_fleet(self):
         import spokebound.ai.evolve as evolve
         import spokebound.ai.evolve_fleet as evolve_fleet
+
         for outcome, margin in [("win", 12), ("draw", 0), ("loss", -7)]:
-            self.assertEqual(evolve._score(outcome, margin),
-                             evolve_fleet._score(outcome, margin))
+            self.assertEqual(evolve._score(outcome, margin), evolve_fleet._score(outcome, margin))
 
     def test_add_to_hall_of_fame_keeps_only_the_newest_entries(self):
         import spokebound.ai.evolve as evolve
+
         hall_of_fame = []
-        seeds = [DEFAULT_WEIGHTS.nudged("material", factor)
-                for factor in (1.1, 1.2, 1.3, 1.4)]
+        seeds = [DEFAULT_WEIGHTS.nudged("material", factor) for factor in (1.1, 1.2, 1.3, 1.4)]
         for seed in seeds:
             evolve._add_to_hall_of_fame(hall_of_fame, seed)
         self.assertEqual(len(hall_of_fame), evolve.HALL_OF_FAME_SIZE)
         # The oldest (first-added) entry was evicted; the newest 3 remain.
-        self.assertEqual(hall_of_fame, seeds[-evolve.HALL_OF_FAME_SIZE:])
+        self.assertEqual(hall_of_fame, seeds[-evolve.HALL_OF_FAME_SIZE :])
 
     def test_hall_of_fame_save_and_load_round_trips(self):
         import spokebound.ai.evolve as evolve
+
         with tempfile.TemporaryDirectory() as tmp:
             original_path = evolve.HALL_OF_FAME_PATH
             evolve.HALL_OF_FAME_PATH = Path(tmp) / "hall_of_fame.json"
@@ -806,6 +918,7 @@ class EvolveScoringTests(unittest.TestCase):
         # during play let a piece grow past what it originally cost to
         # build), so this only checks the one real invariant.
         from spokebound.ai.selfplay import play_full_game
+
         orange_fleet = build_fleet(1, Player.ORANGE)
         white_fleet = build_fleet(1, Player.WHITE)
 
@@ -840,12 +953,13 @@ class BuildTests(unittest.TestCase):
         from spokebound.ai.build import _rules_for_level
         from spokebound.ai.config import NEUTRAL_FLEET_RULES
         from spokebound.ai.levels import LEVELS
-        expected = NEUTRAL_FLEET_RULES.blended(
-            DEFAULT_FLEET_RULES, LEVELS[6].pregame_skill)
+
+        expected = NEUTRAL_FLEET_RULES.blended(DEFAULT_FLEET_RULES, LEVELS[6].pregame_skill)
         self.assertEqual(_rules_for_level(6), expected)
 
     def test_an_unknown_level_number_falls_back_to_full_strength_rules(self):
         from spokebound.ai.build import _rules_for_level
+
         self.assertEqual(_rules_for_level(999), DEFAULT_FLEET_RULES)
 
     def test_no_level_ever_looks_at_an_opponents_fleet(self):
@@ -853,10 +967,9 @@ class BuildTests(unittest.TestCase):
         # at all any more — nothing in the AI ever peeks at what the
         # other side built (see spokebound.ai.levels).
         import inspect
-        self.assertNotIn("opponent_fleet",
-                         inspect.signature(build_fleet).parameters)
-        self.assertNotIn("opponent_fleet",
-                         inspect.signature(build_fleet_spec).parameters)
+
+        self.assertNotIn("opponent_fleet", inspect.signature(build_fleet).parameters)
+        self.assertNotIn("opponent_fleet", inspect.signature(build_fleet_spec).parameters)
 
     def test_every_generated_fleet_gives_every_piece_a_legal_move(self):
         # Every piece reserves one level-1 spoke before the rest of the
@@ -875,8 +988,7 @@ class BuildTests(unittest.TestCase):
                 spec = build_fleet_spec(1, rules=rules)
                 for piece in spec:
                     cost = sum(LEVEL_COSTS[level] for level in piece)
-                    self.assertGreaterEqual(cost, MIN_PIECE_COST,
-                                            f"a 0-cost piece under {rules}")
+                    self.assertGreaterEqual(cost, MIN_PIECE_COST, f"a 0-cost piece under {rules}")
 
 
 class FleetSpecTests(unittest.TestCase):
@@ -887,6 +999,7 @@ class FleetSpecTests(unittest.TestCase):
 
     def test_build_fleet_returns_the_same_as_materializing_its_own_spec(self):
         import random
+
         state = random.getstate()
         random.seed(0)
         spec = build_fleet_spec(1)
@@ -902,8 +1015,7 @@ class FleetSpecTests(unittest.TestCase):
         white = materialize_fleet(spec, Player.WHITE)
         self.assertTrue(all(p.owner is Player.ORANGE for p in orange))
         self.assertTrue(all(p.owner is Player.WHITE for p in white))
-        self.assertEqual([list(p.spokes) for p in orange],
-                         [list(p.spokes) for p in white])
+        self.assertEqual([list(p.spokes) for p in orange], [list(p.spokes) for p in white])
 
     def test_a_dominant_direction_bias_usually_wins_the_weighted_pick(self):
         # Every other direction biased near zero (but never literally
@@ -914,11 +1026,20 @@ class FleetSpecTests(unittest.TestCase):
         import random
 
         from spokebound.ai.build import _weighted_direction
+
         rng_state = random.getstate()
         random.seed(0)
-        rules = FleetRules(bias_n=1.0, bias_ne=0.0001, bias_e=0.0001,
-                           bias_se=0.0001, bias_s=0.0001, bias_sw=0.0001,
-                           bias_w=0.0001, bias_nw=0.0001, variety=0.0)
+        rules = FleetRules(
+            bias_n=1.0,
+            bias_ne=0.0001,
+            bias_e=0.0001,
+            bias_se=0.0001,
+            bias_s=0.0001,
+            bias_sw=0.0001,
+            bias_w=0.0001,
+            bias_nw=0.0001,
+            variety=0.0,
+        )
         picks = [_weighted_direction(rules) for _ in range(200)]
         random.setstate(rng_state)
         self.assertGreater(picks.count(N), 180)
@@ -933,9 +1054,17 @@ class FleetSpecTests(unittest.TestCase):
         # nothing else — which happens to be exactly half of
         # BUILD_BUDGET, so "most of" is checked against that real
         # ceiling, not naively against the other 7 directions' total.)
-        rules = FleetRules(bias_n=20.0, bias_ne=1.0, bias_e=1.0,
-                           bias_se=1.0, bias_s=1.0, bias_sw=1.0,
-                           bias_w=1.0, bias_nw=1.0, variety=0.05)
+        rules = FleetRules(
+            bias_n=20.0,
+            bias_ne=1.0,
+            bias_e=1.0,
+            bias_se=1.0,
+            bias_s=1.0,
+            bias_sw=1.0,
+            bias_w=1.0,
+            bias_nw=1.0,
+            variety=0.05,
+        )
         spec = build_fleet_spec(1, rules=rules)
         totals = [0] * SPOKE_COUNT
         for piece in spec:
@@ -948,15 +1077,25 @@ class FleetSpecTests(unittest.TestCase):
 
 class FleetRulesTests(unittest.TestCase):
     def test_field_names_cover_every_field(self):
-        self.assertEqual(set(DEFAULT_FLEET_RULES.field_names()),
-                         {"bias_n", "bias_ne", "bias_e", "bias_se", "bias_s",
-                          "bias_sw", "bias_w", "bias_nw", "concentration",
-                          "variety"})
+        self.assertEqual(
+            set(DEFAULT_FLEET_RULES.field_names()),
+            {
+                "bias_n",
+                "bias_ne",
+                "bias_e",
+                "bias_se",
+                "bias_s",
+                "bias_sw",
+                "bias_w",
+                "bias_nw",
+                "concentration",
+                "variety",
+            },
+        )
 
     def test_nudged_scales_one_field_only(self):
         nudged = DEFAULT_FLEET_RULES.nudged("concentration", 2.0)
-        self.assertEqual(nudged.concentration,
-                         DEFAULT_FLEET_RULES.concentration * 2.0)
+        self.assertEqual(nudged.concentration, DEFAULT_FLEET_RULES.concentration * 2.0)
         self.assertEqual(nudged.bias_n, DEFAULT_FLEET_RULES.bias_n)
 
     def test_describe_diff_reports_zero_change_against_itself(self):
@@ -1086,11 +1225,11 @@ class DeployTests(unittest.TestCase):
         rng_state = random.getstate()
         random.seed(0)
         low_skill_squares = {
-            choose_deploy_square(make_deployment(), Player.ORANGE, skill=0.0)
-            for _ in range(30)}
+            choose_deploy_square(make_deployment(), Player.ORANGE, skill=0.0) for _ in range(30)
+        }
         full_skill_squares = {
-            choose_deploy_square(make_deployment(), Player.ORANGE, skill=1.0)
-            for _ in range(30)}
+            choose_deploy_square(make_deployment(), Player.ORANGE, skill=1.0) for _ in range(30)
+        }
         random.setstate(rng_state)
         self.assertGreater(len(low_skill_squares), 1)
         self.assertEqual(len(full_skill_squares), 1)
@@ -1130,15 +1269,19 @@ class FullGameSmokeTests(unittest.TestCase):
         # the suite — a fast Level of its own, not one of the 10
         # player-facing rungs, does that (see choose_move_at).
         fast_level = Level(
-            number=99, name="Test", min_depth=2, max_depth=4,
-            time_limit=0.1, critical_time_limit=0.2,
-            use_quiescence=True, use_move_ordering=True,
-            use_transposition_table=True, pregame_skill=1.0,
+            number=99,
+            name="Test",
+            min_depth=2,
+            max_depth=4,
+            time_limit=0.1,
+            critical_time_limit=0.2,
+            use_quiescence=True,
+            use_move_ordering=True,
+            use_transposition_table=True,
+            pregame_skill=1.0,
         )
-        orange_fleet = materialize_fleet(
-            build_fleet_spec(fast_level.number), Player.ORANGE)
-        white_fleet = materialize_fleet(
-            build_fleet_spec(fast_level.number), Player.WHITE)
+        orange_fleet = materialize_fleet(build_fleet_spec(fast_level.number), Player.ORANGE)
+        white_fleet = materialize_fleet(build_fleet_spec(fast_level.number), Player.WHITE)
         deployment = Deployment(orange_fleet, white_fleet)
         while not deployment.is_done:
             square = choose_deploy_square(deployment, deployment.current)
@@ -1161,56 +1304,66 @@ class CriticalityTests(unittest.TestCase):
         # Orange's piece already threatens (3, 3) where White's Captain
         # stands, no move needed to see the check.
         mover = Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED))
-        board = place_all({
-            (5, 3): mover,
-            (8, 3): make_captain(Player.ORANGE),
-            (3, 3): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (8, 3): make_captain(Player.ORANGE),
+                (3, 3): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         self.assertTrue(game.in_check(Player.WHITE))
         self.assertTrue(is_critical(game))
 
     def test_an_unguarded_close_captain_is_critical(self):
-        board = place_all({
-            (8, 6): make_captain(Player.ORANGE),
-            (2, 3): make_captain(Player.WHITE),  # one move from (3, 3)
-        })
+        board = place_all(
+            {
+                (8, 6): make_captain(Player.ORANGE),
+                (2, 3): make_captain(Player.WHITE),  # one move from (3, 3)
+            }
+        )
         self.assertTrue(is_critical(Game(board)))
 
     def test_a_hanging_valuable_piece_is_critical(self):
         # Two unlimited spokes: 4 + 4 = 8 points, right at
         # CRITICAL_PIECE_VALUE.
-        hanging = Piece(Player.ORANGE,
-                        spokes=[UNLIMITED, 0, UNLIMITED, 0, 0, 0, 0, 0])
+        hanging = Piece(Player.ORANGE, spokes=[UNLIMITED, 0, UNLIMITED, 0, 0, 0, 0, 0])
         attacker = Piece(Player.WHITE, spokes=one_spoke(N, UNLIMITED))
-        board = place_all({
-            (5, 3): hanging, (1, 3): attacker,
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): hanging,
+                (1, 3): attacker,
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         self.assertEqual(hanging.cost, 8)
         self.assertIn((5, 3), Game(board).board.legal_moves((1, 3)))
         self.assertTrue(is_critical(Game(board)))
 
     def test_a_calm_midgame_position_is_not_critical(self):
-        board = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (1, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (6, 0): make_captain(Player.ORANGE),
-            (0, 6): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (1, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (6, 0): make_captain(Player.ORANGE),
+                (0, 6): make_captain(Player.WHITE),
+            }
+        )
         self.assertFalse(is_critical(Game(board)))
 
 
 class MoveOrderingTests(unittest.TestCase):
     def test_captures_are_tried_before_quiet_moves(self):
         mover = Piece(Player.ORANGE, spokes=[UNLIMITED] * SPOKE_COUNT)
-        board = place_all({
-            (3, 3): mover,
-            (3, 6): Piece(Player.WHITE, spokes=one_spoke(N, 1)),  # capturable
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (3, 3): mover,
+                (3, 6): Piece(Player.WHITE, spokes=one_spoke(N, 1)),  # capturable
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         moves = game.all_legal_moves(Player.ORANGE)
         ordered = _order_moves(game, moves, tt_move=None)
@@ -1218,12 +1371,14 @@ class MoveOrderingTests(unittest.TestCase):
 
     def test_the_transposition_table_move_is_tried_first(self):
         mover = Piece(Player.ORANGE, spokes=[UNLIMITED] * SPOKE_COUNT)
-        board = place_all({
-            (3, 3): mover,
-            (3, 6): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (3, 3): mover,
+                (3, 6): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         moves = game.all_legal_moves(Player.ORANGE)
         tt_move = ((3, 3), (4, 4))  # a quiet move, not the capture
@@ -1236,19 +1391,18 @@ class MoveOrderingTests(unittest.TestCase):
         # it (no check) — a pure N-only piece can only ever move along
         # that one file, so both moves would "give check" trivially.
         W = 6
-        mover = Piece(Player.ORANGE,
-                      spokes=[UNLIMITED, 0, 0, 0, 0, 0, 0, 0])
+        mover = Piece(Player.ORANGE, spokes=[UNLIMITED, 0, 0, 0, 0, 0, 0, 0])
         mover.spokes[W] = 1
-        board = place_all({
-            (5, 3): mover,
-            (8, 6): make_captain(Player.ORANGE),
-            (2, 3): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (8, 6): make_captain(Player.ORANGE),
+                (2, 3): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
-        self.assertTrue(_gives_check(game.board, ((5, 3), (3, 3)),
-                                     Player.ORANGE))
-        self.assertFalse(_gives_check(game.board, ((5, 3), (5, 2)),
-                                      Player.ORANGE))
+        self.assertTrue(_gives_check(game.board, ((5, 3), (3, 3)), Player.ORANGE))
+        self.assertFalse(_gives_check(game.board, ((5, 3), (5, 2)), Player.ORANGE))
         # Simulating for the check test must not leave the board changed.
         self.assertIsNotNone(game.board.get((5, 3)))
         self.assertIsNone(game.board.get((3, 3)))
@@ -1257,19 +1411,20 @@ class MoveOrderingTests(unittest.TestCase):
         W = 6
         mover = Piece(Player.ORANGE, spokes=[UNLIMITED, 0, 0, 0, 0, 0, 0, 0])
         mover.spokes[W] = 1
-        board = place_all({
-            (5, 3): mover,
-            (8, 6): make_captain(Player.ORANGE),
-            (2, 3): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (8, 6): make_captain(Player.ORANGE),
+                (2, 3): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         moves = game.all_legal_moves(Player.ORANGE)
         killer_move = ((5, 3), (5, 2))  # quiet, not a check (see above)
         check_move = ((5, 3), (3, 3))
         self.assertIn(killer_move, moves)
         self.assertIn(check_move, moves)
-        ordered = _order_moves(game, moves, tt_move=None,
-                               killer_moves=[killer_move], history=None)
+        ordered = _order_moves(game, moves, tt_move=None, killer_moves=[killer_move], history=None)
         self.assertLess(ordered.index(killer_move), ordered.index(check_move))
 
 
@@ -1280,11 +1435,13 @@ class RecordCutoffTests(unittest.TestCase):
 
     def _open_board_position(self) -> Game:
         mover = Piece(Player.ORANGE, spokes=[UNLIMITED] * SPOKE_COUNT)
-        board = place_all({
-            (3, 3): mover,
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (3, 3): mover,
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         return Game(board)
 
     def test_a_quiet_move_is_recorded_as_a_killer_and_bumps_history(self):
@@ -1300,11 +1457,14 @@ class RecordCutoffTests(unittest.TestCase):
     def test_a_capture_is_not_recorded_as_a_killer(self):
         mover = Piece(Player.ORANGE, spokes=[UNLIMITED] * SPOKE_COUNT)
         target = Piece(Player.WHITE, spokes=one_spoke(N, 1))
-        board = place_all({
-            (3, 3): mover, (3, 6): target,
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (3, 3): mover,
+                (3, 6): target,
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         capture_move = ((3, 3), (3, 6))
         killers: dict = {}
@@ -1334,19 +1494,20 @@ class CheckExtensionTests(unittest.TestCase):
         W = 6
         mover = Piece(Player.ORANGE, spokes=[UNLIMITED, 0, 0, 0, 0, 0, 0, 0])
         mover.spokes[W] = 1
-        board = place_all({
-            (5, 3): mover,
-            (8, 6): make_captain(Player.ORANGE),
-            (2, 3): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (8, 6): make_captain(Player.ORANGE),
+                (2, 3): make_captain(Player.WHITE),
+            }
+        )
         return Game(board)
 
     def test_extends_when_the_move_gives_check(self):
         game = self._position()
         child = apply_move(game, ((5, 3), (3, 3)), DEFAULT_WEIGHTS)
         self.assertTrue(child.in_check(child.current))
-        depth, extensions_left = _extended_depth(child, 0,
-                                                 _MAX_CHECK_EXTENSIONS)
+        depth, extensions_left = _extended_depth(child, 0, _MAX_CHECK_EXTENSIONS)
         self.assertEqual(depth, 1)
         self.assertEqual(extensions_left, _MAX_CHECK_EXTENSIONS - 1)
 
@@ -1354,8 +1515,7 @@ class CheckExtensionTests(unittest.TestCase):
         game = self._position()
         child = apply_move(game, ((5, 3), (5, 2)), DEFAULT_WEIGHTS)
         self.assertFalse(child.in_check(child.current))
-        depth, extensions_left = _extended_depth(child, 2,
-                                                 _MAX_CHECK_EXTENSIONS)
+        depth, extensions_left = _extended_depth(child, 2, _MAX_CHECK_EXTENSIONS)
         self.assertEqual((depth, extensions_left), (2, _MAX_CHECK_EXTENSIONS))
 
     def test_does_not_extend_once_the_budget_is_spent(self):
@@ -1393,15 +1553,16 @@ class TerminalScoreTests(unittest.TestCase):
         board = place_all({(8, 3): make_captain(Player.ORANGE)})
         game = Game(board)
         game.outcome = Outcome(winner=None, reason="test")
-        self.assertEqual(
-            _terminal_score(game, Player.ORANGE, DEFAULT_WEIGHTS, 5), 0.0)
+        self.assertEqual(_terminal_score(game, Player.ORANGE, DEFAULT_WEIGHTS, 5), 0.0)
 
     def test_a_non_decisive_score_is_unaffected(self):
-        board = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         static = evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS)
         adjusted = _terminal_score(game, Player.ORANGE, DEFAULT_WEIGHTS, 5)
@@ -1410,31 +1571,38 @@ class TerminalScoreTests(unittest.TestCase):
 
 class TranspositionTests(unittest.TestCase):
     def test_the_same_position_produces_the_same_key(self):
-        board_a = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        board_b = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board_a = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        board_b = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         self.assertEqual(_state_key(Game(board_a)), _state_key(Game(board_b)))
 
     def test_a_different_position_produces_a_different_key(self):
-        board_a = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        board_b = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
-        self.assertNotEqual(_state_key(Game(board_a)),
-                            _state_key(Game(board_b)))
+        board_a = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        board_b = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 2)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
+        self.assertNotEqual(_state_key(Game(board_a)), _state_key(Game(board_b)))
 
 
 class QuiescenceTests(unittest.TestCase):
@@ -1448,11 +1616,15 @@ class QuiescenceTests(unittest.TestCase):
         # Spoke index 7 ("NW") for White physically moves (+1, +1) — see
         # board_delta — so this reaches (1, 1) -> (3, 3) diagonally.
         recapturer = Piece(Player.WHITE, spokes=one_spoke(7, UNLIMITED))
-        board = place_all({
-            (5, 3): mover, (3, 3): target, (1, 1): recapturer,
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (3, 3): target,
+                (1, 1): recapturer,
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         after_capture = apply_move(game, ((5, 3), (3, 3)), DEFAULT_WEIGHTS)
         self.assertIn((3, 3), after_capture.board.legal_moves((1, 1)))
@@ -1460,24 +1632,40 @@ class QuiescenceTests(unittest.TestCase):
         static = evaluate(after_capture, Player.ORANGE, DEFAULT_WEIGHTS)
         deadline = time.monotonic() + 5.0
         features = _Features(True, QUIESCENCE_MAX_PLIES, True)
-        settled = _quiescence(after_capture, float("-inf"), float("inf"),
-                              Player.ORANGE, DEFAULT_WEIGHTS, deadline,
-                              QUIESCENCE_MAX_PLIES, features)
+        settled = _quiescence(
+            after_capture,
+            float("-inf"),
+            float("inf"),
+            Player.ORANGE,
+            DEFAULT_WEIGHTS,
+            deadline,
+            QUIESCENCE_MAX_PLIES,
+            features,
+        )
         self.assertLess(settled, static)
 
     def test_quiescence_returns_the_static_score_when_already_quiet(self):
-        board = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         static = evaluate(game, Player.ORANGE, DEFAULT_WEIGHTS)
         deadline = time.monotonic() + 5.0
         features = _Features(True, QUIESCENCE_MAX_PLIES, True)
-        settled = _quiescence(game, float("-inf"), float("inf"),
-                              Player.ORANGE, DEFAULT_WEIGHTS, deadline,
-                              QUIESCENCE_MAX_PLIES, features)
+        settled = _quiescence(
+            game,
+            float("-inf"),
+            float("inf"),
+            Player.ORANGE,
+            DEFAULT_WEIGHTS,
+            deadline,
+            QUIESCENCE_MAX_PLIES,
+            features,
+        )
         self.assertEqual(settled, static)
 
     def test_quiescence_follows_a_check_not_just_a_capture(self):
@@ -1492,11 +1680,13 @@ class QuiescenceTests(unittest.TestCase):
         mover = Piece(Player.ORANGE, spokes=[0] * SPOKE_COUNT)
         mover.spokes[W] = UNLIMITED
         mover.spokes[SE] = UNLIMITED
-        board = place_all({
-            (0, 5): mover,
-            (5, 1): make_captain(Player.ORANGE),
-            (1, 5): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (0, 5): mover,
+                (5, 1): make_captain(Player.ORANGE),
+                (1, 5): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         check_move = ((0, 5), (0, 4))
         self.assertIsNone(game.board.get(check_move[1]))  # not a capture
@@ -1505,10 +1695,16 @@ class QuiescenceTests(unittest.TestCase):
         static = evaluate(game, Player.ORANGE, Weights())
         deadline = time.monotonic() + 5.0
         features = _Features(True, QUIESCENCE_MAX_PLIES, True)
-        settled = _quiescence(game, float("-inf"), float("inf"),
-                              Player.ORANGE, Weights(), deadline,
-                              QUIESCENCE_MAX_PLIES, features)
+        settled = _quiescence(
+            game,
+            float("-inf"),
+            float("inf"),
+            Player.ORANGE,
+            Weights(),
+            deadline,
+            QUIESCENCE_MAX_PLIES,
+            features,
+        )
         self.assertGreater(settled, static)
         after_check = apply_move(game, check_move, Weights())
-        self.assertEqual(settled, evaluate(after_check, Player.ORANGE,
-                                          Weights()))
+        self.assertEqual(settled, evaluate(after_check, Player.ORANGE, Weights()))

@@ -47,8 +47,7 @@ class ProtocolRoundTripTests(unittest.TestCase):
 
     def test_fleet_round_trips_every_piece_field(self) -> None:
         pieces = [
-            Piece(Player.ORANGE, spokes=[1, 0, 2, 0, 3, 0, 4, 0], bounty=2,
-                 promoted=True, is_captain=False),
+            Piece(Player.ORANGE, spokes=[1, 0, 2, 0, 3, 0, 4, 0], bounty=2, promoted=True, is_captain=False),
             Piece(Player.WHITE, spokes=[0] * 8, is_captain=True),
         ]
         restored = protocol.fleet_from(protocol.fleet(pieces))
@@ -56,23 +55,19 @@ class ProtocolRoundTripTests(unittest.TestCase):
 
     def test_place_round_trips_a_square(self) -> None:
         square = (3, 5)
-        self.assertEqual(
-            protocol.place_from(protocol.place(square)), square)
+        self.assertEqual(protocol.place_from(protocol.place(square)), square)
 
     def test_move_round_trips_src_and_dst(self) -> None:
         src, dst = (8, 3), (7, 3)
-        restored_src, restored_dst = protocol.move_from(
-            protocol.move(src, dst))
+        restored_src, restored_dst = protocol.move_from(protocol.move(src, dst))
         self.assertEqual((restored_src, restored_dst), (src, dst))
 
     def test_upgrade_adjust_round_trips_spoke_and_step(self) -> None:
-        spoke, step = protocol.upgrade_adjust_from(
-            protocol.upgrade_adjust(4, -1))
+        spoke, step = protocol.upgrade_adjust_from(protocol.upgrade_adjust(4, -1))
         self.assertEqual((spoke, step), (4, -1))
 
     def test_hello_carries_the_current_protocol_version(self) -> None:
-        self.assertEqual(
-            protocol.hello()["version"], protocol.PROTOCOL_VERSION)
+        self.assertEqual(protocol.hello()["version"], protocol.PROTOCOL_VERSION)
 
 
 class NetworkSessionTests(unittest.TestCase):
@@ -110,8 +105,7 @@ class NetworkSessionTests(unittest.TestCase):
         host, client = self._connect_pair()
         client.send(protocol.move((8, 3), (7, 3)))
         event = _wait_for(lambda: host, session.MESSAGE)
-        self.assertEqual(
-            protocol.move_from(event.data), ((8, 3), (7, 3)))
+        self.assertEqual(protocol.move_from(event.data), ((8, 3), (7, 3)))
 
     def test_several_messages_in_a_row_all_arrive_in_order(self) -> None:
         host, client = self._connect_pair()
@@ -134,8 +128,7 @@ class NetworkSessionTests(unittest.TestCase):
         # A closed port isn't always refused instantly — some networks
         # (this one included) just silently drop it — so this has to
         # outlast NetworkSession's own connect timeout.
-        _wait_for(lambda: client, session.ERROR,
-                 timeout=session._CONNECT_TIMEOUT_SECONDS + 2)
+        _wait_for(lambda: client, session.ERROR, timeout=session._CONNECT_TIMEOUT_SECONDS + 2)
 
     def test_sending_before_a_connection_exists_does_not_raise(self) -> None:
         client = session.NetworkSession.join("127.0.0.1", self._port)
@@ -146,8 +139,7 @@ class NetworkSessionTests(unittest.TestCase):
         # rather than leaving it to run on, orphaned, well past this
         # test's own end (tearDown's close() can't interrupt a
         # create_connection() call that hasn't produced a socket yet).
-        _wait_for(lambda: client, session.ERROR,
-                 timeout=session._CONNECT_TIMEOUT_SECONDS + 2)
+        _wait_for(lambda: client, session.ERROR, timeout=session._CONNECT_TIMEOUT_SECONDS + 2)
 
 
 class RoomCodeTests(unittest.TestCase):
@@ -174,33 +166,28 @@ class RoomCodeTests(unittest.TestCase):
         code = directory.generate_room_code()
         host = directory.RoomHost(code, game_port=54321, discovery_port=0)
         self.addCleanup(host.close)
-        found = directory.find_room(code, timeout=2.0,
-                                    discovery_port=host.discovery_port)
+        found = directory.find_room(code, timeout=2.0, discovery_port=host.discovery_port)
         self.assertIsNotNone(found)
         _, port = found
         self.assertEqual(port, 54321)
 
     def test_find_room_ignores_a_room_hosted_under_another_code(self) -> None:
-        host = directory.RoomHost(directory.generate_room_code(),
-                                  game_port=54322, discovery_port=0)
+        host = directory.RoomHost(directory.generate_room_code(), game_port=54322, discovery_port=0)
         self.addCleanup(host.close)
         # A code that's (almost certainly) not the one just hosted —
         # generated the same way, so a real collision is vanishingly
         # unlikely without needing to hand-pick a "wrong" value.
         other_code = directory.generate_room_code()
-        found = directory.find_room(other_code, timeout=1.0,
-                                    discovery_port=host.discovery_port)
+        found = directory.find_room(other_code, timeout=1.0, discovery_port=host.discovery_port)
         self.assertIsNone(found)
 
     def test_room_host_reports_the_port_the_os_assigned(self) -> None:
-        host = directory.RoomHost(directory.generate_room_code(),
-                                  game_port=54323, discovery_port=0)
+        host = directory.RoomHost(directory.generate_room_code(), game_port=54323, discovery_port=0)
         self.addCleanup(host.close)
         self.assertNotEqual(host.discovery_port, 0)
 
     def test_find_room_returns_none_when_nobody_is_hosting(self) -> None:
-        found = directory.find_room(directory.generate_room_code(),
-                                    timeout=1.0)
+        found = directory.find_room(directory.generate_room_code(), timeout=1.0)
         self.assertIsNone(found)
 
     def test_join_by_room_code_connects_once_the_room_is_found(self) -> None:
@@ -210,9 +197,10 @@ class RoomCodeTests(unittest.TestCase):
         self.addCleanup(room_host.close)
         # The real lookup, pointed at this test's own discovery port.
         finder = mock.patch.object(
-            session, "find_room",
-            functools.partial(directory.find_room,
-                              discovery_port=room_host.discovery_port))
+            session,
+            "find_room",
+            functools.partial(directory.find_room, discovery_port=room_host.discovery_port),
+        )
         finder.start()
         self.addCleanup(finder.stop)
         host = session.NetworkSession.host(port)
@@ -224,7 +212,8 @@ class RoomCodeTests(unittest.TestCase):
 
     def test_join_by_room_code_errors_when_the_code_is_unknown(self) -> None:
         client = session.NetworkSession.join_by_room_code(
-            directory.generate_room_code(), discovery_timeout=1.0)
+            directory.generate_room_code(), discovery_timeout=1.0
+        )
         self.addCleanup(client.close)
         _wait_for(lambda: client, session.ERROR, timeout=2.0)
 
@@ -238,31 +227,25 @@ class AddressCodeTests(unittest.TestCase):
 
     def test_round_trips_a_real_looking_address(self) -> None:
         code = directory.encode_address("198.51.100.23", 51820)
-        self.assertEqual(directory.decode_address(code),
-                         ("198.51.100.23", 51820))
+        self.assertEqual(directory.decode_address(code), ("198.51.100.23", 51820))
 
     def test_round_trips_the_extremes_of_each_field(self) -> None:
-        for host, port in [("0.0.0.0", 0), ("255.255.255.255", 65535),
-                           ("192.168.1.1", 1)]:
+        for host, port in [("0.0.0.0", 0), ("255.255.255.255", 65535), ("192.168.1.1", 1)]:
             code = directory.encode_address(host, port)
             self.assertEqual(directory.decode_address(code), (host, port))
 
-    def test_encoded_addresses_are_a_different_length_than_room_codes(
-            self) -> None:
+    def test_encoded_addresses_are_a_different_length_than_room_codes(self) -> None:
         code = directory.encode_address("198.51.100.23", 51820)
         self.assertEqual(len(code), directory.ADDRESS_CODE_LENGTH)
-        self.assertNotEqual(directory.ADDRESS_CODE_LENGTH,
-                            directory.CODE_LENGTH)
+        self.assertNotEqual(directory.ADDRESS_CODE_LENGTH, directory.CODE_LENGTH)
 
     def test_a_real_room_code_never_decodes_as_an_address(self) -> None:
         # Wrong length (CODE_LENGTH, not ADDRESS_CODE_LENGTH) — this is
         # the property _start_join's dispatch between the two actually
         # relies on, see spokebound.ui.network_lobby_screen.
-        self.assertIsNone(
-            directory.decode_address(directory.generate_room_code()))
+        self.assertIsNone(directory.decode_address(directory.generate_room_code()))
 
-    def test_rejects_a_code_with_a_character_outside_the_alphabet(
-            self) -> None:
+    def test_rejects_a_code_with_a_character_outside_the_alphabet(self) -> None:
         self.assertIsNone(directory.decode_address("IIIIIIIIII"))
 
     def test_rejects_the_wrong_length(self) -> None:

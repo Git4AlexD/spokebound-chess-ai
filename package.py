@@ -46,15 +46,23 @@ def main() -> None:
     sep = ";" if sys.platform == "win32" else ":"
 
     command = [
-        sys.executable, "-m", "PyInstaller",
-        "--name", name,
+        sys.executable,
+        "-m",
+        "PyInstaller",
+        "--name",
+        name,
         "--onefile",
         "--windowed",
-        "--icon", str(ICON),
-        "--add-data", f"{ASSETS}{sep}spokebound/assets",
-        "--distpath", str(DIST),
-        "--workpath", str(WORK),
-        "--specpath", str(WORK),
+        "--icon",
+        str(ICON),
+        "--add-data",
+        f"{ASSETS}{sep}spokebound/assets",
+        "--distpath",
+        str(DIST),
+        "--workpath",
+        str(WORK),
+        "--specpath",
+        str(WORK),
         str(ENTRY),
     ]
     if SECRETS.is_file():

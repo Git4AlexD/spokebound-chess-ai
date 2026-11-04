@@ -112,10 +112,9 @@ def mix_hex(colour_a: str, colour_b: str, t: float = 0.5) -> str:
     ``colour_a``, 1 is ``colour_b``, 0.5 is their plain RGB midpoint) —
     the general case other modules reach for directly (drawing.py's
     thermal exhaust bands and sun prongs; see also _blend_hex below)."""
-    a = tuple(int(colour_a[i:i + 2], 16) for i in (1, 3, 5))
-    b = tuple(int(colour_b[i:i + 2], 16) for i in (1, 3, 5))
-    return "#" + "".join(f"{round(ac + (bc - ac) * t):02X}"
-                         for ac, bc in zip(a, b, strict=True))
+    a = tuple(int(colour_a[i : i + 2], 16) for i in (1, 3, 5))
+    b = tuple(int(colour_b[i : i + 2], 16) for i in (1, 3, 5))
+    return "#" + "".join(f"{round(ac + (bc - ac) * t):02X}" for ac, bc in zip(a, b, strict=True))
 
 
 def _blend_hex(colour_a: str, colour_b: str) -> str:
@@ -133,8 +132,8 @@ PIECE_MARKER_COLOURS = {
     Player.WHITE: {1: "#FFFFFF", UNLIMITED: "#8CFF5C"},
 }
 PIECE_MARKER_COLOURS[Player.ORANGE][2] = _blend_hex(
-    PIECE_MARKER_COLOURS[Player.ORANGE][1],
-    PIECE_MARKER_COLOURS[Player.ORANGE][UNLIMITED])
+    PIECE_MARKER_COLOURS[Player.ORANGE][1], PIECE_MARKER_COLOURS[Player.ORANGE][UNLIMITED]
+)
 PIECE_MARKER_COLOURS[Player.WHITE][2] = "#9FCBE0"
 
 # A non-Captain piece's own exhaust (see drawing._heat_gradient) fades
@@ -266,46 +265,73 @@ def apply_styles(root: tk.Tk) -> None:
     """Configure ttk styles; call once on the root window."""
     style = ttk.Style(root)
     style.theme_use("clam")
-    style.configure("Accent.TButton", background=ACCENT,
-                    foreground=ON_ACCENT, font=FONT_HEADING,
-                    borderwidth=0, focusthickness=0, padding=(18, 8))
-    style.map("Accent.TButton",
-              background=[("disabled", DISABLED), ("active", ACCENT_DARK)],
-              foreground=[("disabled", ON_ACCENT)])
+    style.configure(
+        "Accent.TButton",
+        background=ACCENT,
+        foreground=ON_ACCENT,
+        font=FONT_HEADING,
+        borderwidth=0,
+        focusthickness=0,
+        padding=(18, 8),
+    )
+    style.map(
+        "Accent.TButton",
+        background=[("disabled", DISABLED), ("active", ACCENT_DARK)],
+        foreground=[("disabled", ON_ACCENT)],
+    )
     # A quieter button for secondary actions (presets, choices among many,
     # "Main menu") that shouldn't compete with the one accent-coloured
     # primary action. Its own colour has to read as a button against both
     # BACKGROUND and PANEL, which are too close to each other for a
     # same-as-the-page background to show up as one — DISABLED (an
     # actual teal, not just an off-white) is distinct from both.
-    style.configure("Secondary.TButton", background=DISABLED, foreground=TEXT,
-                    font=FONT_BODY, borderwidth=1, relief="solid",
-                    focusthickness=0, padding=(14, 7))
-    style.map("Secondary.TButton",
-              background=[("disabled", PANEL), ("active", _ACTIVE_NEUTRAL)],
-              foreground=[("disabled", MUTED_TEXT)],
-              bordercolor=[("!disabled", MUTED_TEXT)])
+    style.configure(
+        "Secondary.TButton",
+        background=DISABLED,
+        foreground=TEXT,
+        font=FONT_BODY,
+        borderwidth=1,
+        relief="solid",
+        focusthickness=0,
+        padding=(14, 7),
+    )
+    style.map(
+        "Secondary.TButton",
+        background=[("disabled", PANEL), ("active", _ACTIVE_NEUTRAL)],
+        foreground=[("disabled", MUTED_TEXT)],
+        bordercolor=[("!disabled", MUTED_TEXT)],
+    )
     # A smaller chip for picking one of several short-labelled options
     # (preset fleets) side by side in a single row, without each one
     # taking as much room as an ordinary button.
-    style.configure("Compact.TButton", background=DISABLED, foreground=TEXT,
-                    font=FONT_SMALL, borderwidth=1, relief="solid",
-                    focusthickness=0, padding=(8, 4))
-    style.map("Compact.TButton",
-              background=[("disabled", PANEL), ("active", _ACTIVE_NEUTRAL)],
-              foreground=[("disabled", MUTED_TEXT)],
-              bordercolor=[("!disabled", MUTED_TEXT)])
+    style.configure(
+        "Compact.TButton",
+        background=DISABLED,
+        foreground=TEXT,
+        font=FONT_SMALL,
+        borderwidth=1,
+        relief="solid",
+        focusthickness=0,
+        padding=(8, 4),
+    )
+    style.map(
+        "Compact.TButton",
+        background=[("disabled", PANEL), ("active", _ACTIVE_NEUTRAL)],
+        foreground=[("disabled", MUTED_TEXT)],
+        bordercolor=[("!disabled", MUTED_TEXT)],
+    )
 
 
-def make_label(parent: tk.Misc, text: str = "", font=FONT_BODY,
-               fg: str = TEXT, bg: str = BACKGROUND,
-               **options) -> tk.Label:
+def make_label(
+    parent: tk.Misc, text: str = "", font=FONT_BODY, fg: str = TEXT, bg: str = BACKGROUND, **options
+) -> tk.Label:
     """Return a themed label (not yet packed)."""
     return tk.Label(parent, text=text, font=font, fg=fg, bg=bg, **options)
 
 
-def make_button(parent: tk.Misc, text: str, command: Callable[[], None],
-                secondary: bool = False, compact: bool = False) -> ttk.Button:
+def make_button(
+    parent: tk.Misc, text: str, command: Callable[[], None], secondary: bool = False, compact: bool = False
+) -> ttk.Button:
     """Return a themed button (not yet packed).
 
     ``secondary`` swaps the bold orange accent style for a quieter one,
@@ -328,13 +354,18 @@ def make_button(parent: tk.Misc, text: str, command: Callable[[], None],
         sound.play_button_click()
         command()
 
-    return ttk.Button(parent, text=text, command=on_click, style=style,
-                      takefocus=0)
+    return ttk.Button(parent, text=text, command=on_click, style=style, takefocus=0)
 
 
-def make_fixed_button(parent: tk.Misc, text: str, command: Callable[[], None],
-                      width: int, height: int, compact: bool = True,
-                      min_font_size: int = 7) -> tk.Frame:
+def make_fixed_button(
+    parent: tk.Misc,
+    text: str,
+    command: Callable[[], None],
+    width: int,
+    height: int,
+    compact: bool = True,
+    min_font_size: int = 7,
+) -> tk.Frame:
     """Return a button pinned to an exact ``width`` x ``height`` in
     pixels, not yet packed — a preset name, an on/off label, anything
     whose text can vary or change at runtime without the button (and so
@@ -351,18 +382,26 @@ def make_fixed_button(parent: tk.Misc, text: str, command: Callable[[], None],
     holder = tk.Frame(parent, width=width, height=height, bg=BACKGROUND)
     holder.pack_propagate(False)
     family, base_size = (FONT_SMALL if compact else FONT_BODY)[:2]
-    fitted = fit_font_size(holder, text, family, base_size, width - 12,
-                          min_font_size)
+    fitted = fit_font_size(holder, text, family, base_size, width - 12, min_font_size)
 
     def on_click() -> None:
         sound.play_button_click()
         command()
 
-    button = tk.Button(holder, text=text, command=on_click,
-                       font=(family, fitted), bg=DISABLED, fg=TEXT,
-                       activebackground=_ACTIVE_NEUTRAL, activeforeground=TEXT,
-                       relief=tk.SOLID, borderwidth=1,
-                       highlightthickness=0, cursor="hand2")
+    button = tk.Button(
+        holder,
+        text=text,
+        command=on_click,
+        font=(family, fitted),
+        bg=DISABLED,
+        fg=TEXT,
+        activebackground=_ACTIVE_NEUTRAL,
+        activeforeground=TEXT,
+        relief=tk.SOLID,
+        borderwidth=1,
+        highlightthickness=0,
+        cursor="hand2",
+    )
     button.pack(fill=tk.BOTH, expand=True)
     return holder
 

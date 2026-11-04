@@ -56,8 +56,7 @@ def format_literal(genome) -> str:
     be pasted in by hand instead, if you'd rather not trust this
     script's own text surgery on a source file."""
     assignment, _ = _TARGETS[type(genome)]
-    fields = ",\n".join(f"    {field}={getattr(genome, field)!r}"
-                       for field in genome.field_names())
+    fields = ",\n".join(f"    {field}={getattr(genome, field)!r}" for field in genome.field_names())
     return f"{assignment} = {type(genome).__name__}(\n{fields},\n)"
 
 
@@ -65,30 +64,33 @@ def apply(genome) -> None:
     """Rewrite config.py's matching assignment (DEFAULT_WEIGHTS or
     DEFAULT_FLEET_RULES, going by ``genome``'s own type) in place."""
     assignment, _ = _TARGETS[type(genome)]
-    pattern = re.compile(
-        rf"^{assignment} = {type(genome).__name__}\([^)]*\)$", re.MULTILINE)
+    pattern = re.compile(rf"^{assignment} = {type(genome).__name__}\([^)]*\)$", re.MULTILINE)
     text = CONFIG_PATH.read_text(encoding="utf-8")
     match = pattern.search(text)
     if match is None:
         raise SystemExit(
             f"Couldn't find a '{assignment} = {type(genome).__name__}(...)' "
             f"assignment to replace in {CONFIG_PATH} — promote by hand "
-            "instead, using the literal printed above.")
-    new_text = text[:match.start()] + format_literal(genome) + text[match.end():]
+            "instead, using the literal printed above."
+        )
+    new_text = text[: match.start()] + format_literal(genome) + text[match.end() :]
     CONFIG_PATH.write_text(new_text, encoding="utf-8")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("champion_file", type=Path,
-                       help="A champion JSON file to promote")
-    parser.add_argument("--kind", choices=("weights", "fleet-rules"),
-                       default="weights",
-                       help="Which default this file promotes into "
-                            "(default: weights)")
-    parser.add_argument("--apply", action="store_true",
-                       help="Actually rewrite config.py (default: only "
-                            "preview what would change)")
+    parser.add_argument("champion_file", type=Path, help="A champion JSON file to promote")
+    parser.add_argument(
+        "--kind",
+        choices=("weights", "fleet-rules"),
+        default="weights",
+        help="Which default this file promotes into (default: weights)",
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Actually rewrite config.py (default: only preview what would change)",
+    )
     args = parser.parse_args()
     cls = Weights if args.kind == "weights" else FleetRules
     _, baseline = _TARGETS[cls]
@@ -100,15 +102,16 @@ def main() -> None:
     print(format_literal(genome))
     if args.apply:
         apply(genome)
-        print(f"\nWritten to {CONFIG_PATH}. Run the test suite before "
-             "trusting this in a real game — several of test_ai.py's "
-             "evaluate() tests check that one position scores better "
-             "than another under the current defaults, and a "
-             "sufficiently extreme promoted value could in principle "
-             "flip one of those orderings.")
+        print(
+            f"\nWritten to {CONFIG_PATH}. Run the test suite before "
+            "trusting this in a real game — several of test_ai.py's "
+            "evaluate() tests check that one position scores better "
+            "than another under the current defaults, and a "
+            "sufficiently extreme promoted value could in principle "
+            "flip one of those orderings."
+        )
     else:
-        print("\n(preview only — nothing written; pass --apply to "
-             "actually rewrite config.py)")
+        print("\n(preview only — nothing written; pass --apply to actually rewrite config.py)")
 
 
 if __name__ == "__main__":

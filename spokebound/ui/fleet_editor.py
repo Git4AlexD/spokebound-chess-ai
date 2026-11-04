@@ -29,9 +29,15 @@ class FleetEditor(tk.Frame):
     internals.
     """
 
-    def __init__(self, parent: tk.Misc, builder: FleetBuilder,
-                 thumb_size: int, editor_size: int, pady: int,
-                 on_change: Callable[[], None] | None = None) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        builder: FleetBuilder,
+        thumb_size: int,
+        editor_size: int,
+        pady: int,
+        on_change: Callable[[], None] | None = None,
+    ) -> None:
         super().__init__(parent, bg=theme.BACKGROUND)
         self._builder = builder
         self._selected = 0
@@ -44,18 +50,19 @@ class FleetEditor(tk.Frame):
         # Room under each thumbnail for its cost, sized from the font's
         # real line height rather than a fixed guess — a DPI-aware
         # window renders FONT_SMALL taller than a fixed allowance holds.
-        self._cost_height = tkfont.Font(font=theme.FONT_SMALL).metrics(
-            "linespace") + 4
+        self._cost_height = tkfont.Font(font=theme.FONT_SMALL).metrics("linespace") + 4
         self._thumbs = tk.Canvas(
-            self, width=thumb_size * count,
+            self,
+            width=thumb_size * count,
             height=thumb_size + self._cost_height,
-            bg=theme.BACKGROUND, highlightthickness=0)
+            bg=theme.BACKGROUND,
+            highlightthickness=0,
+        )
         self._thumbs.bind("<Button-1>", self._select_thumb)
         self._thumbs.pack(pady=pady)
         self._editor = SpokeEditor(self, self._adjust, size=editor_size)
         self._editor.pack()
-        self._problems = theme.make_label(self, font=theme.FONT_SMALL,
-                                          fg=theme.ACCENT_DARK)
+        self._problems = theme.make_label(self, font=theme.FONT_SMALL, fg=theme.ACCENT_DARK)
         self._problems.pack()
         self.refresh()
 
@@ -94,8 +101,7 @@ class FleetEditor(tk.Frame):
         """Bring the budget, thumbnails, editor and problem text up to
         date with the underlying builder — needed after anything
         outside this widget changes it, such as loading a preset."""
-        self._budget.config(
-            text=f"{self._builder.remaining} of {BUILD_BUDGET} Points Left")
+        self._budget.config(text=f"{self._builder.remaining} of {BUILD_BUDGET} Points Left")
         self._draw_thumbs()
         self._editor.show(self._builder.pieces[self._selected])
         self._problems.config(text="\n".join(self._builder.problems()))
@@ -108,11 +114,16 @@ class FleetEditor(tk.Frame):
         for index, piece in enumerate(self._builder.pieces):
             left = index * size
             if index == self._selected:
-                canvas.create_rectangle(left + 2, 2, left + size - 2,
-                                        size - 2, width=2,
-                                        outline=theme.HIGHLIGHT)
+                canvas.create_rectangle(
+                    left + 2, 2, left + size - 2, size - 2, width=2, outline=theme.HIGHLIGHT
+                )
             centre = (left + size / 2, size / 2)
             drawing.draw_star(canvas, centre, size * 0.36, piece)
-            canvas.create_text(centre[0], size + 2, anchor="n",
-                               text=str(piece.cost),
-                               fill=theme.MUTED_TEXT, font=theme.FONT_SMALL)
+            canvas.create_text(
+                centre[0],
+                size + 2,
+                anchor="n",
+                text=str(piece.cost),
+                fill=theme.MUTED_TEXT,
+                font=theme.FONT_SMALL,
+            )

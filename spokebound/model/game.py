@@ -88,8 +88,7 @@ class Game:
         """
         if player is not self.current:
             return []
-        return [(src, dst) for src, _ in self.board.pieces(player)
-               for dst in self.legal_moves(src)]
+        return [(src, dst) for src, _ in self.board.pieces(player) for dst in self.legal_moves(src)]
 
     def score(self, player: Player) -> int:
         """Return the total points ``player`` has left on the board."""
@@ -98,8 +97,7 @@ class Game:
     def in_check(self, player: Player) -> bool:
         """Return True if ``player``'s Captain is currently attacked."""
         square = self._captain_square(player)
-        return (square is not None
-               and self._is_attacked(square, player.opponent))
+        return square is not None and self._is_attacked(square, player.opponent)
 
     def legal_moves(self, src: Square) -> list[Square]:
         """Return legal destinations for the current player's piece.
@@ -110,8 +108,11 @@ class Game:
         piece = self.board.get(src)
         if not self._can_move_from(src, piece):
             return []
-        return [dst for dst in self.board.legal_moves(src)
-               if not self._leaves_captain_attacked(src, dst, piece.owner)]
+        return [
+            dst
+            for dst in self.board.legal_moves(src)
+            if not self._leaves_captain_attacked(src, dst, piece.owner)
+        ]
 
     def is_legal(self, src: Square, dst: Square) -> bool:
         """Return True if ``src`` -> ``dst`` is one of :meth:`legal_moves`,
@@ -119,12 +120,10 @@ class Game:
         piece = self.board.get(src)
         if not self._can_move_from(src, piece):
             return False
-        return (dst in self.board.legal_moves(src)
-                and not self._leaves_captain_attacked(src, dst, piece.owner))
+        return dst in self.board.legal_moves(src) and not self._leaves_captain_attacked(src, dst, piece.owner)
 
     def _can_move_from(self, src: Square, piece: Piece | None) -> bool:
-        return not (self.is_over or self.upgrade or piece is None
-                    or piece.owner is not self.current)
+        return not (self.is_over or self.upgrade or piece is None or piece.owner is not self.current)
 
     def move(self, src: Square, dst: Square) -> None:
         """Play a move for the current player."""
@@ -132,11 +131,9 @@ class Game:
             raise ValueError(f"Illegal move {src} -> {dst}")
         piece = self.board.get(src)
         captured = self.board.move(src, dst)
-        points = (self._capture_points(piece, captured)
-                 + self._promotion_points(piece, dst))
+        points = self._capture_points(piece, captured) + self._promotion_points(piece, dst)
         if piece.is_captain and dst in GOAL_SQUARES:
-            self._end(piece.owner, "marched the Captain onto the centre",
-                      reached_centre=True)
+            self._end(piece.owner, "marched the Captain onto the centre", reached_centre=True)
             return
         if points and not piece.is_captain:
             self.upgrade = PendingUpgrade(piece, points)
@@ -155,15 +152,12 @@ class Game:
         if all(n >= TURN_LIMIT for n in self.moves_made.values()):
             self._end_on_points()
         elif not self._has_any_legal_move(self.current):
-            reason = ("checkmated" if self.in_check(self.current)
-                      else "stalemated, with no legal move")
-            self._end(self.current.opponent,
-                     f"{self.current.label} was {reason}")
+            reason = "checkmated" if self.in_check(self.current) else "stalemated, with no legal move"
+            self._end(self.current.opponent, f"{self.current.label} was {reason}")
 
     def _has_any_legal_move(self, player: Player) -> bool:
         """Return True if any of ``player``'s pieces has a legal move."""
-        return any(self.legal_moves(sq)
-                  for sq, _ in self.board.pieces(player))
+        return any(self.legal_moves(sq) for sq, _ in self.board.pieces(player))
 
     def _captain_square(self, player: Player) -> Square | None:
         """Return the square ``player``'s Captain stands on, if it's alive."""
@@ -176,14 +170,12 @@ class Game:
         """Return True if any of ``by_player``'s pieces can reach it."""
         return self.board.is_attacked(square, by_player)
 
-    def _leaves_captain_attacked(self, src: Square, dst: Square,
-                                 owner: Player) -> bool:
+    def _leaves_captain_attacked(self, src: Square, dst: Square, owner: Player) -> bool:
         """Simulate src -> dst and report whether ``owner``'s Captain is
         then attacked, undoing the simulation before returning."""
         captured = self.board.move(src, dst)
         square = self._captain_square(owner)
-        attacked = (square is not None
-                   and self._is_attacked(square, owner.opponent))
+        attacked = square is not None and self._is_attacked(square, owner.opponent)
         self.board.move(dst, src)
         if captured is not None:
             self.board.place(dst, captured)
@@ -193,10 +185,8 @@ class Game:
         """Log a capture and return the bounty points it earned."""
         if captured is None:
             return 0
-        bounty = (f" and claimed its {captured.bounty} bounty"
-                  if captured.bounty else "")
-        self.log.append(f"{piece.owner.label} captured a {captured.cost}-"
-                        f"point piece{bounty}.")
+        bounty = f" and claimed its {captured.bounty} bounty" if captured.bounty else ""
+        self.log.append(f"{piece.owner.label} captured a {captured.cost}-point piece{bounty}.")
         return captured.bounty
 
     def _promotion_points(self, piece: Piece, dst: Square) -> int:
@@ -208,13 +198,11 @@ class Game:
         if piece.is_captain or piece.promoted:
             return 0
         far_row = HOME_ROWS[piece.owner.opponent]
-        reached = (dst[0] <= far_row if piece.owner is Player.ORANGE
-                  else dst[0] >= far_row)
+        reached = dst[0] <= far_row if piece.owner is Player.ORANGE else dst[0] >= far_row
         if not reached:
             return 0
         piece.promoted = True
-        self.log.append(f"{piece.owner.label} promoted a piece "
-                        f"(+{PROMOTION_BONUS}).")
+        self.log.append(f"{piece.owner.label} promoted a piece (+{PROMOTION_BONUS}).")
         return PROMOTION_BONUS
 
     def _end_on_points(self) -> None:
@@ -225,8 +213,7 @@ class Game:
             winner = Player.ORANGE if orange > white else Player.WHITE
         self._end(winner, f"turn limit reached ({orange}-{white} points)")
 
-    def _end(self, winner: Player | None, reason: str,
-             reached_centre: bool = False) -> None:
+    def _end(self, winner: Player | None, reason: str, reached_centre: bool = False) -> None:
         """Record the result and close any open upgrade."""
         self.outcome = Outcome(winner, reason, reached_centre)
         self.upgrade = None

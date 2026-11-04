@@ -78,8 +78,7 @@ class Weights:
             value, base = getattr(self, field), getattr(baseline, field)
             change = (value / base - 1) * 100 if base else 0.0
             arrow = "+" if change >= 0 else ""
-            lines.append(f"   {field:<18} {value:6.3f}  "
-                        f"({arrow}{change:.0f}% vs. baseline)")
+            lines.append(f"   {field:<18} {value:6.3f}  ({arrow}{change:.0f}% vs. baseline)")
         return "\n".join(lines)
 
 
@@ -157,11 +156,13 @@ class FleetRules:
         spokebound.ai.levels.Level.pregame_skill and
         spokebound.ai.build._rules_for_level — rather than sampling the
         same fully-evolved rules more or less carefully."""
-        return replace(self, **{
-            name: getattr(self, name)
-                 + t * (getattr(other, name) - getattr(self, name))
-            for name in self.field_names()
-        })
+        return replace(
+            self,
+            **{
+                name: getattr(self, name) + t * (getattr(other, name) - getattr(self, name))
+                for name in self.field_names()
+            },
+        )
 
     def describe_diff(self, baseline: "FleetRules") -> str:
         """Same as Weights.describe_diff, for FleetRules."""
@@ -170,8 +171,7 @@ class FleetRules:
             value, base = getattr(self, field), getattr(baseline, field)
             change = (value / base - 1) * 100 if base else 0.0
             arrow = "+" if change >= 0 else ""
-            lines.append(f"   {field:<18} {value:6.3f}  "
-                        f"({arrow}{change:.0f}% vs. baseline)")
+            lines.append(f"   {field:<18} {value:6.3f}  ({arrow}{change:.0f}% vs. baseline)")
         return "\n".join(lines)
 
 

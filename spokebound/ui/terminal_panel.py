@@ -65,37 +65,36 @@ def build_shell(parent: tk.Misc, width: int) -> tuple[tk.Frame, tk.Frame]:
     that content's own background is what actually reads as the
     screen.
     """
-    bezel = tk.Frame(parent, bg=theme.TERMINAL_CASE_OUTER,
-                     highlightthickness=2,
-                     highlightbackground=theme.TERMINAL_BEZEL_EDGE)
+    bezel = tk.Frame(
+        parent,
+        bg=theme.TERMINAL_CASE_OUTER,
+        highlightthickness=2,
+        highlightbackground=theme.TERMINAL_BEZEL_EDGE,
+    )
     # Packed before the casing bands below (which claim the rest of
     # this frame with expand=True), so the keyboard keeps its own
     # natural height instead of being squeezed by whatever's above it.
-    _build_keyboard(bezel, width).pack(side=tk.BOTTOM, fill=tk.X,
-                                       padx=CASING_STEP,
-                                       pady=(0, CASING_STEP))
+    _build_keyboard(bezel, width).pack(side=tk.BOTTOM, fill=tk.X, padx=CASING_STEP, pady=(0, CASING_STEP))
 
     band = bezel
     for i in range(1, CASING_BANDS):
         t = i / (CASING_BANDS - 1)
-        colour = theme.mix_hex(theme.TERMINAL_CASE_OUTER,
-                               theme.TERMINAL_BEZEL, t)
+        colour = theme.mix_hex(theme.TERMINAL_CASE_OUTER, theme.TERMINAL_BEZEL, t)
         next_band = tk.Frame(band, bg=colour)
-        next_band.pack(side=tk.TOP, fill=tk.BOTH, expand=True,
-                       padx=CASING_STEP, pady=CASING_STEP)
+        next_band.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=CASING_STEP, pady=CASING_STEP)
         band = next_band
     # ``band`` is now the innermost casing layer, right at the glass —
     # everything below sits on that, not on the outer shell colour. A
     # bright seam right here, at the actual edge of the glass, is what
     # reads as a crisp machined edge rather than just a colour fade.
     inner_bg = band.cget("bg")
-    band.configure(padx=BEZEL_PADDING, pady=BEZEL_PADDING,
-                   highlightthickness=1, highlightbackground=CASING_SEAM)
+    band.configure(
+        padx=BEZEL_PADDING, pady=BEZEL_PADDING, highlightthickness=1, highlightbackground=CASING_SEAM
+    )
 
     row = tk.Frame(band, bg=inner_bg)
     row.pack(fill=tk.BOTH, expand=True)
-    _build_sidebar(row, inner_bg).pack(side=tk.LEFT, fill=tk.Y,
-                                       padx=(0, SIDEBAR_GAP))
+    _build_sidebar(row, inner_bg).pack(side=tk.LEFT, fill=tk.Y, padx=(0, SIDEBAR_GAP))
 
     screen = tk.Frame(row, bg=theme.TERMINAL_BEZEL)
     screen.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -113,9 +112,9 @@ def _build_sidebar(parent: tk.Misc, bg: str) -> tk.Frame:
     # Packed first, with side=tk.BOTTOM, so it claims its own space at
     # the sidebar's foot — the button sets below, packed next with
     # side=tk.TOP, only ever divide up whatever's left above it.
-    speaker = tk.Canvas(sidebar, width=SIDEBAR_WIDTH,
-                        height=SPEAKER_RADIUS * 2 + 4,
-                        bg=bg, highlightthickness=0)
+    speaker = tk.Canvas(
+        sidebar, width=SIDEBAR_WIDTH, height=SPEAKER_RADIUS * 2 + 4, bg=bg, highlightthickness=0
+    )
     speaker.pack(side=tk.BOTTOM, pady=(0, BEZEL_PADDING))
     _draw_speaker(speaker, SIDEBAR_WIDTH / 2, SPEAKER_RADIUS + 2)
 
@@ -126,14 +125,17 @@ def _build_sidebar(parent: tk.Misc, bg: str) -> tk.Frame:
         group = tk.Frame(sidebar, bg=bg)
         group.pack(side=tk.TOP, expand=True)
         for i in range(BUTTONS_PER_SET):
-            key = tk.Canvas(group, width=SIDEBAR_WIDTH, height=BUTTON_HEIGHT,
-                            bg=bg, highlightthickness=0)
+            key = tk.Canvas(group, width=SIDEBAR_WIDTH, height=BUTTON_HEIGHT, bg=bg, highlightthickness=0)
             key.pack(side=tk.TOP, pady=(0 if i == 0 else BUTTON_GAP, 0))
-            key.create_rectangle(1, 1, SIDEBAR_WIDTH - 1, BUTTON_HEIGHT - 1,
-                                 fill=theme.TERMINAL_BUTTON,
-                                 outline=theme.TERMINAL_BUTTON_EDGE)
-            key.create_line(2, 2, SIDEBAR_WIDTH - 2, 2,
-                            fill=theme.TERMINAL_BUTTON_HIGHLIGHT)
+            key.create_rectangle(
+                1,
+                1,
+                SIDEBAR_WIDTH - 1,
+                BUTTON_HEIGHT - 1,
+                fill=theme.TERMINAL_BUTTON,
+                outline=theme.TERMINAL_BUTTON_EDGE,
+            )
+            key.create_line(2, 2, SIDEBAR_WIDTH - 2, 2, fill=theme.TERMINAL_BUTTON_HIGHLIGHT)
     return sidebar
 
 
@@ -141,21 +143,27 @@ def _draw_speaker(canvas: tk.Canvas, cx: float, cy: float) -> None:
     """Draw a small perforated-metal speaker grille centred at
     (cx, cy): a flat disc with a few concentric rings of drilled
     holes, darker than the disc itself."""
-    canvas.create_oval(cx - SPEAKER_RADIUS, cy - SPEAKER_RADIUS,
-                       cx + SPEAKER_RADIUS, cy + SPEAKER_RADIUS,
-                       fill=theme.TERMINAL_CASE_OUTER,
-                       outline=theme.TERMINAL_BEZEL_EDGE)
-    for ring_radius, hole_count in zip(SPEAKER_HOLE_RINGS,
-                                       SPEAKER_HOLES_PER_RING, strict=True):
+    canvas.create_oval(
+        cx - SPEAKER_RADIUS,
+        cy - SPEAKER_RADIUS,
+        cx + SPEAKER_RADIUS,
+        cy + SPEAKER_RADIUS,
+        fill=theme.TERMINAL_CASE_OUTER,
+        outline=theme.TERMINAL_BEZEL_EDGE,
+    )
+    for ring_radius, hole_count in zip(SPEAKER_HOLE_RINGS, SPEAKER_HOLES_PER_RING, strict=True):
         for h in range(hole_count):
             angle = 2 * math.pi * h / max(1, hole_count)
             hx = cx + ring_radius * math.cos(angle)
             hy = cy + ring_radius * math.sin(angle)
-            canvas.create_oval(hx - SPEAKER_HOLE_RADIUS,
-                               hy - SPEAKER_HOLE_RADIUS,
-                               hx + SPEAKER_HOLE_RADIUS,
-                               hy + SPEAKER_HOLE_RADIUS,
-                               fill=theme.TERMINAL_BEZEL, outline="")
+            canvas.create_oval(
+                hx - SPEAKER_HOLE_RADIUS,
+                hy - SPEAKER_HOLE_RADIUS,
+                hx + SPEAKER_HOLE_RADIUS,
+                hy + SPEAKER_HOLE_RADIUS,
+                fill=theme.TERMINAL_BEZEL,
+                outline="",
+            )
 
 
 def _build_keyboard(parent: tk.Misc, width: int) -> tk.Canvas:
@@ -169,8 +177,7 @@ def _build_keyboard(parent: tk.Misc, width: int) -> tk.Canvas:
     used_width = cols * step - KEYBOARD_KEY_GAP
     left0 = (width - used_width) / 2
     height = KEYBOARD_ROWS * step - KEYBOARD_KEY_GAP + 2 * KEYBOARD_MARGIN
-    canvas = tk.Canvas(parent, width=width, height=height,
-                       bg=theme.TERMINAL_CASE_OUTER, highlightthickness=0)
+    canvas = tk.Canvas(parent, width=width, height=height, bg=theme.TERMINAL_CASE_OUTER, highlightthickness=0)
     for row in range(KEYBOARD_ROWS):
         top = KEYBOARD_MARGIN + row * step
         for col in range(cols):
@@ -178,16 +185,20 @@ def _build_keyboard(parent: tk.Misc, width: int) -> tk.Canvas:
             # A scattered minority of orange keys among the grey ones —
             # the same two-tone texture the reference keyboard uses —
             # rather than an exact key-by-key copy of its layout.
-            orange = (col == 0 or col == cols - 1
-                     or (row == 0 and col % 3 == 0))
-            fill, edge = ((theme.TERMINAL_BUTTON, theme.TERMINAL_BUTTON_EDGE)
-                         if orange else
-                         (theme.KEYBOARD_KEY, theme.KEYBOARD_KEY_EDGE))
-            canvas.create_rectangle(left, top, left + KEYBOARD_KEY_SIZE,
-                                    top + KEYBOARD_KEY_SIZE,
-                                    fill=fill, outline=edge)
-            canvas.create_line(left + 1, top + 1,
-                               left + KEYBOARD_KEY_SIZE - 1, top + 1,
-                               fill=theme.TERMINAL_BUTTON_HIGHLIGHT
-                               if orange else theme.KEYBOARD_KEY_HIGHLIGHT)
+            orange = col == 0 or col == cols - 1 or (row == 0 and col % 3 == 0)
+            fill, edge = (
+                (theme.TERMINAL_BUTTON, theme.TERMINAL_BUTTON_EDGE)
+                if orange
+                else (theme.KEYBOARD_KEY, theme.KEYBOARD_KEY_EDGE)
+            )
+            canvas.create_rectangle(
+                left, top, left + KEYBOARD_KEY_SIZE, top + KEYBOARD_KEY_SIZE, fill=fill, outline=edge
+            )
+            canvas.create_line(
+                left + 1,
+                top + 1,
+                left + KEYBOARD_KEY_SIZE - 1,
+                top + 1,
+                fill=theme.TERMINAL_BUTTON_HIGHLIGHT if orange else theme.KEYBOARD_KEY_HIGHLIGHT,
+            )
     return canvas

@@ -36,7 +36,14 @@ SPOKE_COUNT = len(DIRECTION_NAMES)
 
 # Board steps as (row delta, col delta) for Orange, who faces up the screen.
 _ORANGE_DELTAS = (
-    (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (0, 1),
+    (1, 1),
+    (1, 0),
+    (1, -1),
+    (0, -1),
+    (-1, -1),
 )
 
 
@@ -78,8 +85,7 @@ class Piece:
         level = self.spokes[spoke]
         return None if level == UNLIMITED else level
 
-    def try_adjust(self, spoke: int, step: int, available: int,
-                   floor: int = 0) -> int | None:
+    def try_adjust(self, spoke: int, step: int, available: int, floor: int = 0) -> int | None:
         """Change ``spoke`` by ``step`` levels if the rules allow it.
 
         Args:

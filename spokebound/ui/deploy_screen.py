@@ -144,14 +144,18 @@ class DeployScreen(tk.Frame):
     **Done** to end your turn.
     """
 
-    def __init__(self, parent: tk.Misc, orange_fleet: list[Piece],
-                 white_fleet: list[Piece],
-                 on_new_game: Callable[[], None],
-                 on_main_menu: Callable[[], None],
-                 ai_player: Player | None = None,
-                 ai_difficulty: int | None = None,
-                 session: NetworkSession | None = None,
-                 remote_player: Player | None = None) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        orange_fleet: list[Piece],
+        white_fleet: list[Piece],
+        on_new_game: Callable[[], None],
+        on_main_menu: Callable[[], None],
+        ai_player: Player | None = None,
+        ai_difficulty: int | None = None,
+        session: NetworkSession | None = None,
+        remote_player: Player | None = None,
+    ) -> None:
         """``session``/``remote_player`` mirror ``ai_player``: instead
         of scheduling a computer placement/move, the remote side's own
         actions arrive as messages on ``session``, polled for on the
@@ -182,10 +186,11 @@ class DeployScreen(tk.Frame):
         # (e.g. a window resize after the game's already over) doesn't
         # replay it.
         self._outcome_announced = False
-        self._poller = (NetworkPoller(self, session, NETWORK_POLL_MS,
-                                      self._handle_network_message,
-                                      self._on_disconnected)
-                        if session is not None else None)
+        self._poller = (
+            NetworkPoller(self, session, NETWORK_POLL_MS, self._handle_network_message, self._on_disconnected)
+            if session is not None
+            else None
+        )
         self._rebuild()
         # Keeps this screen fitted to the window as it's resized —
         # un-maximizing, dragging an edge — rather than only at the
@@ -206,8 +211,7 @@ class DeployScreen(tk.Frame):
         self._poller.cancel()
 
     def _on_disconnected(self) -> None:
-        messagebox.showwarning("Connection Lost",
-                               "Your opponent disconnected.", parent=self)
+        messagebox.showwarning("Connection Lost", "Your opponent disconnected.", parent=self)
         self._on_main_menu()
 
     def _rebuild(self) -> None:
@@ -227,17 +231,14 @@ class DeployScreen(tk.Frame):
         # (create_window_board draws that into whatever slack the
         # board's own, usually height-bound, size leaves inside the
         # frame — see below).
-        _, max_height = available_board_size(
-            self, LEFT_PANEL_WIDTH + RIGHT_PANEL_WIDTH)
+        _, max_height = available_board_size(self, LEFT_PANEL_WIDTH + RIGHT_PANEL_WIDTH)
 
         # Each side column is fit to the board's own height budget
         # independently (its content can outgrow the board's height on
         # a short window, so it's fit rather than left to overflow),
         # not sized against each other.
-        left_panel = fit_height(self, self._build_left_panel,
-                                max_height - LEFT_PANEL_HEIGHT_MARGIN)
-        right_panel = fit_height(self, self._build_right_panel,
-                                 max_height - RIGHT_PANEL_HEIGHT_MARGIN)
+        left_panel = fit_height(self, self._build_left_panel, max_height - LEFT_PANEL_HEIGHT_MARGIN)
+        right_panel = fit_height(self, self._build_right_panel, max_height - RIGHT_PANEL_HEIGHT_MARGIN)
         # Frozen only now, on the one, final, kept build of each — never
         # inside _build_left_panel/_build_right_panel themselves, which
         # fit_height also calls on throwaway probe builds purely to
@@ -277,17 +278,14 @@ class DeployScreen(tk.Frame):
         window_width = root.winfo_width()
         left_w = left_panel.winfo_reqwidth()
         right_w = right_panel.winfo_reqwidth()
-        board_max_width = max(1, round(
-            window_width - left_w - right_w - 2 * SIDE_MARGIN))
+        board_max_width = max(1, round(window_width - left_w - right_w - 2 * SIDE_MARGIN))
 
         board = self._game.board if self._game is not None else self._deployment.board
         self._frame_canvas, self._board_view = create_window_board(
-            self, board, self._on_square, board_max_width, max_height,
-            flipped=self._board_flipped())
+            self, board, self._on_square, board_max_width, max_height, flipped=self._board_flipped()
+        )
 
-        left_panel.pack(side=tk.LEFT, anchor=tk.N, pady=6,
-                        padx=(SIDE_MARGIN, 0),
-                        fill=tk.NONE, expand=False)
+        left_panel.pack(side=tk.LEFT, anchor=tk.N, pady=6, padx=(SIDE_MARGIN, 0), fill=tk.NONE, expand=False)
         self._frame_canvas.pack(side=tk.LEFT, pady=10)
         # anchor=tk.CENTER, fill/expand explicitly cancelled: the
         # terminal sits at its own natural content height (casing
@@ -297,10 +295,13 @@ class DeployScreen(tk.Frame):
         # below the gear (reserved by RIGHT_PANEL_TOP_CLEARANCE's own
         # pady floor) rather than sitting pinned to the top of it.
         right_panel.pack(
-            side=tk.LEFT, anchor=tk.CENTER,
+            side=tk.LEFT,
+            anchor=tk.CENTER,
             padx=(0, SIDE_MARGIN),
             pady=(RIGHT_PANEL_TOP_CLEARANCE, 10),
-            fill=tk.NONE, expand=False)
+            fill=tk.NONE,
+            expand=False,
+        )
 
         add_gear(self)
         self._refresh()
@@ -329,10 +330,10 @@ class DeployScreen(tk.Frame):
         # PANEL_PADDING's wider spacing, since starting close to the
         # left edge is the actual ask here, not also squeezing the
         # vertical gap above the Main Menu button.
-        panel = tk.Frame(self, bg=theme.PANEL, width=LEFT_PANEL_WIDTH,
-                         padx=pad_x, pady=pad)
-        theme.make_button(panel, "Main Menu", self._on_main_menu,
-                          secondary=True).pack(anchor=tk.W, pady=(0, gap))
+        panel = tk.Frame(self, bg=theme.PANEL, width=LEFT_PANEL_WIDTH, padx=pad_x, pady=pad)
+        theme.make_button(panel, "Main Menu", self._on_main_menu, secondary=True).pack(
+            anchor=tk.W, pady=(0, gap)
+        )
 
         # wraplength on both: game-mode's own status text ("Orange's
         # Turn", a check warning) never wraps, but deployment's own
@@ -342,12 +343,11 @@ class DeployScreen(tk.Frame):
         # for the first time only once _refresh sets the real text,
         # after fit_height/freeze_height have already measured and
         # locked this panel's height against whatever was here before.
-        self._turn = theme.make_label(panel, font=theme.FONT_TITLE,
-                                      bg=theme.PANEL, wraplength=full_width)
+        self._turn = theme.make_label(panel, font=theme.FONT_TITLE, bg=theme.PANEL, wraplength=full_width)
         self._turn.pack(anchor=tk.W)
-        self._check_label = theme.make_label(panel, bg=theme.PANEL,
-                                             fg=theme.ACCENT_DARK,
-                                             wraplength=full_width)
+        self._check_label = theme.make_label(
+            panel, bg=theme.PANEL, fg=theme.ACCENT_DARK, wraplength=full_width
+        )
         self._check_label.pack(anchor=tk.W, pady=(0, gap))
         # The longest status text either phase ever shows: deployment's
         # own counter at its own longest (whichever side's label is
@@ -360,9 +360,7 @@ class DeployScreen(tk.Frame):
         # screen finishes building, before anything is ever shown).
         worst_player = max(Player, key=lambda p: len(p.label))
         worst_count = self._deployment.fleet_size(worst_player)
-        self._turn.config(
-            text=f"{worst_player.label}: Place Piece {worst_count} of "
-                 f"{worst_count}")
+        self._turn.config(text=f"{worst_player.label}: Place Piece {worst_count} of {worst_count}")
         self._check_label.config(text=f"{worst_player.label} Is in Check!")
 
         # Built from the very first deploy-phase rebuild on, against a
@@ -373,11 +371,8 @@ class DeployScreen(tk.Frame):
         # built fresh.
         card_width = max(150, round(BASE_CARD_WIDTH * scale))
         card_height = max(70, round(BASE_CARD_HEIGHT * scale))
-        score_game = (self._game if self._game is not None
-                     else Game(self._deployment.board))
-        self._score_panel = ScorePanel(panel, score_game,
-                                       card_width=card_width,
-                                       card_height=card_height)
+        score_game = self._game if self._game is not None else Game(self._deployment.board)
+        self._score_panel = ScorePanel(panel, score_game, card_width=card_width, card_height=card_height)
         self._score_panel.pack(anchor=tk.W, pady=(0, gap))
         # Drawn once, right here, rather than left for _refresh to draw
         # for the first time afterwards: ScorePanel's own redraw() can
@@ -393,12 +388,15 @@ class DeployScreen(tk.Frame):
         # current phase (relevant on a resize mid-game, which rebuilds
         # this from scratch) — _begin_game flips both, on this same
         # instance, the moment play actually begins.
-        next_index = (None if self._game is not None else
-                     {p: self._deployment.placed_count(p) for p in Player})
-        self._fleet_panel = FleetPanel(panel, rosters, board,
-                                      track_losses=self._game is not None,
-                                      thumb_size=thumb_size,
-                                      next_index=next_index)
+        next_index = None if self._game is not None else {p: self._deployment.placed_count(p) for p in Player}
+        self._fleet_panel = FleetPanel(
+            panel,
+            rosters,
+            board,
+            track_losses=self._game is not None,
+            thumb_size=thumb_size,
+            next_index=next_index,
+        )
         self._fleet_panel.pack(anchor=tk.W, fill=tk.X)
         return panel
 
@@ -415,35 +413,31 @@ class DeployScreen(tk.Frame):
         # No pack_propagate(False) here either, same reasoning as
         # _build_left_panel — fit_height needs this frame's real,
         # content-driven height to measure it honestly.
-        outer = tk.Frame(self, bg=theme.PANEL, width=RIGHT_PANEL_WIDTH,
-                         padx=pad, pady=pad)
+        outer = tk.Frame(self, bg=theme.PANEL, width=RIGHT_PANEL_WIDTH, padx=pad, pady=pad)
 
         # Packed (then, below, measured) at the bottom first, so
         # fit_height's own scale accounts for its worst-case height —
         # visible or not, it's part of the same card either way, not
         # something a rebuild adds later.
-        self._new_game = theme.make_button(outer, "New Game",
-                                           self._on_new_game)
+        self._new_game = theme.make_button(outer, "New Game", self._on_new_game)
         self._new_game.pack(side=tk.BOTTOM, anchor=tk.W, pady=(gap, 0))
 
         # The card stays on screen permanently (not just while a piece
         # is being upgraded), with its own heading, so it reads as a
         # fixture of the terminal rather than something that pops in
         # and out.
-        bezel, card, self._editor, self._upgrade_label, \
-            self._upgrade_label_holder, card_width = upgrade_terminal.build(
-                outer, scale, width=RIGHT_PANEL_WIDTH - 2 * pad,
-                on_adjust=self._adjust_upgrade)
+        bezel, card, self._editor, self._upgrade_label, self._upgrade_label_holder, card_width = (
+            upgrade_terminal.build(
+                outer, scale, width=RIGHT_PANEL_WIDTH - 2 * pad, on_adjust=self._adjust_upgrade
+            )
+        )
         bezel.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self._upgrade_done = theme.make_button(card, "Done",
-                                               self._finish_upgrade)
+        self._upgrade_done = theme.make_button(card, "Done", self._finish_upgrade)
         # Measured against the worst case — the spend prompt and Done
         # both showing — so fixing the prompt holder's own height to
         # match doesn't itself need a second, idle-state build.
-        self._upgrade_label.config(
-            text="Spend 88 pts of bonus on this piece. Unspent points "
-                 "are lost.")
+        self._upgrade_label.config(text="Spend 88 pts of bonus on this piece. Unspent points are lost.")
         self._upgrade_label.pack(anchor=tk.W)
         card.update_idletasks()
         label_h = self._upgrade_label.winfo_reqheight()
@@ -456,8 +450,7 @@ class DeployScreen(tk.Frame):
         # editor) actually need, which then leaves the label too
         # little room for the wraplength its text was actually measured
         # against, clipping it.
-        self._upgrade_label_holder.configure(height=label_h,
-                                             width=card_width)
+        self._upgrade_label_holder.configure(height=label_h, width=card_width)
         self._upgrade_label_holder.pack_propagate(False)
         self._upgrade_done.pack(pady=(gap, 0), fill=tk.X)
         # The card's own height gets frozen too — but only once,
@@ -613,8 +606,7 @@ class DeployScreen(tk.Frame):
         if self._remote_player is not None:
             return self._remote_player is Player.ORANGE
         if self._ai_player is None:
-            current = (self._game.current if self._game is not None
-                      else self._deployment.current)
+            current = self._game.current if self._game is not None else self._deployment.current
             return current is Player.WHITE
         return False
 
@@ -626,23 +618,21 @@ class DeployScreen(tk.Frame):
         score cards track the real board's own state either way (a
         placeholder Game during deployment, see _build_left_panel)."""
         if self._game is not None and self._game.is_over:
-            self._new_game.pack(side=tk.BOTTOM, anchor=tk.W,
-                               pady=(self._gap, 0))
+            self._new_game.pack(side=tk.BOTTOM, anchor=tk.W, pady=(self._gap, 0))
         else:
             self._new_game.pack_forget()
 
         if self._game is None:
             self._board_view.set_flipped(self._board_flipped())
             self._board_view.redraw(targets=self._deployment.legal_squares())
-            self._fleet_panel.next_index = {
-                p: self._deployment.placed_count(p) for p in Player}
+            self._fleet_panel.next_index = {p: self._deployment.placed_count(p) for p in Player}
             self._fleet_panel.redraw()
             player = self._deployment.current
             placed = self._deployment.placed_count(player)
             total = self._deployment.fleet_size(player)
             self._turn.config(
-                text=f"{player.label}: Place Piece {placed + 1} of {total}",
-                fg=theme.PLAYER_TEXT[player])
+                text=f"{player.label}: Place Piece {placed + 1} of {total}", fg=theme.PLAYER_TEXT[player]
+            )
             # There's no check concept during deployment — only
             # _build_left_panel's own worst-case placeholder text ever
             # sets this label otherwise, to measure the panel's real
@@ -651,8 +641,7 @@ class DeployScreen(tk.Frame):
             self._check_label.config(text="")
             self._maybe_ai_place()
         else:
-            targets = (self._game.legal_moves(self._selected)
-                      if self._selected else [])
+            targets = self._game.legal_moves(self._selected) if self._selected else []
             self._board_view.set_flipped(self._board_flipped())
             self._board_view.redraw(self._selected, targets)
             self._fleet_panel.redraw()
@@ -682,8 +671,7 @@ class DeployScreen(tk.Frame):
             return
         level = LEVELS.get(self._ai_difficulty)
         skill = level.pregame_skill if level is not None else 1.0
-        square = choose_deploy_square(self._deployment, self._ai_player,
-                                      skill=skill)
+        square = choose_deploy_square(self._deployment, self._ai_player, skill=skill)
         self._place(square)
 
     def _maybe_ai_move(self) -> None:
@@ -721,8 +709,7 @@ class DeployScreen(tk.Frame):
         if game.outcome is not None:
             winner = game.outcome.winner
             title = f"{winner.label} Wins!" if winner is not None else "Draw"
-            colour = (theme.PLAYER_TEXT[winner] if winner is not None
-                      else theme.TEXT)
+            colour = theme.PLAYER_TEXT[winner] if winner is not None else theme.TEXT
             if not self._outcome_announced:
                 self._outcome_announced = True
                 # Framed around the human side of an AI game; a local
@@ -755,7 +742,7 @@ class DeployScreen(tk.Frame):
             self._editor.show(None)
             return
         self._upgrade_label.config(
-            text=f"Spend {theme.points_text(upgrade.points)} of bonus on this "
-                 "piece. Unspent points are lost.")
+            text=f"Spend {theme.points_text(upgrade.points)} of bonus on this piece. Unspent points are lost."
+        )
         self._editor.show(upgrade.piece)
         self._upgrade_done.pack(pady=(self._gap, 0), fill=tk.X)

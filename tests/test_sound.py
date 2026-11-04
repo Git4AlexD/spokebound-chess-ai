@@ -88,10 +88,8 @@ class MusicPlaybackTests(unittest.TestCase):
     def test_starting_the_music_opens_and_plays_it_looping(self) -> None:
         sound.play_menu_music()
         commands = self._commands()
-        self.assertTrue(any("open" in c and "menu_music.mp3" in c
-                            for c in commands))
-        self.assertTrue(any(c.startswith("play") and "repeat" in c
-                            for c in commands))
+        self.assertTrue(any("open" in c and "menu_music.mp3" in c for c in commands))
+        self.assertTrue(any(c.startswith("play") and "repeat" in c for c in commands))
 
     def test_stop_closes_the_music_channel(self) -> None:
         sound.play_menu_music()
@@ -125,10 +123,8 @@ class MusicPlaybackTests(unittest.TestCase):
         with patch.object(sound, "_music_enabled", False):
             sound.play_menu_music()
         commands = self._commands()
-        self.assertTrue(any("open" in c and "menu_music.mp3" in c
-                            for c in commands))
-        self.assertTrue(any(c.startswith("play") and "repeat" in c
-                            for c in commands))
+        self.assertTrue(any("open" in c and "menu_music.mp3" in c for c in commands))
+        self.assertTrue(any(c.startswith("play") and "repeat" in c for c in commands))
         self.assertTrue(any(c.startswith("pause") for c in commands))
 
     def test_stop_always_closes_the_channel_even_while_muted(self) -> None:
@@ -137,8 +133,7 @@ class MusicPlaybackTests(unittest.TestCase):
         # has to actually release the channel.
         with patch.object(sound, "_music_enabled", False):
             sound.stop()
-        self._winmm.mciSendStringW.assert_called_once_with(
-            f"close {sound._MUSIC_ALIAS}", None, 0, None)
+        self._winmm.mciSendStringW.assert_called_once_with(f"close {sound._MUSIC_ALIAS}", None, 0, None)
 
     def test_a_playback_error_is_swallowed_not_raised(self) -> None:
         self._winmm.mciSendStringW.side_effect = OSError("no device")
@@ -179,8 +174,9 @@ class KeepAliveTests(unittest.TestCase):
     def test_loops_the_silent_track_on_its_own_channel(self) -> None:
         sound.keep_output_awake()
         commands = self._commands()
-        self.assertTrue(any(c.startswith("open") and "silence.wav" in c
-                            and sound._KEEPALIVE_ALIAS in c for c in commands))
+        self.assertTrue(
+            any(c.startswith("open") and "silence.wav" in c and sound._KEEPALIVE_ALIAS in c for c in commands)
+        )
         self.assertIn(f"play {sound._KEEPALIVE_ALIAS} repeat", commands)
         self.assertFalse(any(sound._MUSIC_ALIAS in c for c in commands))
 
@@ -195,8 +191,7 @@ class KeepAliveTests(unittest.TestCase):
         sound.play_menu_music()
         self._winmm.reset_mock()
         sound.stop()
-        self.assertFalse(any(sound._KEEPALIVE_ALIAS in c
-                             for c in self._commands()))
+        self.assertFalse(any(sound._KEEPALIVE_ALIAS in c for c in self._commands()))
 
     def test_a_playback_error_is_swallowed_not_raised(self) -> None:
         self._winmm.mciSendStringW.side_effect = OSError("no device")
@@ -222,10 +217,8 @@ class MuteTests(unittest.TestCase):
         self.addCleanup(flag_patcher.stop)
         # The mute functions flip real module flags directly; restore
         # both regardless of what a test leaves them as.
-        self.addCleanup(setattr, sound, "_music_enabled",
-                        sound._music_enabled)
-        self.addCleanup(setattr, sound, "_effects_enabled",
-                        sound._effects_enabled)
+        self.addCleanup(setattr, sound, "_music_enabled", sound._music_enabled)
+        self.addCleanup(setattr, sound, "_effects_enabled", sound._effects_enabled)
 
     def test_starts_unmuted(self) -> None:
         self.assertFalse(sound.is_music_muted())
@@ -239,16 +232,14 @@ class MuteTests(unittest.TestCase):
         sound.play_menu_music()
         self._winmm.reset_mock()
         sound.set_music_muted(True)
-        self._winmm.mciSendStringW.assert_called_once_with(
-            f"pause {sound._MUSIC_ALIAS}", None, 0, None)
+        self._winmm.mciSendStringW.assert_called_once_with(f"pause {sound._MUSIC_ALIAS}", None, 0, None)
 
     def test_unmuting_music_resumes_a_playing_channel(self) -> None:
         sound.play_menu_music()
         sound.set_music_muted(True)
         self._winmm.reset_mock()
         sound.set_music_muted(False)
-        self._winmm.mciSendStringW.assert_called_once_with(
-            f"resume {sound._MUSIC_ALIAS}", None, 0, None)
+        self._winmm.mciSendStringW.assert_called_once_with(f"resume {sound._MUSIC_ALIAS}", None, 0, None)
 
     def test_unmuting_music_with_none_playing_does_not_resume(self) -> None:
         # Nothing to resume if the loop was never started (or already
@@ -269,8 +260,7 @@ class MuteTests(unittest.TestCase):
             sound.play_menu_music()
         self._winmm.reset_mock()
         sound.set_music_muted(False)
-        self._winmm.mciSendStringW.assert_called_once_with(
-            f"resume {sound._MUSIC_ALIAS}", None, 0, None)
+        self._winmm.mciSendStringW.assert_called_once_with(f"resume {sound._MUSIC_ALIAS}", None, 0, None)
 
     def test_muting_effects_reports_as_muted(self) -> None:
         sound.set_effects_muted(True)
@@ -307,13 +297,11 @@ class MakeButtonSoundTests(unittest.TestCase):
         self._root = new_tk_root()
         self.addCleanup(self._root.destroy)
 
-    def test_clicking_a_made_button_plays_the_click_and_runs_the_command(
-            self) -> None:
+    def test_clicking_a_made_button_plays_the_click_and_runs_the_command(self) -> None:
         from spokebound.ui import theme
 
         calls = []
-        button = theme.make_button(self._root, "Go", lambda: calls.append(
-            "command"))
+        button = theme.make_button(self._root, "Go", lambda: calls.append("command"))
         with patch.object(sound, "play_button_click") as play:
             button.invoke()
         play.assert_called_once()
@@ -336,10 +324,8 @@ class SpokeEditorSoundTests(unittest.TestCase):
 
         editor = SpokeEditor(self._root, lambda spoke, step: True, size=200)
         editor.show(Piece(Player.ORANGE))
-        x, y = drawing.spoke_point(editor._centre, editor._radius, 0,
-                                   LEVEL_LENGTHS[1])
-        with patch.object(sound, "play_unit_click") as click, \
-                patch.object(sound, "play_reject") as reject:
+        x, y = drawing.spoke_point(editor._centre, editor._radius, 0, LEVEL_LENGTHS[1])
+        with patch.object(sound, "play_unit_click") as click, patch.object(sound, "play_reject") as reject:
             editor._click(type("Event", (), {"x": x, "y": y})())
         click.assert_called_once()
         reject.assert_not_called()
@@ -352,10 +338,8 @@ class SpokeEditorSoundTests(unittest.TestCase):
 
         editor = SpokeEditor(self._root, lambda spoke, step: False, size=200)
         editor.show(Piece(Player.ORANGE))
-        x, y = drawing.spoke_point(editor._centre, editor._radius, 0,
-                                   LEVEL_LENGTHS[1])
-        with patch.object(sound, "play_unit_click") as click, \
-                patch.object(sound, "play_reject") as reject:
+        x, y = drawing.spoke_point(editor._centre, editor._radius, 0, LEVEL_LENGTHS[1])
+        with patch.object(sound, "play_unit_click") as click, patch.object(sound, "play_reject") as reject:
             editor._click(type("Event", (), {"x": x, "y": y})())
         reject.assert_called_once()
         click.assert_not_called()
@@ -371,12 +355,9 @@ class DeployScreenSoundTests(unittest.TestCase):
         from spokebound.model.pieces import Piece, Player
         from spokebound.ui.deploy_screen import DeployScreen
 
-        orange = [Piece(Player.ORANGE, spokes=[1, 0, 0, 0, 0, 0, 0, 0])
-                 for _ in range(FLEET_SIZE)]
-        white = [Piece(Player.WHITE, spokes=[1, 0, 0, 0, 0, 0, 0, 0])
-                for _ in range(FLEET_SIZE)]
-        return DeployScreen(self._root, orange, white, lambda *a: None,
-                            lambda: None)
+        orange = [Piece(Player.ORANGE, spokes=[1, 0, 0, 0, 0, 0, 0, 0]) for _ in range(FLEET_SIZE)]
+        white = [Piece(Player.WHITE, spokes=[1, 0, 0, 0, 0, 0, 0, 0]) for _ in range(FLEET_SIZE)]
+        return DeployScreen(self._root, orange, white, lambda *a: None, lambda: None)
 
     def test_placing_a_piece_plays_the_button_click(self) -> None:
         screen = self._screen()
@@ -389,8 +370,7 @@ class DeployScreenSoundTests(unittest.TestCase):
         screen = self._screen()
         illegal = (3, 3)  # the centre square: never a sanctuary square
         assert illegal not in screen._deployment.legal_squares()
-        with patch.object(sound, "play_reject") as reject, \
-                patch.object(sound, "play_button_click") as click:
+        with patch.object(sound, "play_reject") as reject, patch.object(sound, "play_button_click") as click:
             screen._on_square(illegal)
         reject.assert_called_once()
         click.assert_not_called()
@@ -416,8 +396,10 @@ class AIMenuScreenSoundTests(unittest.TestCase):
         from spokebound.ui.ai_menu_screen import AIMenuScreen
 
         menu = AIMenuScreen(self._root, lambda level: None, lambda: None)
-        with patch.object(sound, "play_button_click") as click, \
-                patch.object(sound, "play_unit_click") as unit_click:
+        with (
+            patch.object(sound, "play_button_click") as click,
+            patch.object(sound, "play_unit_click") as unit_click,
+        ):
             menu._on_slide(menu._last_level + 1)
         click.assert_called_once()
         unit_click.assert_not_called()
@@ -438,8 +420,7 @@ class AppMusicLifecycleTests(unittest.TestCase):
     def setUp(self) -> None:
         from spokebound.ui.app import SpokeboundApp
 
-        with patch.object(sound, "play_menu_music"), \
-                patch.object(sound, "keep_output_awake") as keep_awake:
+        with patch.object(sound, "play_menu_music"), patch.object(sound, "keep_output_awake") as keep_awake:
             self._app = retry_tcl_init(SpokeboundApp)
         self._keep_awake = keep_awake
         self.addCleanup(self._app.destroy)
@@ -511,10 +492,8 @@ class SettingsDialogTests(unittest.TestCase):
         patcher = patch.object(sound, "_winmm", MagicMock())
         patcher.start()
         self.addCleanup(patcher.stop)
-        self.addCleanup(setattr, sound, "_music_enabled",
-                        sound._music_enabled)
-        self.addCleanup(setattr, sound, "_effects_enabled",
-                        sound._effects_enabled)
+        self.addCleanup(setattr, sound, "_music_enabled", sound._music_enabled)
+        self.addCleanup(setattr, sound, "_effects_enabled", sound._effects_enabled)
         sound._music_enabled = True
         sound._effects_enabled = True
 
@@ -534,8 +513,7 @@ class SettingsDialogTests(unittest.TestCase):
         dialog._toggle_music()
         self.assertTrue(sound.is_music_muted())
         self.assertFalse(sound.is_effects_muted())
-        self.assertEqual(_button_texts(dialog),
-                         ["Unmute Music", "Mute Sound"])
+        self.assertEqual(_button_texts(dialog), ["Unmute Music", "Mute Sound"])
         dialog.destroy()
 
     def test_toggling_effects_only_relabels_the_effects_button(self) -> None:
@@ -545,8 +523,7 @@ class SettingsDialogTests(unittest.TestCase):
         dialog._toggle_effects()
         self.assertFalse(sound.is_music_muted())
         self.assertTrue(sound.is_effects_muted())
-        self.assertEqual(_button_texts(dialog),
-                         ["Mute Music", "Unmute Sound"])
+        self.assertEqual(_button_texts(dialog), ["Mute Music", "Unmute Sound"])
         dialog.destroy()
 
     def test_every_rebuild_keeps_the_same_fixed_size(self) -> None:

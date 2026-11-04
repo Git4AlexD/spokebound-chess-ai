@@ -16,28 +16,40 @@ class NameDialog(tk.Toplevel):
     or left blank.
     """
 
-    def __init__(self, parent: tk.Misc, title: str, prompt: str,
-                initial: str = "") -> None:
+    def __init__(self, parent: tk.Misc, title: str, prompt: str, initial: str = "") -> None:
         super().__init__(parent, bg=theme.BACKGROUND)
         self.title(title)
         self.resizable(False, False)
         self.transient(parent.winfo_toplevel())
         self.result: str | None = None
 
-        theme.make_label(self, prompt, theme.FONT_BODY, fg=theme.TEXT,
-                         bg=theme.BACKGROUND, wraplength=DIALOG_WIDTH - 48,
-                         justify=tk.LEFT).pack(padx=24, pady=(24, 12),
-                                              anchor=tk.W)
+        theme.make_label(
+            self,
+            prompt,
+            theme.FONT_BODY,
+            fg=theme.TEXT,
+            bg=theme.BACKGROUND,
+            wraplength=DIALOG_WIDTH - 48,
+            justify=tk.LEFT,
+        ).pack(padx=24, pady=(24, 12), anchor=tk.W)
 
         # Not "_name": tk.Widget already uses that internally for the
         # Tcl widget path, and overwriting it corrupts destroy().
         self._name_var = tk.StringVar(value=initial)
         entry = tk.Entry(
-            self, textvariable=self._name_var, font=theme.FONT_BODY,
-            width=28, bg=theme.PANEL, fg=theme.TEXT,
-            insertbackground=theme.TEXT, disabledbackground=theme.PANEL,
-            relief=tk.FLAT, highlightthickness=2,
-            highlightbackground=theme.DISABLED, highlightcolor=theme.ACCENT)
+            self,
+            textvariable=self._name_var,
+            font=theme.FONT_BODY,
+            width=28,
+            bg=theme.PANEL,
+            fg=theme.TEXT,
+            insertbackground=theme.TEXT,
+            disabledbackground=theme.PANEL,
+            relief=tk.FLAT,
+            highlightthickness=2,
+            highlightbackground=theme.DISABLED,
+            highlightcolor=theme.ACCENT,
+        )
         entry.pack(padx=24, pady=(0, 20), ipady=4)
         entry.focus_set()
         entry.select_range(0, tk.END)
@@ -46,11 +58,12 @@ class NameDialog(tk.Toplevel):
 
         buttons = tk.Frame(self, bg=theme.BACKGROUND)
         buttons.pack(padx=24, pady=(0, 24), fill=tk.X)
-        theme.make_button(buttons, "Cancel", self._cancel,
-                          secondary=True).pack(side=tk.LEFT, expand=True,
-                                               fill=tk.X, padx=(0, 6))
+        theme.make_button(buttons, "Cancel", self._cancel, secondary=True).pack(
+            side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 6)
+        )
         theme.make_button(buttons, "Save", self._confirm).pack(
-            side=tk.LEFT, expand=True, fill=tk.X, padx=(6, 0))
+            side=tk.LEFT, expand=True, fill=tk.X, padx=(6, 0)
+        )
 
         # A real popup: grabs input until closed (including via the
         # window's own close button), centred over the window that

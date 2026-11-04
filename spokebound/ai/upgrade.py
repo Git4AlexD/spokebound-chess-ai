@@ -12,9 +12,9 @@ from spokebound.model.spending import PendingUpgrade
 SPEND_CANDIDATES = 3
 
 
-def spend_candidates(game: Game, upgrade: PendingUpgrade,
-                     weights: Weights,
-                     width: int = SPEND_CANDIDATES) -> list[tuple[int, ...]]:
+def spend_candidates(
+    game: Game, upgrade: PendingUpgrade, weights: Weights, width: int = SPEND_CANDIDATES
+) -> list[tuple[int, ...]]:
     """Return up to ``width`` ways of spending ``upgrade``'s points, best first.
 
     A beam search over the spend: each step raises one spoke by one level,
@@ -39,7 +39,7 @@ def spend_candidates(game: Game, upgrade: PendingUpgrade,
                 if delta > points or cost + delta > PIECE_CAP:
                     continue
                 extended = True
-                raised = (*spokes[:spoke], level + 1, *spokes[spoke + 1:])
+                raised = (*spokes[:spoke], level + 1, *spokes[spoke + 1 :])
                 successors[(raised, points - delta, cost + delta)] = None
             if not extended:
                 finished.add(spokes)

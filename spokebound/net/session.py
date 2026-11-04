@@ -67,8 +67,7 @@ class NetworkSession:
         accept the first connection in the background. A CONNECTED (or
         ERROR) event follows via :meth:`poll` once a friend joins."""
         session = cls()
-        threading.Thread(target=session._accept, args=(port,),
-                         daemon=True).start()
+        threading.Thread(target=session._accept, args=(port,), daemon=True).start()
         return session
 
     @classmethod
@@ -76,13 +75,11 @@ class NetworkSession:
         """Connect out to a host already listening on ``host``:``port``.
         A CONNECTED (or ERROR) event follows via :meth:`poll`."""
         session = cls()
-        threading.Thread(target=session._connect, args=(host, port),
-                         daemon=True).start()
+        threading.Thread(target=session._connect, args=(host, port), daemon=True).start()
         return session
 
     @classmethod
-    def join_by_room_code(cls, room_code: str,
-                          discovery_timeout: float = 4.0) -> "NetworkSession":
+    def join_by_room_code(cls, room_code: str, discovery_timeout: float = 4.0) -> "NetworkSession":
         """Look up ``room_code`` on the LAN (see
         :func:`spokebound.net.directory.find_room`), then connect to
         whatever address answers. A CONNECTED (or ERROR — including
@@ -91,9 +88,9 @@ class NetworkSession:
         address itself is never exposed to the caller, only ever seen
         inside this module."""
         session = cls()
-        threading.Thread(target=session._connect_by_room_code,
-                         args=(room_code, discovery_timeout),
-                         daemon=True).start()
+        threading.Thread(
+            target=session._connect_by_room_code, args=(room_code, discovery_timeout), daemon=True
+        ).start()
         return session
 
     @classmethod
@@ -108,8 +105,7 @@ class NetworkSession:
         first is the one to actually keep (see
         network_lobby_screen._start_waiting)."""
         session = cls()
-        threading.Thread(target=session._relay_connect,
-                         args=("host", room_code), daemon=True).start()
+        threading.Thread(target=session._relay_connect, args=("host", room_code), daemon=True).start()
         return session
 
     @classmethod
@@ -119,8 +115,7 @@ class NetworkSession:
         under it. A CONNECTED (or ERROR) event follows via
         :meth:`poll`."""
         session = cls()
-        threading.Thread(target=session._relay_connect,
-                         args=("join", room_code), daemon=True).start()
+        threading.Thread(target=session._relay_connect, args=("join", room_code), daemon=True).start()
         return session
 
     def send(self, message: dict) -> None:
@@ -196,8 +191,7 @@ class NetworkSession:
 
     def _connect(self, host: str, port: int) -> None:
         try:
-            sock = socket.create_connection(
-                (host, port), timeout=_CONNECT_TIMEOUT_SECONDS)
+            sock = socket.create_connection((host, port), timeout=_CONNECT_TIMEOUT_SECONDS)
         except OSError as exc:
             if not self._closing:
                 self._events.put(Event(ERROR, str(exc)))
@@ -207,13 +201,11 @@ class NetworkSession:
         self._events.put(Event(CONNECTED, (host, port)))
         self._recv_loop()
 
-    def _connect_by_room_code(self, room_code: str,
-                              discovery_timeout: float) -> None:
+    def _connect_by_room_code(self, room_code: str, discovery_timeout: float) -> None:
         found = find_room(room_code, discovery_timeout)
         if found is None:
             if not self._closing:
-                self._events.put(Event(
-                    ERROR, "No one is hosting that room code right now."))
+                self._events.put(Event(ERROR, "No one is hosting that room code right now."))
             return
         host, port = found
         self._connect(host, port)
@@ -233,8 +225,7 @@ class NetworkSession:
         # takes to join), not just briefly.
         self._listener = sock
         try:
-            relay.await_pairing(sock, role,
-                               should_continue=lambda: not self._closing)
+            relay.await_pairing(sock, role, should_continue=lambda: not self._closing)
         except relay.RelayError as exc:
             self._listener = None
             with contextlib.suppress(OSError):
@@ -272,7 +263,6 @@ class NetworkSession:
             while b"\n" in buffer:
                 line, buffer = buffer.split(b"\n", 1)
                 if line:
-                    self._events.put(
-                        Event(MESSAGE, json.loads(line.decode("utf-8"))))
+                    self._events.put(Event(MESSAGE, json.loads(line.decode("utf-8"))))
         if not self._closing:
             self._events.put(Event(DISCONNECTED))

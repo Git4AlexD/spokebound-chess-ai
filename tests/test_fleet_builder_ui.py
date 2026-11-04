@@ -25,28 +25,23 @@ class FitTextTests(unittest.TestCase):
         self.addCleanup(self._root.destroy)
 
     def test_short_text_keeps_the_base_size(self) -> None:
-        size = fit_text.fit_font_size(self._root, "Hi", "Helvetica", 12,
-                                      max_width=200)
+        size = fit_text.fit_font_size(self._root, "Hi", "Helvetica", 12, max_width=200)
         self.assertEqual(size, 12)
 
     def test_long_text_shrinks_to_fit(self) -> None:
         long_text = "A Very Long Preset Fleet Name Indeed" * 2
-        size = fit_text.fit_font_size(self._root, long_text, "Helvetica",
-                                      12, max_width=100)
+        size = fit_text.fit_font_size(self._root, long_text, "Helvetica", 12, max_width=100)
         self.assertLess(size, 12)
 
     def test_never_shrinks_below_the_floor(self) -> None:
         long_text = "An Extremely Unreasonably Long Custom Fleet Name" * 5
-        size = fit_text.fit_font_size(self._root, long_text, "Helvetica",
-                                      12, max_width=20, min_size=7)
+        size = fit_text.fit_font_size(self._root, long_text, "Helvetica", 12, max_width=20, min_size=7)
         self.assertEqual(size, 7)
 
     def test_bold_text_is_measured_as_bold(self) -> None:
         text = "Spokebound"
-        size = fit_text.fit_font_size(self._root, text, "Helvetica", 40,
-                                      max_width=300, weight="bold")
-        measured = tkfont.Font(root=self._root, family="Helvetica",
-                               size=size, weight="bold").measure(text)
+        size = fit_text.fit_font_size(self._root, text, "Helvetica", 40, max_width=300, weight="bold")
+        measured = tkfont.Font(root=self._root, family="Helvetica", size=size, weight="bold").measure(text)
         self.assertLessEqual(measured, 300)
 
 
@@ -56,23 +51,20 @@ class MakeFixedButtonTests(unittest.TestCase):
         self.addCleanup(self._root.destroy)
 
     def test_holder_is_pinned_to_the_requested_size(self) -> None:
-        holder = theme.make_fixed_button(self._root, "Short", lambda: None,
-                                         width=140, height=36)
+        holder = theme.make_fixed_button(self._root, "Short", lambda: None, width=140, height=36)
         self.assertEqual(int(holder.cget("width")), 140)
         self.assertEqual(int(holder.cget("height")), 36)
 
     def test_a_very_long_label_keeps_the_same_size(self) -> None:
         holder = theme.make_fixed_button(
-            self._root, "An Extremely Unreasonably Long Custom Fleet Name",
-            lambda: None, width=140, height=36)
+            self._root, "An Extremely Unreasonably Long Custom Fleet Name", lambda: None, width=140, height=36
+        )
         self.assertEqual(int(holder.cget("width")), 140)
         self.assertEqual(int(holder.cget("height")), 36)
 
     def test_clicking_runs_the_command(self) -> None:
         calls = []
-        holder = theme.make_fixed_button(self._root, "Go",
-                                         lambda: calls.append(1),
-                                         width=140, height=36)
+        holder = theme.make_fixed_button(self._root, "Go", lambda: calls.append(1), width=140, height=36)
         button = holder.winfo_children()[0]
         with patch("spokebound.ui.theme.sound.play_button_click"):
             button.invoke()
@@ -96,8 +88,7 @@ class NameDialogTests(unittest.TestCase):
         from spokebound.ui.name_dialog import NameDialog
 
         with patch.object(NameDialog, "wait_window", lambda self: None):
-            return NameDialog(self._root, "Save Fleet", "Name this fleet:",
-                             initial)
+            return NameDialog(self._root, "Save Fleet", "Name this fleet:", initial)
 
     def test_starts_with_the_initial_value(self) -> None:
         dialog = self._dialog(initial="Old Name")
@@ -135,8 +126,7 @@ class NameDialogTests(unittest.TestCase):
 
     def test_the_entry_confirms_on_return_and_cancels_on_escape(self) -> None:
         dialog = self._dialog()
-        entry = next(w for w in dialog.winfo_children()
-                    if isinstance(w, tk.Entry))
+        entry = next(w for w in dialog.winfo_children() if isinstance(w, tk.Entry))
         self.assertTrue(entry.bind("<Return>"))
         self.assertTrue(entry.bind("<Escape>"))
         dialog.destroy()
@@ -149,8 +139,7 @@ class FleetEditorTests(unittest.TestCase):
 
     def _editor(self, on_change=None):
         builder = FleetBuilder(Player.ORANGE)
-        return FleetEditor(self._root, builder, thumb_size=60,
-                          editor_size=160, pady=4, on_change=on_change)
+        return FleetEditor(self._root, builder, thumb_size=60, editor_size=160, pady=4, on_change=on_change)
 
     def test_starts_invalid_with_every_piece_at_zero(self) -> None:
         editor = self._editor()
@@ -164,9 +153,10 @@ class FleetEditorTests(unittest.TestCase):
         editor.load_preset(PRESETS["Vanguard"])
         self.assertTrue(editor.is_valid())
         self.assertEqual(calls, [1])
-        self.assertEqual([p.cost for p in editor.pieces],
-                         [sum((0, 1, 2, 4)[lvl] for lvl in spokes)
-                         for spokes in PRESETS["Vanguard"]])
+        self.assertEqual(
+            [p.cost for p in editor.pieces],
+            [sum((0, 1, 2, 4)[lvl] for lvl in spokes) for spokes in PRESETS["Vanguard"]],
+        )
 
     def test_on_change_is_not_fired_by_construction_itself(self) -> None:
         calls = []
@@ -194,32 +184,42 @@ class PresetColumnTests(unittest.TestCase):
         self.addCleanup(self._root.destroy)
 
     def test_empty_entries_show_the_placeholder_text(self) -> None:
-        column = build_preset_column(self._root, "Your Custom Fleets", [],
-                                     140, 32, 4,
-                                     empty_text="No Custom Fleets Built Yet")
-        texts = [w.cget("text") for w in column.winfo_children()
-                if isinstance(w, tk.Label)]
+        column = build_preset_column(
+            self._root, "Your Custom Fleets", [], 140, 32, 4, empty_text="No Custom Fleets Built Yet"
+        )
+        texts = [w.cget("text") for w in column.winfo_children() if isinstance(w, tk.Label)]
         self.assertIn("No Custom Fleets Built Yet", texts)
 
     def test_entries_without_delete_are_a_single_button_each(self) -> None:
-        column = build_preset_column(
-            self._root, "Presets", [("Rush", lambda: None)], 140, 32, 4)
+        column = build_preset_column(self._root, "Presets", [("Rush", lambda: None)], 140, 32, 4)
         # heading label + one fixed-button holder
         self.assertEqual(len(column.winfo_children()), 2)
 
     def test_entries_with_delete_add_a_second_button(self) -> None:
         calls = []
         column = build_preset_column(
-            self._root, "Yours", [("Rush", lambda: None)], 140, 32, 4,
-            on_delete=lambda name: calls.append(name))
+            self._root,
+            "Yours",
+            [("Rush", lambda: None)],
+            140,
+            32,
+            4,
+            on_delete=lambda name: calls.append(name),
+        )
         row = column.winfo_children()[1]
         self.assertEqual(len(row.winfo_children()), 2)
 
     def test_delete_button_calls_on_delete_with_the_entrys_name(self) -> None:
         calls = []
         column = build_preset_column(
-            self._root, "Yours", [("Rush", lambda: None)], 140, 32, 4,
-            on_delete=lambda name: calls.append(name))
+            self._root,
+            "Yours",
+            [("Rush", lambda: None)],
+            140,
+            32,
+            4,
+            on_delete=lambda name: calls.append(name),
+        )
         row = column.winfo_children()[1]
         delete_holder = row.winfo_children()[1]
         delete_button = delete_holder.winfo_children()[0]
@@ -254,8 +254,7 @@ class CustomFleetScreenTests(unittest.TestCase):
         screen = self._screen()
         screen._load(PRESETS["Rush"])
         dialog = MagicMock(result=None)
-        with patch("spokebound.ui.custom_fleet_screen.NameDialog",
-                  return_value=dialog):
+        with patch("spokebound.ui.custom_fleet_screen.NameDialog", return_value=dialog):
             screen._save()
         self.assertEqual(custom_fleets.load_all(), {})
 
@@ -265,8 +264,7 @@ class CustomFleetScreenTests(unittest.TestCase):
         screen = self._screen()
         screen._load(PRESETS["Rush"])
         dialog = MagicMock(result="My Fleet")
-        with patch("spokebound.ui.custom_fleet_screen.NameDialog",
-                  return_value=dialog):
+        with patch("spokebound.ui.custom_fleet_screen.NameDialog", return_value=dialog):
             screen._save()
         self.assertEqual(custom_fleets.load_all(), {"My Fleet": PRESETS["Rush"]})
 

@@ -110,8 +110,7 @@ class NetworkLobbyScreen(tk.Frame):
     complete. Calls ``on_connected(session, is_host)`` once it has —
     the caller takes it from there (building a fleet, then play)."""
 
-    def __init__(self, parent: tk.Misc, on_connected: OnConnected,
-                 on_main_menu: Callable[[], None]) -> None:
+    def __init__(self, parent: tk.Misc, on_connected: OnConnected, on_main_menu: Callable[[], None]) -> None:
         super().__init__(parent, bg=theme.BACKGROUND)
         self._on_connected = on_connected
         self._on_main_menu = on_main_menu
@@ -212,9 +211,9 @@ class NetworkLobbyScreen(tk.Frame):
         alongside it — see _show_host/_start_join) for the first
         CONNECTED event; whichever gets there first is the one kept,
         any other still-pending attempt is closed."""
+
         def poll() -> None:
-            sessions = [s for s in (self._session, self._relay_session)
-                       if s is not None]
+            sessions = [s for s in (self._session, self._relay_session) if s is not None]
             for session in sessions:
                 for event in session.poll():
                     if event.kind == CONNECTED:
@@ -241,9 +240,9 @@ class NetworkLobbyScreen(tk.Frame):
                         self._on_connected(session, is_host)
                         return
                     if event.kind == ERROR:
-                        self._status.config(
-                            text=f"Couldn't connect: {event.data}")
+                        self._status.config(text=f"Couldn't connect: {event.data}")
             self._poll_job = self.after(POLL_MS, poll)
+
         poll()
 
     # ------------------------------------------------------------------
@@ -257,24 +256,24 @@ class NetworkLobbyScreen(tk.Frame):
 
     def _render_choice(self) -> None:
         scale = window_scale(self, max_scale=MAX_SCALE)
-        theme.make_button(self, "Main Menu", self._on_main_menu,
-                          secondary=True).pack(anchor=tk.NW, padx=16,
-                                               pady=16)
+        theme.make_button(self, "Main Menu", self._on_main_menu, secondary=True).pack(
+            anchor=tk.NW, padx=16, pady=16
+        )
         centre = tk.Frame(self, bg=theme.BACKGROUND)
         centre.place(relx=0.5, rely=0.5, anchor="center")
-        theme.make_label(centre, "Invite a Friend",
-                         theme.scaled_font(theme.FONT_TITLE, scale),
-                         fg=theme.ACCENT).pack(pady=(0, round(24 * scale)))
+        theme.make_label(
+            centre, "Invite a Friend", theme.scaled_font(theme.FONT_TITLE, scale), fg=theme.ACCENT
+        ).pack(pady=(0, round(24 * scale)))
 
         row = tk.Frame(centre, bg=theme.BACKGROUND)
         row.pack()
         card_w, card_h = round(CARD_WIDTH * scale), round(CARD_HEIGHT * scale)
-        ModeCard(row, "Host", "Start a game on this device for a friend "
-                              "to join.", self._show_host,
-                 card_w, card_h).pack(side=tk.LEFT, padx=round(10 * scale))
-        ModeCard(row, "Join", "Connect to a friend who's already "
-                              "hosting.", self._show_join,
-                 card_w, card_h).pack(side=tk.LEFT, padx=round(10 * scale))
+        ModeCard(
+            row, "Host", "Start a game on this device for a friend to join.", self._show_host, card_w, card_h
+        ).pack(side=tk.LEFT, padx=round(10 * scale))
+        ModeCard(
+            row, "Join", "Connect to a friend who's already hosting.", self._show_join, card_w, card_h
+        ).pack(side=tk.LEFT, padx=round(10 * scale))
         add_gear(self)
 
     # ------------------------------------------------------------------
@@ -304,8 +303,9 @@ class NetworkLobbyScreen(tk.Frame):
         # _start_waiting keeps whichever gets there first. When no
         # relay's configured this is just None, and hosting falls back
         # to the address-code/manual-forwarding path below entirely.
-        self._relay_session = (NetworkSession.host_via_relay(self._room_code)
-                               if relay.address() is not None else None)
+        self._relay_session = (
+            NetworkSession.host_via_relay(self._room_code) if relay.address() is not None else None
+        )
         if relay.address() is not None:
             # The relay makes the room code itself enough on its own —
             # skip the public-IP/manual-forwarding path below.
@@ -317,18 +317,15 @@ class NetworkLobbyScreen(tk.Frame):
             # (and its "Looking up..." wait) entirely.
             self._public_ip_status = "found"
             self._public_ip = _KNOWN_PUBLIC_IP
-            self._address_code = encode_address(_KNOWN_PUBLIC_IP,
-                                                DEFAULT_PORT)
+            self._address_code = encode_address(_KNOWN_PUBLIC_IP, DEFAULT_PORT)
         else:
             self._public_ip_status = "checking"
             # Only set once the lookup resolves — see _poll_public_ip
             # and _display_code/_public_ip_note.
             self._public_ip = None
             self._address_code = None
-            self._public_ip_deadline = (time.monotonic()
-                                        + PUBLIC_IP_OVERALL_TIMEOUT)
-            threading.Thread(target=self._lookup_public_ip,
-                             daemon=True).start()
+            self._public_ip_deadline = time.monotonic() + PUBLIC_IP_OVERALL_TIMEOUT
+            threading.Thread(target=self._lookup_public_ip, daemon=True).start()
             self._poll_public_ip()
         self._render = self._render_host
         self._render_host()
@@ -356,14 +353,12 @@ class NetworkLobbyScreen(tk.Frame):
                 # result into an unread queue whenever it does return.
                 address = None
             else:
-                self._public_ip_poll_job = self.after(
-                    200, self._poll_public_ip)
+                self._public_ip_poll_job = self.after(200, self._poll_public_ip)
                 return
         self._public_ip_poll_job = None
         self._public_ip = address
         self._public_ip_status = "found" if address is not None else "unavailable"
-        self._address_code = (encode_address(address, DEFAULT_PORT)
-                              if address is not None else None)
+        self._address_code = encode_address(address, DEFAULT_PORT) if address is not None else None
         # Only the host screen ever cares — if hosting was already
         # cancelled (or a friend already connected) by the time this
         # arrives, there's nothing left that needs redrawing for it.
@@ -376,8 +371,7 @@ class NetworkLobbyScreen(tk.Frame):
         IP is known (works for anyone, LAN or not, once the port's
         actually forwarded — see _public_ip_note), the plain room code
         until then."""
-        return (self._address_code if self._address_code is not None
-               else self._room_code)
+        return self._address_code if self._address_code is not None else self._room_code
 
     def _code_caption(self) -> str:
         if self._address_code is not None:
@@ -393,42 +387,50 @@ class NetworkLobbyScreen(tk.Frame):
         if self._public_ip_status == "checking":
             return "Looking up your public address…"
         if self._address_code is not None:
-            return ("To let a friend elsewhere in, forward TCP port "
-                   f"{DEFAULT_PORT} to this PC in your router's "
-                   "settings, then give them the code above.")
-        return ("This machine's own public address couldn't be found. "
-               "Not on your network? Have them enter this address "
-               f"instead: {self._local_address}")
+            return (
+                "To let a friend elsewhere in, forward TCP port "
+                f"{DEFAULT_PORT} to this PC in your router's "
+                "settings, then give them the code above."
+            )
+        return (
+            "This machine's own public address couldn't be found. "
+            "Not on your network? Have them enter this address "
+            f"instead: {self._local_address}"
+        )
 
     def _render_host(self) -> None:
         scale = window_scale(self, max_scale=MAX_SCALE)
-        theme.make_button(self, "Main Menu", self._on_main_menu,
-                          secondary=True).pack(anchor=tk.NW, padx=16,
-                                               pady=16)
+        theme.make_button(self, "Main Menu", self._on_main_menu, secondary=True).pack(
+            anchor=tk.NW, padx=16, pady=16
+        )
         centre = tk.Frame(self, bg=theme.BACKGROUND)
         centre.place(relx=0.5, rely=0.5, anchor="center")
-        theme.make_label(centre, "Hosting a Game",
-                         theme.scaled_font(theme.FONT_TITLE, scale),
-                         fg=theme.ACCENT).pack(pady=(0, round(16 * scale)))
-        theme.make_label(centre, self._code_caption(),
-                         theme.scaled_font(theme.FONT_BODY, scale),
-                         fg=theme.MUTED_TEXT).pack()
-
-        theme.make_label(centre, self._display_code(),
-                         theme.scaled_font(theme.FONT_HERO, scale),
-                         fg=theme.TEXT).pack(pady=(round(4 * scale),
-                                                    round(16 * scale)))
         theme.make_label(
-            centre, self._public_ip_note(),
+            centre, "Hosting a Game", theme.scaled_font(theme.FONT_TITLE, scale), fg=theme.ACCENT
+        ).pack(pady=(0, round(16 * scale)))
+        theme.make_label(
+            centre, self._code_caption(), theme.scaled_font(theme.FONT_BODY, scale), fg=theme.MUTED_TEXT
+        ).pack()
+
+        theme.make_label(
+            centre, self._display_code(), theme.scaled_font(theme.FONT_HERO, scale), fg=theme.TEXT
+        ).pack(pady=(round(4 * scale), round(16 * scale)))
+        theme.make_label(
+            centre,
+            self._public_ip_note(),
             theme.scaled_font(theme.FONT_SMALL, scale),
-            fg=theme.MUTED_TEXT, wraplength=round(320 * scale),
-            justify=tk.CENTER).pack(pady=(0, round(16 * scale)))
+            fg=theme.MUTED_TEXT,
+            wraplength=round(320 * scale),
+            justify=tk.CENTER,
+        ).pack(pady=(0, round(16 * scale)))
         self._status = theme.make_label(
-            centre, "Waiting for your friend to join…",
-            theme.scaled_font(theme.FONT_BODY, scale), fg=theme.MUTED_TEXT)
+            centre,
+            "Waiting for your friend to join…",
+            theme.scaled_font(theme.FONT_BODY, scale),
+            fg=theme.MUTED_TEXT,
+        )
         self._status.pack(pady=(0, round(16 * scale)))
-        theme.make_button(centre, "Cancel", self._cancel_connection,
-                          secondary=True).pack()
+        theme.make_button(centre, "Cancel", self._cancel_connection, secondary=True).pack()
         add_gear(self)
 
     # ------------------------------------------------------------------
@@ -443,48 +445,55 @@ class NetworkLobbyScreen(tk.Frame):
 
     def _render_join(self) -> None:
         scale = window_scale(self, max_scale=MAX_SCALE)
-        theme.make_button(self, "Main Menu", self._on_main_menu,
-                          secondary=True).pack(anchor=tk.NW, padx=16,
-                                               pady=16)
+        theme.make_button(self, "Main Menu", self._on_main_menu, secondary=True).pack(
+            anchor=tk.NW, padx=16, pady=16
+        )
         centre = tk.Frame(self, bg=theme.BACKGROUND)
         centre.place(relx=0.5, rely=0.5, anchor="center")
-        theme.make_label(centre, "Join a Friend's Game",
-                         theme.scaled_font(theme.FONT_TITLE, scale),
-                         fg=theme.ACCENT).pack(pady=(0, round(16 * scale)))
         theme.make_label(
-            centre, "Enter the code your friend gave you, or their "
-                   "address if they gave you one instead:",
+            centre, "Join a Friend's Game", theme.scaled_font(theme.FONT_TITLE, scale), fg=theme.ACCENT
+        ).pack(pady=(0, round(16 * scale)))
+        theme.make_label(
+            centre,
+            "Enter the code your friend gave you, or their address if they gave you one instead:",
             theme.scaled_font(theme.FONT_BODY, scale),
-            fg=theme.MUTED_TEXT, wraplength=round(320 * scale),
-            justify=tk.CENTER).pack(pady=(0, round(8 * scale)))
+            fg=theme.MUTED_TEXT,
+            wraplength=round(320 * scale),
+            justify=tk.CENTER,
+        ).pack(pady=(0, round(8 * scale)))
 
         entry = tk.Entry(
-            centre, textvariable=self._code_var, width=ENTRY_WIDTH,
+            centre,
+            textvariable=self._code_var,
+            width=ENTRY_WIDTH,
             font=theme.scaled_font(theme.FONT_HEADING, scale),
-            bg=theme.PANEL, fg=theme.TEXT,
-            justify=tk.CENTER, insertbackground=theme.TEXT,
-            disabledbackground=theme.PANEL, relief=tk.SOLID, borderwidth=1,
-            highlightthickness=1, highlightbackground=theme.DISABLED,
-            highlightcolor=theme.ACCENT)
+            bg=theme.PANEL,
+            fg=theme.TEXT,
+            justify=tk.CENTER,
+            insertbackground=theme.TEXT,
+            disabledbackground=theme.PANEL,
+            relief=tk.SOLID,
+            borderwidth=1,
+            highlightthickness=1,
+            highlightbackground=theme.DISABLED,
+            highlightcolor=theme.ACCENT,
+        )
         entry.pack(pady=(0, round(4 * scale)))
         entry.focus_set()
         entry.bind("<Return>", lambda _e: self._start_join())
 
         self._status = theme.make_label(
-            centre, "", theme.scaled_font(theme.FONT_SMALL, scale),
-            fg=theme.ACCENT_DARK)
+            centre, "", theme.scaled_font(theme.FONT_SMALL, scale), fg=theme.ACCENT_DARK
+        )
         self._status.pack(pady=(round(4 * scale), round(12 * scale)))
-        theme.make_button(centre, "Connect", self._start_join).pack(
-            pady=(0, round(8 * scale)))
-        theme.make_button(centre, "Cancel", self._on_main_menu,
-                          secondary=True).pack()
+        theme.make_button(centre, "Connect", self._start_join).pack(pady=(0, round(8 * scale)))
+        theme.make_button(centre, "Cancel", self._on_main_menu, secondary=True).pack()
         add_gear(self)
 
     def _start_join(self) -> None:
         text = self._code_var.get().strip()
         if not text:
-            self._status.config(
-                text="Enter a code or an address to connect to.")
+            self._status.config(text="Enter a code or an address to connect to.")
             return
         if _looks_like_address(text):
             host, port = _parse_address(text)
@@ -504,8 +513,7 @@ class NetworkLobbyScreen(tk.Frame):
             self._status.config(text="Connecting…")
             self._session = NetworkSession.join(host, port)
         else:
-            self._status.config(
-                text="Looking for that room…")
+            self._status.config(text="Looking for that room…")
             self._session = NetworkSession.join_by_room_code(code)
             # Races alongside the LAN attempt above when a relay's
             # configured — see the same note in _show_host. A code
@@ -513,6 +521,5 @@ class NetworkLobbyScreen(tk.Frame):
             # one down on their end) simply never gets a relay-side
             # reply, same as the LAN attempt simply never getting one
             # from a friend who isn't actually on this network.
-            self._relay_session = (NetworkSession.join_via_relay(code)
-                                   if relay.address() is not None else None)
+            self._relay_session = NetworkSession.join_via_relay(code) if relay.address() is not None else None
         self._start_waiting(is_host=False)

@@ -65,15 +65,19 @@ class BoardView(tk.Canvas):
     legible floor (see MIN_SQUARE_SIZE).
     """
 
-    def __init__(self, parent: tk.Misc, board: Board,
-                 on_click: Callable[[Square], None],
-                 max_width: int, max_height: int,
-                 flipped: bool = False) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        board: Board,
+        on_click: Callable[[Square], None],
+        max_width: int,
+        max_height: int,
+        flipped: bool = False,
+    ) -> None:
         self.square_size = self._fit_square_size(max_width, max_height)
         width = self.square_size * BOARD_COLS
         height = self.square_size * DISPLAY_ROWS
-        super().__init__(parent, width=width, height=height,
-                         bg=theme.BACKGROUND, highlightthickness=0)
+        super().__init__(parent, width=width, height=height, bg=theme.BACKGROUND, highlightthickness=0)
         self._board = board
         self._on_click = on_click
         self._flipped = flipped
@@ -103,8 +107,7 @@ class BoardView(tk.Canvas):
             display_col = BOARD_COLS - 1 - display_col
         self._on_click((display_row - ROW_OFFSET, display_col))
 
-    def redraw(self, selected: Square | None = None,
-               targets: Iterable[Square] = ()) -> None:
+    def redraw(self, selected: Square | None = None, targets: Iterable[Square] = ()) -> None:
         """Redraw everything, marking the selection and its legal moves."""
         self.delete("all")
         self._draw_stars()
@@ -122,21 +125,21 @@ class BoardView(tk.Canvas):
             # draws both: whichever one the square underneath doesn't
             # swallow is the one that shows.
             bounds = self._bounds(selected, inset=2)
-            self.create_rectangle(*bounds, width=6,
-                                  outline=theme.HIGHLIGHT_SHADOW)
-            self.create_rectangle(*bounds, width=2,
-                                  outline=theme.HIGHLIGHT)
+            self.create_rectangle(*bounds, width=6, outline=theme.HIGHLIGHT_SHADOW)
+            self.create_rectangle(*bounds, width=2, outline=theme.HIGHLIGHT)
         sun_centre = self._centre(_SUN_SQUARE)
         for player in Player:
             for square, piece in self._board.pieces(player):
                 piece_centre = self._centre(square)
-                sun_direction = (piece_centre[0] - sun_centre[0],
-                                 piece_centre[1] - sun_centre[1])
-                drawing.draw_star(self, piece_centre,
-                                  self.square_size * 0.42, piece,
-                                  rotated=(player is Player.WHITE)
-                                  != self._flipped,
-                                  sun_direction=sun_direction)
+                sun_direction = (piece_centre[0] - sun_centre[0], piece_centre[1] - sun_centre[1])
+                drawing.draw_star(
+                    self,
+                    piece_centre,
+                    self.square_size * 0.42,
+                    piece,
+                    rotated=(player is Player.WHITE) != self._flipped,
+                    sun_direction=sun_direction,
+                )
         for square in targets:
             self._draw_target(square)
 
@@ -163,8 +166,7 @@ class BoardView(tk.Canvas):
     def _sanctuary_owner(self, square: Square) -> Player | None:
         """Return whose zone ``square`` is in, or None if it's open ground."""
         for player in Player:
-            if (in_sanctuary(square, player)
-                   or self._board.extra_squares.get(player) == square):
+            if in_sanctuary(square, player) or self._board.extra_squares.get(player) == square:
                 return player
         return None
 
@@ -177,15 +179,14 @@ class BoardView(tk.Canvas):
         """
         if self._board.get(square) is not None:
             bounds = self._bounds(square, inset=4)
-            self.create_oval(*bounds, width=6,
-                             outline=theme.HIGHLIGHT_SHADOW)
+            self.create_oval(*bounds, width=6, outline=theme.HIGHLIGHT_SHADOW)
             self.create_oval(*bounds, width=3, outline=theme.MOVE_MARK)
             return
         x, y = self._centre(square)
         r = self.square_size * 0.12
-        self.create_oval(x - r, y - r, x + r, y + r,
-                         fill=theme.MOVE_MARK,
-                         outline=theme.HIGHLIGHT_SHADOW, width=2)
+        self.create_oval(
+            x - r, y - r, x + r, y + r, fill=theme.MOVE_MARK, outline=theme.HIGHLIGHT_SHADOW, width=2
+        )
 
     def _display_position(self, square: Square) -> tuple[int, int]:
         """Return ``square``'s (row, col) in on-screen display terms —
@@ -198,18 +199,14 @@ class BoardView(tk.Canvas):
             display_col = BOARD_COLS - 1 - display_col
         return display_row, display_col
 
-    def _bounds(self, square: Square,
-               inset: int = 0) -> tuple[int, int, int, int]:
+    def _bounds(self, square: Square, inset: int = 0) -> tuple[int, int, int, int]:
         """Return the pixel rectangle of ``square``, shrunk by ``inset``."""
         display_row, display_col = self._display_position(square)
         left = display_col * self.square_size
         top = display_row * self.square_size
-        return (left + inset, top + inset,
-                left + self.square_size - inset,
-                top + self.square_size - inset)
+        return (left + inset, top + inset, left + self.square_size - inset, top + self.square_size - inset)
 
     def _centre(self, square: Square) -> tuple[float, float]:
         """Return the pixel centre of ``square``."""
         display_row, display_col = self._display_position(square)
-        return ((display_col + 0.5) * self.square_size,
-                (display_row + 0.5) * self.square_size)
+        return ((display_col + 0.5) * self.square_size, (display_row + 0.5) * self.square_size)

@@ -215,8 +215,9 @@ def _play_one(task: tuple) -> tuple[int, str, int]:
     margin = genome_score - opponent_score
     if result.winner is None:
         return (genome_index, "draw", margin)
-    genome_won = ((a_is_orange and result.winner is Player.ORANGE)
-                 or (not a_is_orange and result.winner is Player.WHITE))
+    genome_won = (a_is_orange and result.winner is Player.ORANGE) or (
+        not a_is_orange and result.winner is Player.WHITE
+    )
     return (genome_index, "win" if genome_won else "loss", margin)
 
 
@@ -235,10 +236,12 @@ def _score(outcome: str, margin: int) -> float:
     return base + bonus
 
 
-def _evaluate_population(genomes: list[Weights], incumbent: Weights,
-                         hall_of_fame: list[Weights],
-                         games_per_benchmark: int = GAMES_PER_BENCHMARK,
-                         ) -> list[float]:
+def _evaluate_population(
+    genomes: list[Weights],
+    incumbent: Weights,
+    hall_of_fame: list[Weights],
+    games_per_benchmark: int = GAMES_PER_BENCHMARK,
+) -> list[float]:
     """Play every one of ``genomes`` against every benchmark bot, the
     current ``incumbent``, and every ``hall_of_fame`` entry (see the
     module docstring on why each is in the mix), ``games_per_benchmark``
@@ -259,20 +262,26 @@ def _evaluate_population(genomes: list[Weights], incumbent: Weights,
     started = time.monotonic()
     with multiprocessing.Pool() as pool:
         for completed, (genome_index, outcome, margin) in enumerate(
-                pool.imap_unordered(_play_one, tasks), start=1):
+            pool.imap_unordered(_play_one, tasks), start=1
+        ):
             points[genome_index] += _score(outcome, margin)
             if completed % 10 == 0 or completed == len(tasks):
                 elapsed = time.monotonic() - started
                 remaining = len(tasks) - completed
                 eta = (elapsed / completed) * remaining if completed else 0.0
-                print(f"    {completed}/{len(tasks)} games played "
-                     f"({format_duration(elapsed)} elapsed, "
-                     f"~{format_duration(eta)} left)", flush=True)
+                print(
+                    f"    {completed}/{len(tasks)} games played "
+                    f"({format_duration(elapsed)} elapsed, "
+                    f"~{format_duration(eta)} left)",
+                    flush=True,
+                )
     return points
 
 
-def checkpoint(weights: Weights, games: int = CHECKPOINT_GAMES,
-              ) -> dict[str, tuple[int, int, int]]:
+def checkpoint(
+    weights: Weights,
+    games: int = CHECKPOINT_GAMES,
+) -> dict[str, tuple[int, int, int]]:
     """Play ``weights`` against every benchmark bot, ``games`` games
     each, at DEEP_LEVEL, and return each bot's own
     ``(wins, losses, draws)`` from ``weights``' side — the clear,
@@ -283,9 +292,15 @@ def checkpoint(weights: Weights, games: int = CHECKPOINT_GAMES,
     with multiprocessing.Pool() as pool:
         for bot_name, bot in BENCHMARKS.items():
             wins, losses, draws = play_round(
-                pool, _play_game, weights, bot, games,
+                pool,
+                _play_game,
+                weights,
+                bot,
+                games,
                 label=f"checkpoint vs {bot_name}",
-                a_name="incumbent", b_name=bot_name)
+                a_name="incumbent",
+                b_name=bot_name,
+            )
             results[bot_name] = (wins, losses, draws)
     return results
 
@@ -310,8 +325,7 @@ def _clean_files() -> None:
     fresh run_cma_es call regardless, but LOG_PATH/BEST_WEIGHTS_PATH/
     STATE_PATH don't) — so nothing left over from an earlier, unrelated
     run can ever get spliced into this one's history."""
-    for path in (RESULTS_PATH, LOG_PATH, BEST_WEIGHTS_PATH, STATE_PATH,
-                HALL_OF_FAME_PATH):
+    for path in (RESULTS_PATH, LOG_PATH, BEST_WEIGHTS_PATH, STATE_PATH, HALL_OF_FAME_PATH):
         path.unlink(missing_ok=True)
 
 
@@ -327,8 +341,7 @@ def _save_hall_of_fame(hall_of_fame: list[Weights]) -> None:
         json.dump([vars(genome) for genome in hall_of_fame], f)
 
 
-def _add_to_hall_of_fame(hall_of_fame: list[Weights],
-                         incumbent: Weights) -> None:
+def _add_to_hall_of_fame(hall_of_fame: list[Weights], incumbent: Weights) -> None:
     """Append ``incumbent`` to ``hall_of_fame`` in place, trimming to
     HALL_OF_FAME_SIZE by dropping the *oldest* entries first (FIFO) —
     the newest snapshots stay, since they're the closest to what the
@@ -337,10 +350,15 @@ def _add_to_hall_of_fame(hall_of_fame: list[Weights],
     del hall_of_fame[:-HALL_OF_FAME_SIZE]
 
 
-def run(population_size: int = POPULATION_SIZE, generations: int = GENERATIONS,
-       games_per_benchmark: int = GAMES_PER_BENCHMARK, sigma0: float = SIGMA0,
-       checkpoint_every: int = CHECKPOINT_EVERY, resume: bool = True,
-       seed: int | None = None) -> Weights:
+def run(
+    population_size: int = POPULATION_SIZE,
+    generations: int = GENERATIONS,
+    games_per_benchmark: int = GAMES_PER_BENCHMARK,
+    sigma0: float = SIGMA0,
+    checkpoint_every: int = CHECKPOINT_EVERY,
+    resume: bool = True,
+    seed: int | None = None,
+) -> Weights:
     """Run CMA-ES for ``generations`` generations, checkpointing the
     incumbent's own per-benchmark record every ``checkpoint_every``
     generations, and always promote the final incumbent into
@@ -365,27 +383,36 @@ def run(population_size: int = POPULATION_SIZE, generations: int = GENERATIONS,
     generation_count = 0
     hall_of_fame = _load_hall_of_fame()
 
-    def evaluate_population(genomes: list[Weights],
-                            incumbent: Weights) -> list[float]:
+    def evaluate_population(genomes: list[Weights], incumbent: Weights) -> list[float]:
         nonlocal generation_count
         generation_count += 1
-        fitnesses = _evaluate_population(genomes, incumbent, hall_of_fame,
-                                        games_per_benchmark)
-        if (checkpoint_every and generation_count % checkpoint_every == 0):
+        fitnesses = _evaluate_population(genomes, incumbent, hall_of_fame, games_per_benchmark)
+        if checkpoint_every and generation_count % checkpoint_every == 0:
             _print_checkpoint(incumbent)
-        if (HALL_OF_FAME_EVERY and generation_count % HALL_OF_FAME_EVERY == 0):
+        if HALL_OF_FAME_EVERY and generation_count % HALL_OF_FAME_EVERY == 0:
             _add_to_hall_of_fame(hall_of_fame, incumbent)
             _save_hall_of_fame(hall_of_fame)
-            print(f"  (added this generation's incumbent to the hall of "
-                 f"fame — now {len(hall_of_fame)} entr"
-                 f"{'y' if len(hall_of_fame) == 1 else 'ies'})", flush=True)
+            print(
+                f"  (added this generation's incumbent to the hall of "
+                f"fame — now {len(hall_of_fame)} entr"
+                f"{'y' if len(hall_of_fame) == 1 else 'ies'})",
+                flush=True,
+            )
         return fitnesses
 
     incumbent = run_cma_es(
-        label="WEIGHT", seed_genome=DEFAULT_WEIGHTS, sigma0=sigma0,
-        evaluate_population=evaluate_population, generations=generations,
-        population_size=population_size, results_path=RESULTS_PATH,
-        log_path=LOG_PATH, state_path=STATE_PATH, resume=resume, seed=seed)
+        label="WEIGHT",
+        seed_genome=DEFAULT_WEIGHTS,
+        sigma0=sigma0,
+        evaluate_population=evaluate_population,
+        generations=generations,
+        population_size=population_size,
+        results_path=RESULTS_PATH,
+        log_path=LOG_PATH,
+        state_path=STATE_PATH,
+        resume=resume,
+        seed=seed,
+    )
 
     with BEST_WEIGHTS_PATH.open("w", encoding="utf-8") as f:
         json.dump(vars(incumbent), f, indent=2)
@@ -411,7 +438,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--fresh", action="store_true",
-        help="Ignore any saved in-progress run and start over from scratch")
+        "--fresh", action="store_true", help="Ignore any saved in-progress run and start over from scratch"
+    )
     args = parser.parse_args()
     run(resume=not args.fresh)

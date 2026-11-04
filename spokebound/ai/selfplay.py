@@ -41,6 +41,7 @@ def format_duration(seconds: float) -> str:
         return f"{minutes}m {secs}s"
     return f"{secs}s"
 
+
 # The search profile every self-play game (spokebound.ai.evolve,
 # evolve_fleet, and benchmarks.py's own fallback) plays at — not one of
 # the 10 player-facing levels in spokebound.ai.levels (0 is never a key
@@ -51,10 +52,14 @@ def format_duration(seconds: float) -> str:
 # games in a reasonable time, deep enough that two different Weights or
 # FleetRules still actually play differently against each other.
 SELF_PLAY_LEVEL = Level(
-    number=0, name="Self-Play",
-    min_depth=2, max_depth=3,
-    time_limit=0.4, critical_time_limit=0.6,
-    use_quiescence=True, use_move_ordering=True,
+    number=0,
+    name="Self-Play",
+    min_depth=2,
+    max_depth=3,
+    time_limit=0.4,
+    critical_time_limit=0.6,
+    use_quiescence=True,
+    use_move_ordering=True,
     use_transposition_table=True,
     # Unused in practice: build_fleet_spec only ever consults a level's
     # pregame_skill by looking it up in the real LEVELS dict by number,
@@ -78,11 +83,13 @@ class GameResult(NamedTuple):
     white_score: int
 
 
-def play_full_game(orange_fleet: list[Piece], white_fleet: list[Piece],
-                   choose_for: Callable[[Player], MoveChooser],
-                   weights_for: Callable[[Player], Weights] | None = None,
-                   skill_for: Callable[[Player], float] | None = None,
-                   ) -> GameResult:
+def play_full_game(
+    orange_fleet: list[Piece],
+    white_fleet: list[Piece],
+    choose_for: Callable[[Player], MoveChooser],
+    weights_for: Callable[[Player], Weights] | None = None,
+    skill_for: Callable[[Player], float] | None = None,
+) -> GameResult:
     """Deploy both fleets and play one full game to completion.
 
     ``choose_for(player)`` returns the move-chooser to call whenever it's
@@ -110,8 +117,7 @@ def play_full_game(orange_fleet: list[Piece], white_fleet: list[Piece],
     deployment = Deployment(orange_fleet, white_fleet)
     while not deployment.is_done:
         player = deployment.current
-        weights = (weights_for(player) if weights_for is not None
-                  else DEFAULT_WEIGHTS)
+        weights = weights_for(player) if weights_for is not None else DEFAULT_WEIGHTS
         skill = skill_for(player) if skill_for is not None else 1.0
         square = choose_deploy_square(deployment, player, weights, skill)
         deployment.place(square)
@@ -121,8 +127,7 @@ def play_full_game(orange_fleet: list[Piece], white_fleet: list[Piece],
     plies = 0
     while not game.is_over and plies < ceiling:
         ply = choose_for(game.current)(game)
-        weights = (weights_for(game.current) if weights_for is not None
-                   else DEFAULT_WEIGHTS)
+        weights = weights_for(game.current) if weights_for is not None else DEFAULT_WEIGHTS
         play_ply(game, ply, weights)
         plies += 1
     winner = game.outcome.winner if game.outcome is not None else None
@@ -145,17 +150,22 @@ def _play_one(task: tuple) -> str:
     winner = play_game_fn(a, b) if a_is_orange else play_game_fn(b, a)
     if winner is None:
         return "draw"
-    a_won = ((a_is_orange and winner is Player.ORANGE)
-            or (not a_is_orange and winner is Player.WHITE))
+    a_won = (a_is_orange and winner is Player.ORANGE) or (not a_is_orange and winner is Player.WHITE)
     return "a" if a_won else "b"
 
 
-def play_round(pool: multiprocessing.Pool, play_game_fn: Callable,
-              a=None, b=None, games: int = 0, label: str = "round",
-              a_name: str = "a", b_name: str = "b",
-              progress_every: int = PROGRESS_EVERY,
-              prepare: Callable[[], tuple] | None = None,
-              ) -> tuple[int, int, int]:
+def play_round(
+    pool: multiprocessing.Pool,
+    play_game_fn: Callable,
+    a=None,
+    b=None,
+    games: int = 0,
+    label: str = "round",
+    a_name: str = "a",
+    b_name: str = "b",
+    progress_every: int = PROGRESS_EVERY,
+    prepare: Callable[[], tuple] | None = None,
+) -> tuple[int, int, int]:
     """Play ``games`` games between ``a`` and ``b`` with ``play_game_fn``,
     each side playing both colours equally, spread across every CPU core
     in ``pool``. Prints a progress line every ``progress_every`` completed
@@ -180,21 +190,23 @@ def play_round(pool: multiprocessing.Pool, play_game_fn: Callable,
         if prepare is not None and i % 2 == 0:
             current = prepare()
         task_args.append(current)
-    tasks = [(play_game_fn, i % 2 == 0, task_args[i][0], task_args[i][1])
-            for i in range(games)]
+    tasks = [(play_game_fn, i % 2 == 0, task_args[i][0], task_args[i][1]) for i in range(games)]
     results = []
     started = time.monotonic()
-    for completed, result in enumerate(
-            pool.imap_unordered(_play_one, tasks), start=1):
+    for completed, result in enumerate(pool.imap_unordered(_play_one, tasks), start=1):
         results.append(result)
         if completed % progress_every == 0 or completed == games:
             elapsed = time.monotonic() - started
             remaining = games - completed
             eta = (elapsed / completed) * remaining if completed else 0.0
-            eta_text = (f", ~{format_duration(eta)} left" if remaining
-                       else f", took {format_duration(elapsed)}")
-            print(f"  [{label}] {completed}/{games} games played "
-                 f"({a_name} {results.count('a')}, "
-                 f"{b_name} {results.count('b')}, "
-                 f"draws {results.count('draw')}){eta_text}", flush=True)
+            eta_text = (
+                f", ~{format_duration(eta)} left" if remaining else f", took {format_duration(elapsed)}"
+            )
+            print(
+                f"  [{label}] {completed}/{games} games played "
+                f"({a_name} {results.count('a')}, "
+                f"{b_name} {results.count('b')}, "
+                f"draws {results.count('draw')}){eta_text}",
+                flush=True,
+            )
     return (results.count("a"), results.count("b"), results.count("draw"))

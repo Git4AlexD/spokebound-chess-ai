@@ -23,10 +23,14 @@ class NetworkPoller:
     arrives, which also ends the loop.
     """
 
-    def __init__(self, widget: tk.Misc, session: NetworkSession,
-                interval_ms: int,
-                on_message: Callable[[Message], object],
-                on_disconnected: Callable[[], None]) -> None:
+    def __init__(
+        self,
+        widget: tk.Misc,
+        session: NetworkSession,
+        interval_ms: int,
+        on_message: Callable[[Message], object],
+        on_disconnected: Callable[[], None],
+    ) -> None:
         self._widget = widget
         self._session = session
         self._interval_ms = interval_ms

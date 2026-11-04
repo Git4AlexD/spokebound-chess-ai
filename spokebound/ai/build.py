@@ -43,8 +43,14 @@ _SPEND_ATTEMPTS = 5
 # Field name for each spoke index, in spoke order — see
 # spokebound.model.pieces.DIRECTION_NAMES, which this mirrors exactly.
 _DIRECTION_BIAS_FIELDS = (
-    "bias_n", "bias_ne", "bias_e", "bias_se",
-    "bias_s", "bias_sw", "bias_w", "bias_nw",
+    "bias_n",
+    "bias_ne",
+    "bias_e",
+    "bias_se",
+    "bias_s",
+    "bias_sw",
+    "bias_w",
+    "bias_nw",
 )
 
 Spec = list[list[int]]  # one fleet's raw spoke levels, not yet owned by anyone
@@ -92,8 +98,7 @@ def materialize_fleet(spec: Spec, owner: Player) -> list[Piece]:
     return builder.pieces
 
 
-def build_fleet(difficulty: int, owner: Player,
-               rules: FleetRules | None = None) -> list[Piece]:
+def build_fleet(difficulty: int, owner: Player, rules: FleetRules | None = None) -> list[Piece]:
     """Return a finished fleet for ``owner``, playing at ``difficulty``
     (a level number — see spokebound.ai.levels.LEVELS and
     build_fleet_spec for what ``rules`` overrides)."""
@@ -115,8 +120,7 @@ def _build_one_spec(rules: FleetRules) -> Spec:
     return [list(piece.spokes) for piece in builder.pieces]
 
 
-def _allocate_points(builder: FleetBuilder, points: int,
-                     rules: FleetRules) -> None:
+def _allocate_points(builder: FleetBuilder, points: int, rules: FleetRules) -> None:
     """Spend ``points`` one at a time: each point picks a direction
     (biased by ``rules``' own per-direction weights, blended with some
     uniform randomness — see _weighted_direction) and a piece (weighted
@@ -139,8 +143,7 @@ def _weighted_direction(rules: FleetRules) -> int:
     weights, blended with a little uniform randomness (rules.variety)
     so a run of the very same rules doesn't always build the identical
     fleet."""
-    biases = [max(0.01, getattr(rules, field))
-             for field in _DIRECTION_BIAS_FIELDS]
+    biases = [max(0.01, getattr(rules, field)) for field in _DIRECTION_BIAS_FIELDS]
     variety = min(1.0, max(0.0, rules.variety))
     weights = [(1 - variety) * bias + variety for bias in biases]
     return random.choices(range(SPOKE_COUNT), weights=weights, k=1)[0]

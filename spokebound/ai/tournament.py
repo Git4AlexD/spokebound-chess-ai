@@ -51,8 +51,7 @@ def play_game(orange_level: int, white_level: int) -> Player | None:
     def skill_for(player: Player) -> float:
         return LEVELS[by_player[player]].pregame_skill
 
-    return play_full_game(orange_fleet, white_fleet, choose_for,
-                          skill_for=skill_for).winner
+    return play_full_game(orange_fleet, white_fleet, choose_for, skill_for=skill_for).winner
 
 
 class _SerialPool:
@@ -63,17 +62,15 @@ class _SerialPool:
         return map(func, tasks)
 
 
-def play_matchup(pool: _SerialPool, a: int, b: int,
-                 games: int = GAMES_PER_MATCHUP) -> tuple[int, int, int]:
+def play_matchup(pool: _SerialPool, a: int, b: int, games: int = GAMES_PER_MATCHUP) -> tuple[int, int, int]:
     """Play ``games`` games between levels ``a`` and ``b``, split evenly
     between colours. Returns ``(a_wins, b_wins, draws)``."""
-    return play_round(pool, play_game, a, b, games,
-                      label=f"{a} vs {b}", a_name=str(a), b_name=str(b))
+    return play_round(pool, play_game, a, b, games, label=f"{a} vs {b}", a_name=str(a), b_name=str(b))
 
 
-def run(levels=LEVELS_TO_TEST, games_per_matchup: int = GAMES_PER_MATCHUP,
-       adjacent_only: bool = False
-       ) -> dict[tuple[int, int], tuple[int, int, int]]:
+def run(
+    levels=LEVELS_TO_TEST, games_per_matchup: int = GAMES_PER_MATCHUP, adjacent_only: bool = False
+) -> dict[tuple[int, int], tuple[int, int, int]]:
     """Play every pair of ``levels`` against each other, printing progress
     as each matchup finishes. Each pair plays ``games_per_matchup`` games
     (two by default), split evenly between the two colours. With
@@ -81,11 +78,12 @@ def run(levels=LEVELS_TO_TEST, games_per_matchup: int = GAMES_PER_MATCHUP,
     ``{(a, b): (a_wins, b_wins, draws)}`` for every pair, ``a < b``.
     """
     ordered = sorted(levels)
-    pairs = (list(itertools.pairwise(ordered)) if adjacent_only
-             else list(itertools.combinations(ordered, 2)))
-    print(f"Tournament: {len(pairs)} matchups x {games_per_matchup} games "
-         f"= {len(pairs) * games_per_matchup} games total, one at a time",
-         flush=True)
+    pairs = list(itertools.pairwise(ordered)) if adjacent_only else list(itertools.combinations(ordered, 2))
+    print(
+        f"Tournament: {len(pairs)} matchups x {games_per_matchup} games "
+        f"= {len(pairs) * games_per_matchup} games total, one at a time",
+        flush=True,
+    )
     results: dict[tuple[int, int], tuple[int, int, int]] = {}
     pool = _SerialPool()
     for index, (a, b) in enumerate(pairs, start=1):
@@ -93,14 +91,16 @@ def run(levels=LEVELS_TO_TEST, games_per_matchup: int = GAMES_PER_MATCHUP,
         a_wins, b_wins, draws = play_matchup(pool, a, b, games_per_matchup)
         elapsed = time.monotonic() - started
         results[(a, b)] = (a_wins, b_wins, draws)
-        print(f"[{index}/{len(pairs)}] Level {a} ({LEVELS[a].name}) "
-             f"vs Level {b} ({LEVELS[b].name}): "
-             f"{a_wins}-{b_wins}-{draws} ({elapsed:.0f}s)", flush=True)
+        print(
+            f"[{index}/{len(pairs)}] Level {a} ({LEVELS[a].name}) "
+            f"vs Level {b} ({LEVELS[b].name}): "
+            f"{a_wins}-{b_wins}-{draws} ({elapsed:.0f}s)",
+            flush=True,
+        )
     return results
 
 
-def summarize(results: dict[tuple[int, int], tuple[int, int, int]],
-             levels=LEVELS_TO_TEST) -> None:
+def summarize(results: dict[tuple[int, int], tuple[int, int, int]], levels=LEVELS_TO_TEST) -> None:
     """Print total wins/losses/draws and a win rate per level, across
     every matchup it played."""
     totals = {level: [0, 0, 0] for level in levels}  # wins, losses, draws
@@ -118,20 +118,17 @@ def summarize(results: dict[tuple[int, int], tuple[int, int, int]],
     print("\nHead-to-head (row's wins-losses against column):", flush=True)
     print("      " + "".join(f"{level:>8}" for level in ordered), flush=True)
     for row in ordered:
-        cells = [f"{'-' if row == col else head_to_head.get((row, col), ''):>8}"
-                 for col in ordered]
+        cells = [f"{'-' if row == col else head_to_head.get((row, col), ''):>8}" for col in ordered]
         print(f"{row:>5} " + "".join(cells), flush=True)
     print("\nStandings (by win rate):", flush=True)
-    ranked = sorted(totals.items(),
-                    key=lambda item: item[1][0] / max(1, sum(item[1])),
-                    reverse=True)
+    ranked = sorted(totals.items(), key=lambda item: item[1][0] / max(1, sum(item[1])), reverse=True)
     for level, (wins, losses, draws) in ranked:
         games = wins + losses + draws
         rate = wins / games if games else 0.0
-        print(f"  Level {level:>2} {LEVELS[level].name:<12} "
-             f"{wins:>3}-{losses:>3}-{draws:>3}  ({rate:.0%})", flush=True)
-
-
+        print(
+            f"  Level {level:>2} {LEVELS[level].name:<12} {wins:>3}-{losses:>3}-{draws:>3}  ({rate:.0%})",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

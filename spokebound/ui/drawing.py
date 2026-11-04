@@ -79,8 +79,7 @@ SUN_BANDS = 6
 Point = tuple[float, float]
 
 
-def spoke_point(centre: Point, radius: float, spoke: int, fraction: float,
-                rotated: bool = False) -> Point:
+def spoke_point(centre: Point, radius: float, spoke: int, fraction: float, rotated: bool = False) -> Point:
     """Return the point ``fraction`` of the way out along ``spoke``.
 
     ``rotated`` turns the star 180 degrees, used for White's pieces so each
@@ -89,8 +88,7 @@ def spoke_point(centre: Point, radius: float, spoke: int, fraction: float,
     degrees = _spoke_degrees(spoke, rotated)
     angle = math.radians(degrees)
     length = radius * fraction
-    return (centre[0] + length * math.cos(angle),
-            centre[1] + length * math.sin(angle))
+    return (centre[0] + length * math.cos(angle), centre[1] + length * math.sin(angle))
 
 
 def _spoke_degrees(spoke: int, rotated: bool = False) -> float:
@@ -118,8 +116,7 @@ def level_at(centre: Point, radius: float, x: float, y: float) -> int:
     (including back down to 0), rather than only stepping it by one.
     """
     fraction = math.hypot(x - centre[0], y - centre[1]) / radius
-    return min(range(len(LEVEL_LENGTHS)),
-               key=lambda level: abs(LEVEL_LENGTHS[level] - fraction))
+    return min(range(len(LEVEL_LENGTHS)), key=lambda level: abs(LEVEL_LENGTHS[level] - fraction))
 
 
 def _hexagon(tip: Point, size: float, angle: float) -> list[float]:
@@ -137,8 +134,7 @@ def _hexagon(tip: Point, size: float, angle: float) -> list[float]:
 _CIRCLE_SIDES = 20
 
 
-def _ellipse(centre: Point, half_length: float, half_width: float,
-            angle: float) -> list[float]:
+def _ellipse(centre: Point, half_length: float, half_width: float, angle: float) -> list[float]:
     """A many-sided oval, its long axis (``half_length``) pointing
     outward along the spoke at ``angle`` and its short axis
     (``half_width``) across it — a circle when the two are equal."""
@@ -148,13 +144,13 @@ def _ellipse(centre: Point, half_length: float, half_width: float,
     for i in range(_CIRCLE_SIDES):
         t = math.radians(360 * i / _CIRCLE_SIDES)
         local_x, local_y = half_length * math.cos(t), half_width * math.sin(t)
-        coords.extend((centre[0] + local_x * cos_a - local_y * sin_a,
-                      centre[1] + local_x * sin_a + local_y * cos_a))
+        coords.extend(
+            (centre[0] + local_x * cos_a - local_y * sin_a, centre[1] + local_x * sin_a + local_y * cos_a)
+        )
     return coords
 
 
-def _tapered_quad(p0: Point, half0: float, p1: Point, half1: float,
-                  perp_degrees: float) -> list[float]:
+def _tapered_quad(p0: Point, half0: float, p1: Point, half1: float, perp_degrees: float) -> list[float]:
     """A quad running from ``p0`` to ``p1``, ``half0``/``half1`` wide
     across the perpendicular (``perp_degrees``) at each end — one band
     of a thermal exhaust blade or sun prong (see _draw_regular_star and
@@ -176,8 +172,11 @@ def _scaled_polygon(points: list[float], factor: float) -> list[float]:
     rendering involved. See :func:`_regular_dilator`."""
     xs, ys = points[0::2], points[1::2]
     cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
-    return [coord for x, y in zip(xs, ys, strict=True)
-           for coord in (cx + (x - cx) * factor, cy + (y - cy) * factor)]
+    return [
+        coord
+        for x, y in zip(xs, ys, strict=True)
+        for coord in (cx + (x - cx) * factor, cy + (y - cy) * factor)
+    ]
 
 
 Dilator = Callable[[float], list[float]]
@@ -210,8 +209,9 @@ def _regular_dilator(points: list[float]) -> Dilator:
     return dilate
 
 
-def _blade_dilator(p0: Point, half0: float, p1: Point, half1: float,
-                   along_degrees: float, perp_degrees: float) -> Dilator:
+def _blade_dilator(
+    p0: Point, half0: float, p1: Point, half1: float, along_degrees: float, perp_degrees: float
+) -> Dilator:
     """Return a dilator (see _draw_silhouette) for one tapered-quad
     band of an exhaust blade or sun prong: widens ``half0``/``half1`` by
     ``extra`` on both sides AND pushes ``p0``/``p1`` outward along the
@@ -232,14 +232,14 @@ def _blade_dilator(p0: Point, half0: float, p1: Point, half1: float,
             return _tapered_quad(p0, half0, p1, half1, perp_degrees)
         p0e = (p0[0] - ax * extra, p0[1] - ay * extra)
         p1e = (p1[0] + ax * extra, p1[1] + ay * extra)
-        return _tapered_quad(p0e, half0 + extra, p1e, half1 + extra,
-                             perp_degrees)
+        return _tapered_quad(p0e, half0 + extra, p1e, half1 + extra, perp_degrees)
 
     return dilate
 
 
-def _draw_silhouette(canvas: tk.Canvas, shapes: list[tuple[Dilator, str]],
-                     outline: str, border: float) -> None:
+def _draw_silhouette(
+    canvas: tk.Canvas, shapes: list[tuple[Dilator, str]], outline: str, border: float
+) -> None:
     """Draw ``shapes`` — each a (dilator, own fill colour) pair, see
     :func:`_regular_dilator`/:func:`_blade_dilator` — as one solid
     silhouette with a single outer outline, even though its pieces are
@@ -270,12 +270,10 @@ def _draw_silhouette(canvas: tk.Canvas, shapes: list[tuple[Dilator, str]],
     for dilate, _fill in shapes:
         canvas.create_polygon(*dilate(border), fill=outline, outline="")
     for dilate, fill in shapes:
-        canvas.create_polygon(*dilate(min(1.0, border / 2)), fill=fill,
-                              outline="")
+        canvas.create_polygon(*dilate(min(1.0, border / 2)), fill=fill, outline="")
 
 
-def _hull_shade(colour: str, point: Point, centre: Point,
-                radius: float) -> str:
+def _hull_shade(colour: str, point: Point, centre: Point, radius: float) -> str:
     """Lighten or darken ``colour`` by how closely ``point`` (relative
     to ``centre``) sits toward HULL_LIGHT_DIRECTION or away from it —
     the near-light side of a piece reads brighter, the far side darker,
@@ -293,8 +291,7 @@ def _hull_shade(colour: str, point: Point, centre: Point,
     return theme.mix_hex(colour, "#000000", -alignment * HULL_SHADOW_STRENGTH)
 
 
-def _draw_hull(canvas: tk.Canvas, centre: Point, radius: float, fill: str,
-              rotated: bool) -> None:
+def _draw_hull(canvas: tk.Canvas, centre: Point, radius: float, fill: str, rotated: bool) -> None:
     """Draw the hub's faceted lighting overlay: one triangular wedge per
     spoke direction, from the centre out to two adjacent hub vertices
     (pulled in by HULL_WEDGE_INSET so they sit safely inside the hub's
@@ -304,25 +301,25 @@ def _draw_hull(canvas: tk.Canvas, centre: Point, radius: float, fill: str,
     piece's real silhouette, only how the hub already inside it reads.
     """
     hub_radius = radius * LEVEL_LENGTHS[0]
-    vertices = [spoke_point(centre, hub_radius, spoke, HULL_WEDGE_INSET,
-                           rotated)
-               for spoke in range(SPOKE_COUNT)]
+    vertices = [
+        spoke_point(centre, hub_radius, spoke, HULL_WEDGE_INSET, rotated) for spoke in range(SPOKE_COUNT)
+    ]
     for i, vertex in enumerate(vertices):
         next_vertex = vertices[(i + 1) % SPOKE_COUNT]
-        centroid = ((centre[0] + vertex[0] + next_vertex[0]) / 3,
-                   (centre[1] + vertex[1] + next_vertex[1]) / 3)
+        centroid = (
+            (centre[0] + vertex[0] + next_vertex[0]) / 3,
+            (centre[1] + vertex[1] + next_vertex[1]) / 3,
+        )
         wedge_colour = _hull_shade(fill, centroid, centre, radius)
-        canvas.create_polygon(centre[0], centre[1], *vertex, *next_vertex,
-                              fill=wedge_colour, outline="")
+        canvas.create_polygon(centre[0], centre[1], *vertex, *next_vertex, fill=wedge_colour, outline="")
 
 
 def _hex_to_unit_rgb(colour: str) -> tuple[float, float, float]:
-    return tuple(int(colour[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    return tuple(int(colour[i : i + 2], 16) / 255 for i in (1, 3, 5))
 
 
 def _unit_rgb_to_hex(rgb: tuple[float, float, float]) -> str:
-    return "#" + "".join(f"{round(max(0.0, min(1.0, c)) * 255):02X}"
-                         for c in rgb)
+    return "#" + "".join(f"{round(max(0.0, min(1.0, c)) * 255):02X}" for c in rgb)
 
 
 def _heat_gradient(fill: str, t: float) -> str:
@@ -385,10 +382,8 @@ def _draw_field(canvas: tk.Canvas, centre: Point, radius: float) -> None:
     x, y = centre
     for fraction in LEVEL_LENGTHS[1:]:
         r = radius * fraction
-        canvas.create_oval(x - r, y - r, x + r, y + r,
-                           outline=theme.HIGHLIGHT_SHADOW, width=3)
-        canvas.create_oval(x - r, y - r, x + r, y + r,
-                           outline=theme.PIECE_RING, width=1)
+        canvas.create_oval(x - r, y - r, x + r, y + r, outline=theme.HIGHLIGHT_SHADOW, width=3)
+        canvas.create_oval(x - r, y - r, x + r, y + r, outline=theme.PIECE_RING, width=1)
 
     for spoke in range(SPOKE_COUNT):
         end = spoke_point(centre, radius, spoke, 0.94)
@@ -398,17 +393,27 @@ def _draw_field(canvas: tk.Canvas, centre: Point, radius: float) -> None:
         # exactly behind the ray's own dashes), so either way some
         # shadow ends up showing in a gap that should be transparent.
         # Plain thin dashes read fine on their own.
-        canvas.create_line(*centre, *end, fill=theme.PIECE_DIRECTION_GUIDE,
-                           width=1, dash=(2, 4))
+        canvas.create_line(*centre, *end, fill=theme.PIECE_DIRECTION_GUIDE, width=1, dash=(2, 4))
         dot = max(0.6, radius * 0.025)
-        canvas.create_oval(end[0] - dot, end[1] - dot, end[0] + dot,
-                           end[1] + dot, fill=theme.PIECE_DIRECTION_GUIDE,
-                           outline="")
+        canvas.create_oval(
+            end[0] - dot,
+            end[1] - dot,
+            end[0] + dot,
+            end[1] + dot,
+            fill=theme.PIECE_DIRECTION_GUIDE,
+            outline="",
+        )
 
 
-def draw_star(canvas: tk.Canvas, centre: Point, radius: float, piece: Piece,
-              rotated: bool = False, lost: bool = False,
-              sun_direction: Point | None = None) -> None:
+def draw_star(
+    canvas: tk.Canvas,
+    centre: Point,
+    radius: float,
+    piece: Piece,
+    rotated: bool = False,
+    lost: bool = False,
+    sun_direction: Point | None = None,
+) -> None:
     """Draw ``piece`` as a star whose spikes show its range.
 
     The Captain (always range level 1 on every spoke — see
@@ -426,15 +431,12 @@ def draw_star(canvas: tk.Canvas, centre: Point, radius: float, piece: Piece,
     context with no real board position, e.g. a fleet thumbnail) it
     falls back to a fixed "lit from above" default.
     """
-    fill, outline = (theme.LOST_PIECE_COLOURS if lost
-                     else theme.PIECE_COLOURS[piece.owner])
+    fill, outline = theme.LOST_PIECE_COLOURS if lost else theme.PIECE_COLOURS[piece.owner]
     _draw_field(canvas, centre, radius)
     if piece.is_captain:
-        _draw_captain_star(canvas, centre, radius, piece, rotated, fill,
-                           outline)
+        _draw_captain_star(canvas, centre, radius, piece, rotated, fill, outline)
     else:
-        _draw_regular_star(canvas, centre, radius, piece, rotated, fill,
-                           outline, sun_direction)
+        _draw_regular_star(canvas, centre, radius, piece, rotated, fill, outline, sun_direction)
 
     if piece.bounty:
         badge = (centre[0] + radius * 0.9, centre[1] - radius * 0.9)
@@ -447,10 +449,16 @@ def draw_star(canvas: tk.Canvas, centre: Point, radius: float, piece: Piece,
         canvas.create_line(x - r, y + r, x + r, y - r, fill=outline, width=2)
 
 
-def _draw_regular_star(canvas: tk.Canvas, centre: Point, radius: float,
-                       piece: Piece, rotated: bool, fill: str,
-                       outline: str,
-                       sun_direction: Point | None = None) -> None:
+def _draw_regular_star(
+    canvas: tk.Canvas,
+    centre: Point,
+    radius: float,
+    piece: Piece,
+    rotated: bool,
+    fill: str,
+    outline: str,
+    sun_direction: Point | None = None,
+) -> None:
     """Draw a non-Captain piece as one silhouette: the hub plus every
     active spoke's own tapered thermal exhaust blade, base to its own
     range ring, with a single ``outline`` around the combined shape
@@ -473,9 +481,11 @@ def _draw_regular_star(canvas: tk.Canvas, centre: Point, radius: float,
     # would draw a filled wedge between any two long spokes, fusing them
     # into one blob instead of leaving each spoke's own blade to read as
     # its own separate arm.
-    hub_points = [c for spoke in range(SPOKE_COUNT)
-                 for c in spoke_point(centre, radius, spoke, LEVEL_LENGTHS[0],
-                                      rotated)]
+    hub_points = [
+        c
+        for spoke in range(SPOKE_COUNT)
+        for c in spoke_point(centre, radius, spoke, LEVEL_LENGTHS[0], rotated)
+    ]
     shapes: list[tuple[Dilator, str]] = [(_regular_dilator(hub_points), fill)]
     # _draw_silhouette's own outline dilates every shape outward by
     # `border`, so a blade whose true tip sits exactly on its range ring
@@ -503,42 +513,49 @@ def _draw_regular_star(canvas: tk.Canvas, centre: Point, radius: float,
             # up exactly with the hub's own much narrower vertex there,
             # which is what used to leave a sliver of the hub's own
             # outline peeking through once a direction had a blade.
-            p0 = spoke_point(centre, radius, spoke, 0.0 if band == 0 else
-                             frac0, rotated)
+            p0 = spoke_point(centre, radius, spoke, 0.0 if band == 0 else frac0, rotated)
             p1 = spoke_point(centre, radius, spoke, frac1, rotated)
-            half0 = radius * (EXHAUST_BASE_WIDTH_FRACTION -
-                             (EXHAUST_BASE_WIDTH_FRACTION -
-                              EXHAUST_TIP_WIDTH_FRACTION) * t0)
-            half1 = radius * (EXHAUST_BASE_WIDTH_FRACTION -
-                             (EXHAUST_BASE_WIDTH_FRACTION -
-                              EXHAUST_TIP_WIDTH_FRACTION) * t1)
+            half0 = radius * (
+                EXHAUST_BASE_WIDTH_FRACTION - (EXHAUST_BASE_WIDTH_FRACTION - EXHAUST_TIP_WIDTH_FRACTION) * t0
+            )
+            half1 = radius * (
+                EXHAUST_BASE_WIDTH_FRACTION - (EXHAUST_BASE_WIDTH_FRACTION - EXHAUST_TIP_WIDTH_FRACTION) * t1
+            )
             # Coloured by this band's own PHYSICAL position (see
             # _physical_heat), not by how far along this one blade it
             # happens to sit — so a longer spoke's gradient continues a
             # shorter one's rather than restarting or re-pacing it.
             band_colour = _heat_gradient(fill, _physical_heat((frac0 + frac1) / 2))
-            shapes.append((_blade_dilator(p0, half0, p1, half1, angle, perp),
-                          band_colour))
-        tip_markers.append((spoke_point(centre, radius, spoke, tip_frac,
-                                        rotated),
-                            _heat_gradient(fill, _physical_heat(tip_frac))))
+            shapes.append((_blade_dilator(p0, half0, p1, half1, angle, perp), band_colour))
+        tip_markers.append(
+            (
+                spoke_point(centre, radius, spoke, tip_frac, rotated),
+                _heat_gradient(fill, _physical_heat(tip_frac)),
+            )
+        )
 
     _draw_silhouette(canvas, shapes, outline, border)
     _draw_hull(canvas, centre, radius, fill, rotated)
     for tip, tip_colour in tip_markers:
         r = radius * EXHAUST_TIP_MARKER_FRACTION
-        canvas.create_oval(tip[0] - r, tip[1] - r, tip[0] + r, tip[1] + r,
-                           fill=tip_colour, outline=theme.HIGHLIGHT_SHADOW,
-                           width=1)
+        canvas.create_oval(
+            tip[0] - r,
+            tip[1] - r,
+            tip[0] + r,
+            tip[1] + r,
+            fill=tip_colour,
+            outline=theme.HIGHLIGHT_SHADOW,
+            width=1,
+        )
         hr = r * EXHAUST_TIP_HIGHLIGHT_FRACTION
         hx, hy = tip[0] - r * 0.3, tip[1] - r * 0.3
-        canvas.create_oval(hx - hr, hy - hr, hx + hr, hy + hr,
-                           fill="#FFFFFF", outline="")
+        canvas.create_oval(hx - hr, hy - hr, hx + hr, hy + hr, fill="#FFFFFF", outline="")
     _draw_cockpit(canvas, centre, radius, sun_direction)
 
 
-def _draw_cockpit(canvas: tk.Canvas, centre: Point, radius: float,
-                  sun_direction: Point | None = None) -> None:
+def _draw_cockpit(
+    canvas: tk.Canvas, centre: Point, radius: float, sun_direction: Point | None = None
+) -> None:
     """Draw a small glassy cockpit at a piece's own centre, in the same
     fixed, neutral grey (theme.COCKPIT_FILL/COCKPIT_HIGHLIGHT) regardless
     of which side owns the piece or how far it can reach — a plain
@@ -555,8 +572,7 @@ def _draw_cockpit(canvas: tk.Canvas, centre: Point, radius: float,
     highlight = theme.COCKPIT_HIGHLIGHT
     x, y = centre
     w, h = radius * 0.17, radius * 0.11
-    canvas.create_oval(x - w, y - h, x + w, y + h, fill=cockpit_fill,
-                       outline=theme.HIGHLIGHT_SHADOW, width=1)
+    canvas.create_oval(x - w, y - h, x + w, y + h, fill=cockpit_fill, outline=theme.HIGHLIGHT_SHADOW, width=1)
     hw, hh = w * 0.42, h * 0.38
     if sun_direction is not None and any(sun_direction):
         mag = math.hypot(*sun_direction)
@@ -567,13 +583,12 @@ def _draw_cockpit(canvas: tk.Canvas, centre: Point, radius: float,
     # direction from the sun to this piece — the near side catches
     # the light, the far side falls in its own shadow.
     hx, hy = x - ux * w * 0.5, y - uy * h * 0.55
-    canvas.create_oval(hx - hw, hy - hh, hx + hw, hy + hh, fill=highlight,
-                       outline="")
+    canvas.create_oval(hx - hw, hy - hh, hx + hw, hy + hh, fill=highlight, outline="")
 
 
-def _draw_captain_star(canvas: tk.Canvas, centre: Point, radius: float,
-                       piece: Piece, rotated: bool, fill: str,
-                       outline: str) -> None:
+def _draw_captain_star(
+    canvas: tk.Canvas, centre: Point, radius: float, piece: Piece, rotated: bool, fill: str, outline: str
+) -> None:
     """Draw the Captain exactly as every other piece used to be drawn:
     each spoke's own hexagon marker outlined individually (in the side's
     own PIECE_MARKER_COLOURS, not the body colour), tucked half behind
@@ -588,48 +603,44 @@ def _draw_captain_star(canvas: tk.Canvas, centre: Point, radius: float,
         if level != 1:
             continue
         angle = _spoke_degrees(spoke, rotated)
-        anchor = spoke_point(centre, radius, spoke,
-                             LEVEL_LENGTHS[1] - pullback, rotated)
-        canvas.create_polygon(*_hexagon(anchor,
-                                        radius * CAPTAIN_HEX_SIZE_FRACTION,
-                                        angle),
-                              fill=marker_colour, outline=outline, width=1,
-                              joinstyle=tk.MITER)
+        anchor = spoke_point(centre, radius, spoke, LEVEL_LENGTHS[1] - pullback, rotated)
+        canvas.create_polygon(
+            *_hexagon(anchor, radius * CAPTAIN_HEX_SIZE_FRACTION, angle),
+            fill=marker_colour,
+            outline=outline,
+            width=1,
+            joinstyle=tk.MITER,
+        )
 
-    body = [c for spoke, level in enumerate(piece.spokes)
-            for c in spoke_point(centre, radius, spoke,
-                                 LEVEL_LENGTHS[level] - (
-                                     pullback if level == 1 else 0),
-                                 rotated)]
-    canvas.create_polygon(*body, fill=fill, outline=outline, width=2,
-                          joinstyle=tk.MITER)
+    body = [
+        c
+        for spoke, level in enumerate(piece.spokes)
+        for c in spoke_point(
+            centre, radius, spoke, LEVEL_LENGTHS[level] - (pullback if level == 1 else 0), rotated
+        )
+    ]
+    canvas.create_polygon(*body, fill=fill, outline=outline, width=2, joinstyle=tk.MITER)
 
-    canvas.create_polygon(*_hexagon(centre, radius * 0.08, 0),
-                          fill=marker_colour, outline=outline, width=1,
-                          joinstyle=tk.MITER)
+    canvas.create_polygon(
+        *_hexagon(centre, radius * 0.08, 0), fill=marker_colour, outline=outline, width=1, joinstyle=tk.MITER
+    )
     _draw_captain_rings(canvas, centre, radius, outline)
 
 
-def _draw_captain_rings(canvas: tk.Canvas, centre: Point, radius: float,
-                        colour: str) -> None:
+def _draw_captain_rings(canvas: tk.Canvas, centre: Point, radius: float, colour: str) -> None:
     """Mark the Captain with concentric rings inside its body."""
     body_radius = radius * LEVEL_LENGTHS[1]
     x, y = centre
     for fraction in (0.62, 0.32):
         r = body_radius * fraction
-        canvas.create_oval(x - r, y - r, x + r, y + r,
-                           outline=theme.HIGHLIGHT, width=4)
-        canvas.create_oval(x - r, y - r, x + r, y + r, outline=colour,
-                           width=2)
+        canvas.create_oval(x - r, y - r, x + r, y + r, outline=theme.HIGHLIGHT, width=4)
+        canvas.create_oval(x - r, y - r, x + r, y + r, outline=colour, width=2)
 
 
-
-def draw_badge(canvas: tk.Canvas, centre: Point, size: float,
-               text: str) -> None:
+def draw_badge(canvas: tk.Canvas, centre: Point, size: float, text: str) -> None:
     """Draw a small dark disc with ``text`` in it, for bounty values."""
     x, y = centre
-    canvas.create_oval(x - size, y - size, x + size, y + size,
-                       fill=theme.BADGE_FILL, outline="")
+    canvas.create_oval(x - size, y - size, x + size, y + size, fill=theme.BADGE_FILL, outline="")
     font = (theme.FONT_FAMILY, max(7, int(size)), "bold")
     canvas.create_text(x, y, text=text, fill=theme.BADGE_TEXT, font=font)
 
@@ -645,8 +656,7 @@ def draw_sun(canvas: tk.Canvas, centre: Point, radius: float) -> None:
     border = max(1.5, radius * 0.05)
     core_radius = radius * SUN_CORE_FRACTION
     shapes: list[tuple[Dilator, str]] = [
-        (_regular_dilator(_ellipse(centre, core_radius, core_radius, 0)),
-         theme.SUN_CORE)
+        (_regular_dilator(_ellipse(centre, core_radius, core_radius, 0)), theme.SUN_CORE)
     ]
     for spoke in range(SPOKE_COUNT):
         angle = _spoke_degrees(spoke)
@@ -655,23 +665,22 @@ def draw_sun(canvas: tk.Canvas, centre: Point, radius: float) -> None:
             t0, t1 = band / SUN_BANDS, (band + 1) / SUN_BANDS
             frac0 = SUN_CORE_FRACTION + (1.0 - SUN_CORE_FRACTION) * t0
             frac1 = SUN_CORE_FRACTION + (1.0 - SUN_CORE_FRACTION) * t1
-            half0 = radius * (SUN_PRONG_BASE_WIDTH_FRACTION -
-                             (SUN_PRONG_BASE_WIDTH_FRACTION -
-                              SUN_PRONG_TIP_WIDTH_FRACTION) * t0)
-            half1 = radius * (SUN_PRONG_BASE_WIDTH_FRACTION -
-                             (SUN_PRONG_BASE_WIDTH_FRACTION -
-                              SUN_PRONG_TIP_WIDTH_FRACTION) * t1)
+            half0 = radius * (
+                SUN_PRONG_BASE_WIDTH_FRACTION
+                - (SUN_PRONG_BASE_WIDTH_FRACTION - SUN_PRONG_TIP_WIDTH_FRACTION) * t0
+            )
+            half1 = radius * (
+                SUN_PRONG_BASE_WIDTH_FRACTION
+                - (SUN_PRONG_BASE_WIDTH_FRACTION - SUN_PRONG_TIP_WIDTH_FRACTION) * t1
+            )
             p0 = spoke_point(centre, radius, spoke, frac0)
             p1 = spoke_point(centre, radius, spoke, frac1)
-            colour = theme.mix_hex(theme.SUN_CORE, theme.SUN_TIP,
-                                   (t0 + t1) / 2)
-            shapes.append((_blade_dilator(p0, half0, p1, half1, angle, perp),
-                          colour))
+            colour = theme.mix_hex(theme.SUN_CORE, theme.SUN_TIP, (t0 + t1) / 2)
+            shapes.append((_blade_dilator(p0, half0, p1, half1, angle, perp), colour))
     _draw_silhouette(canvas, shapes, theme.SUN_OUTLINE, border)
 
 
-def draw_guides(canvas: tk.Canvas, centre: Point, radius: float,
-                colour: str = theme.GUIDE) -> None:
+def draw_guides(canvas: tk.Canvas, centre: Point, radius: float, colour: str = theme.GUIDE) -> None:
     """Draw faint spoke lines and range rings behind an editable star —
     this chart itself, not the piece optionally drawn on top of it
     (see SpokeEditor.redraw), so it's the one thing always visible
@@ -683,5 +692,4 @@ def draw_guides(canvas: tk.Canvas, centre: Point, radius: float,
         canvas.create_line(*centre, *end, fill=colour, dash=(1, 6))
     for fraction in LEVEL_LENGTHS[1:]:
         r = radius * fraction
-        canvas.create_oval(centre[0] - r, centre[1] - r,
-                           centre[0] + r, centre[1] + r, outline=colour)
+        canvas.create_oval(centre[0] - r, centre[1] - r, centre[0] + r, centre[1] + r, outline=colour)

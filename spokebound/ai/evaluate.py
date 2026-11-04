@@ -32,8 +32,7 @@ DECISIVE_SCORE = 10_000.0
 _LegalMovesCache = dict[Square, list[Square]]
 
 
-def _legal_moves(board: Board, square: Square,
-                 cache: _LegalMovesCache | None) -> list[Square]:
+def _legal_moves(board: Board, square: Square, cache: _LegalMovesCache | None) -> list[Square]:
     if cache is None:
         return board.legal_moves(square)
     cached = cache.get(square)
@@ -43,8 +42,7 @@ def _legal_moves(board: Board, square: Square,
     return cached
 
 
-def evaluate(game: Game, player: Player,
-            weights: Weights = DEFAULT_WEIGHTS) -> float:
+def evaluate(game: Game, player: Player, weights: Weights = DEFAULT_WEIGHTS) -> float:
     """Score ``game`` from ``player``'s perspective under ``weights``."""
     if game.outcome is not None:
         winner = game.outcome.winner
@@ -54,23 +52,18 @@ def evaluate(game: Game, player: Player,
 
     opponent = player.opponent
     cache: _LegalMovesCache = {}
-    return (weights.material * _material(game, player, opponent)
-           + weights.bounty_risk * _bounty_risk(game, player, opponent, cache)
-           + weights.captain_distance * _captain_distance(game, player,
-                                                           opponent)
-           + weights.captain_safety * _captain_safety(game, player,
-                                                       opponent, cache)
-           + weights.goal_attackers * _goal_attackers(game, player,
-                                                       opponent, cache)
-           + weights.goal_urgency * _goal_urgency(game, player, opponent,
-                                                   cache)
-           + weights.goal_area_control * _goal_area_control(game, player,
-                                                             opponent, cache)
-           + weights.piece_safety * _piece_safety(game, player, opponent,
-                                                   cache)
-           + weights.captain_escape * _captain_escape(game, player,
-                                                       opponent, cache)
-           + weights.mobility * _mobility(game, player, opponent, cache))
+    return (
+        weights.material * _material(game, player, opponent)
+        + weights.bounty_risk * _bounty_risk(game, player, opponent, cache)
+        + weights.captain_distance * _captain_distance(game, player, opponent)
+        + weights.captain_safety * _captain_safety(game, player, opponent, cache)
+        + weights.goal_attackers * _goal_attackers(game, player, opponent, cache)
+        + weights.goal_urgency * _goal_urgency(game, player, opponent, cache)
+        + weights.goal_area_control * _goal_area_control(game, player, opponent, cache)
+        + weights.piece_safety * _piece_safety(game, player, opponent, cache)
+        + weights.captain_escape * _captain_escape(game, player, opponent, cache)
+        + weights.mobility * _mobility(game, player, opponent, cache)
+    )
 
 
 def _material(game: Game, player: Player, opponent: Player) -> float:
@@ -78,17 +71,18 @@ def _material(game: Game, player: Player, opponent: Player) -> float:
     return game.score(player) - game.score(opponent)
 
 
-def _bounty_risk(game: Game, player: Player, opponent: Player,
-                 cache: _LegalMovesCache | None = None) -> float:
+def _bounty_risk(
+    game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None
+) -> float:
     """Bounty points the opponent has hanging one capture away from being
     lost, minus the same for this player — threatened bounties the
     opponent would lose are good for ``player``, and vice versa."""
-    return (_bounty_at_risk(game.board, opponent, player, cache)
-           - _bounty_at_risk(game.board, player, opponent, cache))
+    return _bounty_at_risk(game.board, opponent, player, cache) - _bounty_at_risk(
+        game.board, player, opponent, cache
+    )
 
 
-def _threatened_squares(board: Board, attacker: Player,
-                        cache: _LegalMovesCache | None = None) -> set[Square]:
+def _threatened_squares(board: Board, attacker: Player, cache: _LegalMovesCache | None = None) -> set[Square]:
     """Return every square ``attacker`` could move a piece to right now
     (pseudo-legally — good enough for a risk estimate, and far cheaper
     than filtering every one of these squares for check every time)."""
@@ -98,13 +92,13 @@ def _threatened_squares(board: Board, attacker: Player,
     return threatened
 
 
-def _bounty_at_risk(board: Board, owner: Player, attacker: Player,
-                    cache: _LegalMovesCache | None = None) -> int:
+def _bounty_at_risk(
+    board: Board, owner: Player, attacker: Player, cache: _LegalMovesCache | None = None
+) -> int:
     """Return ``owner``'s bounty points sitting on a square ``attacker``
     could move to right now."""
     threatened = _threatened_squares(board, attacker, cache)
-    return sum(piece.bounty for square, piece in board.pieces(owner)
-              if piece.bounty and square in threatened)
+    return sum(piece.bounty for square, piece in board.pieces(owner) if piece.bounty and square in threatened)
 
 
 # Extra credit once a Captain is within this many moves of the goal, on
@@ -116,8 +110,7 @@ def _bounty_at_risk(board: Board, owner: Player, attacker: Player,
 CAPTAIN_CLOSE_RANGE = 2
 
 
-def _captain_distance(game: Game, player: Player,
-                      opponent: Player) -> float:
+def _captain_distance(game: Game, player: Player, opponent: Player) -> float:
     """How much closer this player's Captain is to the goal than the
     opponent's, counted two ways at once: a steady, even score for every
     square of difference across the whole board — so making progress
@@ -152,8 +145,9 @@ def _captain_distance_to_goal(board: Board, player: Player) -> int | None:
     return max(abs(square[0] - goal_row), abs(square[1] - goal_col))
 
 
-def _goal_attackers(game: Game, player: Player, opponent: Player,
-                    cache: _LegalMovesCache | None = None) -> float:
+def _goal_attackers(
+    game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None
+) -> float:
     """Count of this player's pieces that hold or could reach the goal
     square right now, minus the opponent's.
 
@@ -172,8 +166,9 @@ def _goal_attackers(game: Game, player: Player, opponent: Player,
     return mine - theirs
 
 
-def _goal_urgency(game: Game, player: Player, opponent: Player,
-                  cache: _LegalMovesCache | None = None) -> float:
+def _goal_urgency(
+    game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None
+) -> float:
     """How urgently the opponent's Captain is closing in on a
     *completely undefended* goal, versus the same for this player's own
     advance.
@@ -197,21 +192,26 @@ def _inverse_distance(board: Board, player: Player) -> float:
     return 1.0 / distance if distance else 0.0
 
 
-def _attacker_count(board: Board, attacker: Player, square: Square,
-                    cache: _LegalMovesCache | None = None) -> int:
+def _attacker_count(
+    board: Board, attacker: Player, square: Square, cache: _LegalMovesCache | None = None
+) -> int:
     """Count ``attacker``'s pieces that could move to ``square`` right
     now, plus one if they already hold it with a piece of their own —
     occupying it denies it to the opponent's Captain exactly as
     attacking it from outside does."""
     occupant = board.get(square)
     count = 1 if (occupant is not None and occupant.owner is attacker) else 0
-    count += sum(1 for attacker_square, _ in board.pieces(attacker)
-                if square in _legal_moves(board, attacker_square, cache))
+    count += sum(
+        1
+        for attacker_square, _ in board.pieces(attacker)
+        if square in _legal_moves(board, attacker_square, cache)
+    )
     return count
 
 
-def _goal_area_control(game: Game, player: Player, opponent: Player,
-                       cache: _LegalMovesCache | None = None) -> float:
+def _goal_area_control(
+    game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None
+) -> float:
     """Control of the 8 squares immediately around the goal — not the
     goal square itself, that's goal_attackers' job — this player's minus
     the opponent's.
@@ -223,15 +223,14 @@ def _goal_area_control(game: Game, player: Player, opponent: Player,
     even get adjacent to the goal in the first place, let alone onto it.
     """
     area = _neighbours(next(iter(GOAL_SQUARES)))
-    mine = sum(_attacker_count(game.board, player, square, cache)
-              for square in area)
-    theirs = sum(_attacker_count(game.board, opponent, square, cache)
-                for square in area)
+    mine = sum(_attacker_count(game.board, player, square, cache) for square in area)
+    theirs = sum(_attacker_count(game.board, opponent, square, cache) for square in area)
     return mine - theirs
 
 
-def _piece_safety(game: Game, player: Player, opponent: Player,
-                  cache: _LegalMovesCache | None = None) -> float:
+def _piece_safety(
+    game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None
+) -> float:
     """Value of this player's pieces that are under attack with nothing
     of their own able to recapture, minus the same for the opponent.
 
@@ -242,17 +241,22 @@ def _piece_safety(game: Game, player: Player, opponent: Player,
     all is material about to be lost for free — the evaluation
     otherwise has no way to tell those two apart.
     """
-    return (_undefended_value(game.board, opponent, player, cache)
-           - _undefended_value(game.board, player, opponent, cache))
+    return _undefended_value(game.board, opponent, player, cache) - _undefended_value(
+        game.board, player, opponent, cache
+    )
 
 
-def _undefended_value(board: Board, owner: Player, attacker: Player,
-                      cache: _LegalMovesCache | None = None) -> int:
+def _undefended_value(
+    board: Board, owner: Player, attacker: Player, cache: _LegalMovesCache | None = None
+) -> int:
     """Return the total cost of ``owner``'s pieces that ``attacker``
     threatens and no other piece of ``owner``'s could recapture."""
     threatened = _threatened_squares(board, attacker, cache)
-    return sum(piece.cost for square, piece in board.pieces(owner)
-              if square in threatened and not _is_defended(board, square))
+    return sum(
+        piece.cost
+        for square, piece in board.pieces(owner)
+        if square in threatened and not _is_defended(board, square)
+    )
 
 
 def _is_defended(board: Board, square: Square) -> bool:
@@ -279,14 +283,14 @@ def _is_defended(board: Board, square: Square) -> bool:
     owner = piece.owner
     piece.owner = owner.opponent
     try:
-        return any(square in board.legal_moves(other_square)
-                  for other_square, _ in board.pieces(owner))
+        return any(square in board.legal_moves(other_square) for other_square, _ in board.pieces(owner))
     finally:
         piece.owner = owner
 
 
-def _captain_escape(game: Game, player: Player, opponent: Player,
-                    cache: _LegalMovesCache | None = None) -> float:
+def _captain_escape(
+    game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None
+) -> float:
     """This player's Captain's count of safe escape squares (legal moves
     that land somewhere the opponent doesn't currently attack), minus
     the opponent's.
@@ -297,22 +301,20 @@ def _captain_escape(game: Game, player: Player, opponent: Player,
     edge of the board — which is its own kind of danger captain_safety
     alone wouldn't catch.
     """
-    return (_escape_count(game, player, opponent, cache)
-           - _escape_count(game, opponent, player, cache))
+    return _escape_count(game, player, opponent, cache) - _escape_count(game, opponent, player, cache)
 
 
-def _escape_count(game: Game, owner: Player, attacker: Player,
-                  cache: _LegalMovesCache | None = None) -> int:
+def _escape_count(game: Game, owner: Player, attacker: Player, cache: _LegalMovesCache | None = None) -> int:
     square = _captain_square(game.board, owner)
     if square is None:
         return 0
     threatened = _threatened_squares(game.board, attacker, cache)
-    return sum(1 for dst in _legal_moves(game.board, square, cache)
-              if dst not in threatened)
+    return sum(1 for dst in _legal_moves(game.board, square, cache) if dst not in threatened)
 
 
-def _captain_safety(game: Game, player: Player, opponent: Player,
-                    cache: _LegalMovesCache | None = None) -> float:
+def _captain_safety(
+    game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None
+) -> float:
     """How much more surrounded this player's Captain is than the
     opponent's — a rough tactical-danger proxy alongside material."""
     mine = _attackers_near_captain(game.board, player, opponent, cache)
@@ -320,8 +322,9 @@ def _captain_safety(game: Game, player: Player, opponent: Player,
     return theirs - mine
 
 
-def _attackers_near_captain(board: Board, owner: Player, attacker: Player,
-                            cache: _LegalMovesCache | None = None) -> int:
+def _attackers_near_captain(
+    board: Board, owner: Player, attacker: Player, cache: _LegalMovesCache | None = None
+) -> int:
     """Count ``attacker``'s pieces that could reach ``owner``'s Captain's
     square or a square right next to it."""
     square = _captain_square(board, owner)
@@ -337,9 +340,9 @@ def _attackers_near_captain(board: Board, owner: Player, attacker: Player,
 
 def _neighbours(square: Square) -> set[Square]:
     row, col = square
-    return {(row + d_row, col + d_col)
-           for d_row in (-1, 0, 1) for d_col in (-1, 0, 1)
-           if (d_row, d_col) != (0, 0)}
+    return {
+        (row + d_row, col + d_col) for d_row in (-1, 0, 1) for d_col in (-1, 0, 1) if (d_row, d_col) != (0, 0)
+    }
 
 
 def _captain_square(board: Board, player: Player) -> Square | None:
@@ -349,15 +352,12 @@ def _captain_square(board: Board, player: Player) -> Square | None:
     return None
 
 
-def _mobility(game: Game, player: Player, opponent: Player,
-             cache: _LegalMovesCache | None = None) -> float:
+def _mobility(game: Game, player: Player, opponent: Player, cache: _LegalMovesCache | None = None) -> float:
     """Pseudo-legal move counts, this player's minus the opponent's —
     cheaper than filtering for check, and good enough as a "how much
     room to manoeuvre" signal."""
-    mine = sum(len(_legal_moves(game.board, square, cache))
-              for square, _ in game.board.pieces(player))
-    theirs = sum(len(_legal_moves(game.board, square, cache))
-                for square, _ in game.board.pieces(opponent))
+    mine = sum(len(_legal_moves(game.board, square, cache)) for square, _ in game.board.pieces(player))
+    theirs = sum(len(_legal_moves(game.board, square, cache)) for square, _ in game.board.pieces(opponent))
     return mine - theirs
 
 
@@ -377,15 +377,15 @@ def is_critical(game: Game) -> bool:
     for player in Player:
         if _goal_urgency(game, player, player.opponent, cache) != 0.0:
             return True
-    return (_hanging_piece_value(game, Player.ORANGE, cache) >= CRITICAL_PIECE_VALUE
-           or _hanging_piece_value(game, Player.WHITE, cache) >= CRITICAL_PIECE_VALUE)
+    return (
+        _hanging_piece_value(game, Player.ORANGE, cache) >= CRITICAL_PIECE_VALUE
+        or _hanging_piece_value(game, Player.WHITE, cache) >= CRITICAL_PIECE_VALUE
+    )
 
 
-def _hanging_piece_value(game: Game, owner: Player,
-                         cache: _LegalMovesCache | None = None) -> int:
+def _hanging_piece_value(game: Game, owner: Player, cache: _LegalMovesCache | None = None) -> int:
     """Return the highest cost among ``owner``'s pieces sitting on a
     square the opponent could capture right now (pseudo-legally)."""
     threatened = _threatened_squares(game.board, owner.opponent, cache)
-    values = [piece.cost for square, piece in game.board.pieces(owner)
-             if square in threatened]
+    values = [piece.cost for square, piece in game.board.pieces(owner) if square in threatened]
     return max(values, default=0)

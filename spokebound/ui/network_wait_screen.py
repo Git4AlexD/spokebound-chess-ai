@@ -24,17 +24,21 @@ class NetworkWaitScreen(tk.Frame):
     ``on_disconnected()`` instead if the peer disconnects or the
     connection errors out first."""
 
-    def __init__(self, parent: tk.Misc, session: NetworkSession,
-                 message: str, message_type: str,
-                 on_message: Callable[[Message], None],
-                 on_disconnected: Callable[[], None]) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        session: NetworkSession,
+        message: str,
+        message_type: str,
+        on_message: Callable[[Message], None],
+        on_disconnected: Callable[[], None],
+    ) -> None:
         super().__init__(parent, bg=theme.BACKGROUND)
         self._session = session
         self._message_type = message_type
         self._on_message = on_message
         self._message = message
-        self._poller = NetworkPoller(self, session, POLL_MS,
-                                     self._handle_message, on_disconnected)
+        self._poller = NetworkPoller(self, session, POLL_MS, self._handle_message, on_disconnected)
 
         self._rebuild()
         # Keeps this screen's scale matched to the window as it's
@@ -63,11 +67,10 @@ class NetworkWaitScreen(tk.Frame):
             child.destroy()
         starfield.add_starfield(self)
         scale = window_scale(self)
-        theme.make_label(self, "Spokebound",
-                         theme.scaled_font(theme.FONT_TITLE, scale),
-                         fg=theme.ACCENT).pack(pady=(round(120 * scale), 4))
-        theme.make_label(self, self._message,
-                         theme.scaled_font(theme.FONT_HEADING, scale)).pack()
+        theme.make_label(
+            self, "Spokebound", theme.scaled_font(theme.FONT_TITLE, scale), fg=theme.ACCENT
+        ).pack(pady=(round(120 * scale), 4))
+        theme.make_label(self, self._message, theme.scaled_font(theme.FONT_HEADING, scale)).pack()
         add_gear(self)
 
     def _on_destroy(self, event: tk.Event) -> None:

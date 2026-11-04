@@ -19,16 +19,20 @@ class SpokeEditor(tk.Canvas):
     rules.
     """
 
-    def __init__(self, parent: tk.Misc, on_adjust: AdjustCallback,
-                 size: int = 260, bg: str = theme.BACKGROUND,
-                 guide_colour: str = theme.GUIDE) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        on_adjust: AdjustCallback,
+        size: int = 260,
+        bg: str = theme.BACKGROUND,
+        guide_colour: str = theme.GUIDE,
+    ) -> None:
         # A dedicated strip above the star for the "Forward" label, scaled
         # with the star rather than pinned a fixed number of pixels above
         # it — a fixed offset pushes the label above the canvas entirely
         # (clipping it) once the star gets small.
         label_area = max(18, round(size * 0.1))
-        super().__init__(parent, width=size, height=size + label_area,
-                         bg=bg, highlightthickness=0)
+        super().__init__(parent, width=size, height=size + label_area, bg=bg, highlightthickness=0)
         self._on_adjust = on_adjust
         self._piece: Piece | None = None
         self._centre = (size / 2, label_area + size / 2)
@@ -47,11 +51,9 @@ class SpokeEditor(tk.Canvas):
     def redraw(self) -> None:
         """Redraw the guides and the current piece."""
         self.delete("all")
-        drawing.draw_guides(self, self._centre, self._radius,
-                            colour=self._guide_colour)
+        drawing.draw_guides(self, self._centre, self._radius, colour=self._guide_colour)
         x, _ = self._centre
-        self.create_text(x, self._label_y, text="Forward",
-                         fill=self._guide_colour, font=theme.FONT_SMALL)
+        self.create_text(x, self._label_y, text="Forward", fill=self._guide_colour, font=theme.FONT_SMALL)
         if self._piece is not None:
             drawing.draw_star(self, self._centre, self._radius, self._piece)
 

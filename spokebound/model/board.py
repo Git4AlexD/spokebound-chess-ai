@@ -124,8 +124,7 @@ class Board:
                 break
         return False
 
-    def _ray(self, src: Square, piece: Piece,
-             spoke: int) -> Iterator[Square]:
+    def _ray(self, src: Square, piece: Piece, spoke: int) -> Iterator[Square]:
         """Yield squares reachable along one spoke.
 
         Movement stops at the board edge or the first piece in the way;
@@ -139,8 +138,7 @@ class Board:
             square = (square[0] + d_row, square[1] + d_col)
             steps += 1
             row, col = square
-            if not (0 <= row < BOARD_ROWS and 0 <= col < BOARD_COLS) \
-                    and not self.in_bounds(square):
+            if not (0 <= row < BOARD_ROWS and 0 <= col < BOARD_COLS) and not self.in_bounds(square):
                 return
             occupant = self._grid.get(square)
             if occupant is None:

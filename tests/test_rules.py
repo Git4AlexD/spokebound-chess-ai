@@ -47,19 +47,23 @@ class MovementTests(unittest.TestCase):
     """Move generation and blocking."""
 
     def test_orange_forward_is_up_and_white_forward_is_down(self):
-        board = place_all({
-            (6, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (0, 0): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-        })
+        board = place_all(
+            {
+                (6, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (0, 0): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+            }
+        )
         game = Game(board)
         self.assertEqual(game.board.legal_moves((6, 0)), [(5, 0)])
         self.assertEqual(game.board.legal_moves((0, 0)), [(1, 0)])
 
     def test_ray_stops_and_captures_at_the_first_piece(self):
-        board = place_all({
-            (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-        })
+        board = place_all(
+            {
+                (5, 3): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (3, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+            }
+        )
         game = Game(board)
         self.assertEqual(game.board.legal_moves((5, 3)), [(4, 3), (3, 3)])
 
@@ -67,8 +71,7 @@ class MovementTests(unittest.TestCase):
         board = place_all({(4, 3): make_captain(Player.ORANGE)})
         game = Game(board)
         moves = set(game.board.legal_moves((4, 3)))
-        expected = {(3, 3), (3, 4), (4, 4), (5, 4),
-                   (5, 3), (5, 2), (4, 2), (3, 2)}
+        expected = {(3, 3), (3, 4), (4, 4), (5, 4), (5, 3), (5, 2), (4, 2), (3, 2)}
         self.assertEqual(moves, expected)
 
 
@@ -76,11 +79,13 @@ class CheckTests(unittest.TestCase):
     """Leaving your own Captain attacked, checkmate and stalemate."""
 
     def test_a_move_that_leaves_your_own_captain_attacked_is_illegal(self):
-        board = place_all({
-            (0, 0): make_captain(Player.WHITE),
-            (0, 3): Piece(Player.ORANGE, spokes=one_spoke(W, UNLIMITED)),
-            (8, 0): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (0, 0): make_captain(Player.WHITE),
+                (0, 3): Piece(Player.ORANGE, spokes=one_spoke(W, UNLIMITED)),
+                (8, 0): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         game.current = Player.WHITE
         self.assertTrue(game.in_check(Player.WHITE))
@@ -88,13 +93,15 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(set(game.legal_moves((0, 0))), {(1, 0), (1, 1)})
 
     def test_checkmate_ends_the_game_for_the_mated_player(self):
-        board = place_all({
-            (0, 0): make_captain(Player.WHITE),
-            (0, 3): Piece(Player.ORANGE, spokes=one_spoke(W, UNLIMITED)),
-            (2, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (2, 1): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (0, 0): make_captain(Player.WHITE),
+                (0, 3): Piece(Player.ORANGE, spokes=one_spoke(W, UNLIMITED)),
+                (2, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (2, 1): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         game.current = Player.WHITE
         self.assertEqual(game.legal_moves((0, 0)), [])
@@ -103,13 +110,15 @@ class CheckTests(unittest.TestCase):
         self.assertIn("checkmated", game.outcome.reason)
 
     def test_a_stalemated_player_loses_rather_than_draws(self):
-        board = place_all({
-            (0, 0): make_captain(Player.WHITE),
-            (2, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (2, 1): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (0, 2): Piece(Player.ORANGE, spokes=one_spoke(W, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (0, 0): make_captain(Player.WHITE),
+                (2, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (2, 1): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (0, 2): Piece(Player.ORANGE, spokes=one_spoke(W, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         game.current = Player.WHITE
         self.assertFalse(game.in_check(Player.WHITE))
@@ -178,20 +187,18 @@ class DeploymentTests(unittest.TestCase):
     placed turn by turn."""
 
     def _fleets(self):
-        return ([Piece(Player.ORANGE) for _ in range(FLEET_SIZE)],
-                [Piece(Player.WHITE) for _ in range(FLEET_SIZE)])
+        return (
+            [Piece(Player.ORANGE) for _ in range(FLEET_SIZE)],
+            [Piece(Player.WHITE) for _ in range(FLEET_SIZE)],
+        )
 
     def test_both_captains_start_on_the_centre_column_behind_the_lines(self):
         deployment = Deployment(*self._fleets())
         board = deployment.board
-        self.assertEqual(board.extra_squares[Player.ORANGE],
-                         (BOARD_ROWS, CAPTAIN_COLUMN))
-        self.assertEqual(board.extra_squares[Player.WHITE],
-                         (-1, CAPTAIN_COLUMN))
-        self.assertIs(board.get((BOARD_ROWS, CAPTAIN_COLUMN)),
-                     deployment.captains[Player.ORANGE])
-        self.assertIs(board.get((-1, CAPTAIN_COLUMN)),
-                     deployment.captains[Player.WHITE])
+        self.assertEqual(board.extra_squares[Player.ORANGE], (BOARD_ROWS, CAPTAIN_COLUMN))
+        self.assertEqual(board.extra_squares[Player.WHITE], (-1, CAPTAIN_COLUMN))
+        self.assertIs(board.get((BOARD_ROWS, CAPTAIN_COLUMN)), deployment.captains[Player.ORANGE])
+        self.assertIs(board.get((-1, CAPTAIN_COLUMN)), deployment.captains[Player.WHITE])
 
     def test_only_the_built_fleet_is_placed_turn_by_turn(self):
         deployment = Deployment(*self._fleets())
@@ -204,10 +211,8 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(order, [Player.ORANGE, Player.WHITE] * FLEET_SIZE)
 
         board = deployment.board
-        self.assertEqual(len(list(board.pieces(Player.ORANGE))),
-                         FLEET_SIZE + 1)  # + the Captain
-        self.assertEqual(len(list(board.pieces(Player.WHITE))),
-                         FLEET_SIZE + 1)
+        self.assertEqual(len(list(board.pieces(Player.ORANGE))), FLEET_SIZE + 1)  # + the Captain
+        self.assertEqual(len(list(board.pieces(Player.WHITE))), FLEET_SIZE + 1)
 
     def test_cannot_deploy_a_regular_piece_outside_own_sanctuary(self):
         deployment = Deployment(*self._fleets())
@@ -237,11 +242,14 @@ class GameFlowTests(unittest.TestCase):
     def test_capturing_a_bounty_opens_a_turn_ending_upgrade(self):
         mover = Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED))
         target = Piece(Player.WHITE, spokes=one_spoke(N, 1), bounty=3)
-        board = place_all({
-            (5, 3): mover, (3, 3): target,
-            (0, 0): make_captain(Player.WHITE),
-            (8, 6): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (3, 3): target,
+                (0, 0): make_captain(Player.WHITE),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         game.move((5, 3), (3, 3))
         self.assertEqual(game.upgrade.points, 3)
@@ -251,11 +259,13 @@ class GameFlowTests(unittest.TestCase):
 
     def test_reaching_the_far_row_promotes_and_opens_an_upgrade(self):
         mover = Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED))
-        board = place_all({
-            (1, 3): mover,
-            (0, 0): make_captain(Player.WHITE),
-            (8, 6): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (1, 3): mover,
+                (0, 0): make_captain(Player.WHITE),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         game.move((1, 3), (0, 3))
         self.assertTrue(mover.promoted)
@@ -263,11 +273,13 @@ class GameFlowTests(unittest.TestCase):
 
     def test_captain_never_promotes_or_opens_an_upgrade(self):
         captain = make_captain(Player.ORANGE)
-        board = place_all({
-            (1, 3): captain,
-            (0, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1), bounty=2),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (1, 3): captain,
+                (0, 3): Piece(Player.WHITE, spokes=one_spoke(N, 1), bounty=2),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         game.move((1, 3), (0, 3))
         self.assertFalse(captain.promoted)
@@ -277,10 +289,12 @@ class GameFlowTests(unittest.TestCase):
     def test_marching_the_captain_onto_the_centre_wins_instantly(self):
         goal_row, goal_col = next(iter(GOAL_SQUARES))
         start = (goal_row - 1, goal_col)
-        board = place_all({
-            start: make_captain(Player.ORANGE),
-            (0, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                start: make_captain(Player.ORANGE),
+                (0, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         game.move(start, (goal_row, goal_col))
         self.assertEqual(game.outcome.winner, Player.ORANGE)
@@ -288,11 +302,13 @@ class GameFlowTests(unittest.TestCase):
 
     def test_copy_is_independent_of_the_original(self):
         mover = Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED))
-        board = place_all({
-            (5, 3): mover,
-            (0, 0): make_captain(Player.WHITE),
-            (8, 6): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (0, 0): make_captain(Player.WHITE),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         clone = game.copy()
         clone.move((5, 3), (4, 3))
@@ -303,11 +319,14 @@ class GameFlowTests(unittest.TestCase):
     def test_copy_keeps_the_pending_upgrade_pointed_at_the_cloned_piece(self):
         mover = Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED))
         target = Piece(Player.WHITE, spokes=one_spoke(N, 1), bounty=3)
-        board = place_all({
-            (5, 3): mover, (3, 3): target,
-            (0, 0): make_captain(Player.WHITE),
-            (8, 6): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (5, 3): mover,
+                (3, 3): target,
+                (0, 0): make_captain(Player.WHITE),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         game.move((5, 3), (3, 3))
         clone = game.copy()
@@ -316,34 +335,39 @@ class GameFlowTests(unittest.TestCase):
         self.assertIsNot(clone.upgrade.piece, game.upgrade.piece)
 
     def test_all_legal_moves_lists_every_piece_for_the_current_player(self):
-        board = place_all({
-            (6, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (6, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (0, 0): make_captain(Player.WHITE),
-            (8, 6): make_captain(Player.ORANGE),
-        })
+        board = place_all(
+            {
+                (6, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (6, 6): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (0, 0): make_captain(Player.WHITE),
+                (8, 6): make_captain(Player.ORANGE),
+            }
+        )
         game = Game(board)
         moves = game.all_legal_moves(Player.ORANGE)
-        self.assertCountEqual(
-            moves, [((6, 0), (5, 0)), ((6, 6), (5, 6))])
+        self.assertCountEqual(moves, [((6, 0), (5, 0)), ((6, 6), (5, 6))])
 
     def test_all_legal_moves_is_empty_for_the_player_not_on_move(self):
-        board = place_all({
-            (6, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
-            (0, 0): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (8, 6): make_captain(Player.ORANGE),
-            (1, 0): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (6, 0): Piece(Player.ORANGE, spokes=one_spoke(N, 1)),
+                (0, 0): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (8, 6): make_captain(Player.ORANGE),
+                (1, 0): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         self.assertEqual(game.all_legal_moves(Player.WHITE), [])
 
     def test_turn_limit_decides_the_game_on_points(self):
-        board = place_all({
-            (4, 0): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
-            (4, 6): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
-            (8, 3): make_captain(Player.ORANGE),
-            (0, 3): make_captain(Player.WHITE),
-        })
+        board = place_all(
+            {
+                (4, 0): Piece(Player.ORANGE, spokes=one_spoke(N, UNLIMITED)),
+                (4, 6): Piece(Player.WHITE, spokes=one_spoke(N, 1)),
+                (8, 3): make_captain(Player.ORANGE),
+                (0, 3): make_captain(Player.WHITE),
+            }
+        )
         game = Game(board)
         game.moves_made = {Player.ORANGE: TURN_LIMIT, Player.WHITE: TURN_LIMIT}
         game.finish_turn()

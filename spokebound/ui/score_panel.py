@@ -29,21 +29,28 @@ class ScorePanel(tk.Frame):
     progress bar against the turn limit) and points left on the board.
     """
 
-    def __init__(self, parent: tk.Misc, game: Game,
-                 card_width: int = BASE_CARD_WIDTH,
-                 card_height: int = BASE_CARD_HEIGHT) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        game: Game,
+        card_width: int = BASE_CARD_WIDTH,
+        card_height: int = BASE_CARD_HEIGHT,
+    ) -> None:
         super().__init__(parent, bg=theme.PANEL)
         self._game = game
         self._width = card_width
         self._height = card_height
         self._cards: dict[Player, tk.Canvas] = {}
         for index, player in enumerate(Player):
-            canvas = tk.Canvas(self, width=card_width, height=card_height,
-                               bg=CARD_FILL,
-                               highlightthickness=1,
-                               highlightbackground=theme.PLAYER_TEXT[player])
-            canvas.grid(row=0, column=index,
-                       padx=(0, 8) if index == 0 else 0)
+            canvas = tk.Canvas(
+                self,
+                width=card_width,
+                height=card_height,
+                bg=CARD_FILL,
+                highlightthickness=1,
+                highlightbackground=theme.PLAYER_TEXT[player],
+            )
+            canvas.grid(row=0, column=index, padx=(0, 8) if index == 0 else 0)
             self._cards[player] = canvas
         # Not drawn here: DeployScreen's own _refresh (right after
         # _rebuild) always redraws this immediately afterwards anyway
@@ -68,30 +75,47 @@ class ScorePanel(tk.Frame):
             canvas.delete("all")
             colour = theme.PLAYER_TEXT[player]
             bar_width = self._width - 2 * PADDING
-            name = canvas.create_text(PADDING, PADDING, anchor="nw",
-                                      text=player.label,
-                                      font=theme.FONT_HEADING, fill=colour)
+            name = canvas.create_text(
+                PADDING, PADDING, anchor="nw", text=player.label, font=theme.FONT_HEADING, fill=colour
+            )
             moves = canvas.create_text(
-                PADDING, _below(canvas, name), anchor="nw",
+                PADDING,
+                _below(canvas, name),
+                anchor="nw",
                 text=f"{game.moves_made[player]}/{TURN_LIMIT} moves",
-                font=theme.FONT_SMALL, fill=theme.MUTED_TEXT)
+                font=theme.FONT_SMALL,
+                fill=theme.MUTED_TEXT,
+            )
             bar_top = _below(canvas, moves)
             # A recessed track (theme.BACKGROUND, not theme.DISABLED) —
             # DISABLED's teal sits too close in luminance to Orange's
             # copper PLAYER_TEXT fill to tell filled from empty.
             canvas.create_rectangle(
-                PADDING, bar_top, PADDING + bar_width,
-                bar_top + BASE_BAR_HEIGHT, fill=theme.BACKGROUND, outline="")
-            fraction = (min(1.0, game.moves_made[player] / TURN_LIMIT)
-                        if TURN_LIMIT else 0.0)
+                PADDING,
+                bar_top,
+                PADDING + bar_width,
+                bar_top + BASE_BAR_HEIGHT,
+                fill=theme.BACKGROUND,
+                outline="",
+            )
+            fraction = min(1.0, game.moves_made[player] / TURN_LIMIT) if TURN_LIMIT else 0.0
             if fraction > 0:
                 canvas.create_rectangle(
-                    PADDING, bar_top, PADDING + bar_width * fraction,
-                    bar_top + BASE_BAR_HEIGHT, fill=colour, outline="")
+                    PADDING,
+                    bar_top,
+                    PADDING + bar_width * fraction,
+                    bar_top + BASE_BAR_HEIGHT,
+                    fill=colour,
+                    outline="",
+                )
             points = canvas.create_text(
-                PADDING, bar_top + BASE_BAR_HEIGHT + ROW_GAP, anchor="nw",
+                PADDING,
+                bar_top + BASE_BAR_HEIGHT + ROW_GAP,
+                anchor="nw",
                 text=f"{theme.points_text(game.score(player))} on board",
-                font=theme.FONT_SMALL, fill=theme.TEXT)
+                font=theme.FONT_SMALL,
+                fill=theme.TEXT,
+            )
             bottom = canvas.bbox(points)[3] + PADDING
             canvas.configure(height=max(self._height, bottom))
 

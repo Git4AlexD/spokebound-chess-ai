@@ -24,6 +24,7 @@ def _make_app() -> SpokeboundApp:
     """Return a SpokeboundApp built without its normal __init__ side
     effects (maximizing the window, starting menu music) — this test
     only needs its screen-switching logic, not a real visible window."""
+
     def build() -> SpokeboundApp:
         app = SpokeboundApp.__new__(SpokeboundApp)
         tk.Tk.__init__(app)
@@ -35,12 +36,12 @@ def _make_app() -> SpokeboundApp:
         app._local_player = None
         app._remote_player = None
         return app
+
     return retry_tcl_init(build)
 
 
 def _pieces(preset_name: str, owner: Player) -> list[Piece]:
-    return [Piece(owner, spokes=list(spokes))
-           for spokes in PRESETS[preset_name]]
+    return [Piece(owner, spokes=list(spokes)) for spokes in PRESETS[preset_name]]
 
 
 class NetworkFleetHandoffTests(unittest.TestCase):
@@ -100,8 +101,7 @@ class NetworkFleetHandoffTests(unittest.TestCase):
         self.assertEqual(type(self.host._screen).__name__, "DeployScreen")
         self.assertEqual(type(self.join._screen).__name__, "DeployScreen")
 
-    def test_a_placement_made_right_after_connecting_reaches_the_peer(
-            self) -> None:
+    def test_a_placement_made_right_after_connecting_reaches_the_peer(self) -> None:
         """Once both are on the deploy screen, a placement sent the
         instant deployment starts — before the peer's own first poll
         would otherwise have run — must still update the peer's board

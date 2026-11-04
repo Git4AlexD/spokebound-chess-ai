@@ -82,13 +82,21 @@ class _Features:
         "see",
     )
 
-    def __init__(self, quiescence: bool, quiescence_max_plies: int,
-                move_ordering: bool, pvs: bool = True,
-                reductions: bool = True, aspiration: bool = True,
-                iid: bool = True, see: bool = True,
-                check_extensions: int = _MAX_CHECK_EXTENSIONS,
-                quiescence_pruning: bool = True, futility: bool = True,
-                history_pruning: bool = True) -> None:
+    def __init__(
+        self,
+        quiescence: bool,
+        quiescence_max_plies: int,
+        move_ordering: bool,
+        pvs: bool = True,
+        reductions: bool = True,
+        aspiration: bool = True,
+        iid: bool = True,
+        see: bool = True,
+        check_extensions: int = _MAX_CHECK_EXTENSIONS,
+        quiescence_pruning: bool = True,
+        futility: bool = True,
+        history_pruning: bool = True,
+    ) -> None:
         self.quiescence = quiescence
         self.quiescence_max_plies = quiescence_max_plies
         self.move_ordering = move_ordering
@@ -107,15 +115,13 @@ class _TimeUp(Exception):
     """Raised to unwind a search once its time budget has run out."""
 
 
-def choose_move(game: Game, difficulty: int,
-                weights: Weights = DEFAULT_WEIGHTS) -> Move:
+def choose_move(game: Game, difficulty: int, weights: Weights = DEFAULT_WEIGHTS) -> Move:
     """Return the ``(src, dst)`` move ``game.current`` should play, at
     ``difficulty`` 1-10 (see spokebound.ai.levels.LEVELS)."""
     return choose_turn(game, difficulty, weights)[:2]
 
 
-def choose_turn(game: Game, difficulty: int,
-                weights: Weights = DEFAULT_WEIGHTS) -> Ply:
+def choose_turn(game: Game, difficulty: int, weights: Weights = DEFAULT_WEIGHTS) -> Ply:
     """Like :func:`choose_move`, but returns the whole turn — the move and
     how any upgrade it opens is spent — ready for :func:`play_ply`."""
     if difficulty not in LEVELS:
@@ -123,8 +129,7 @@ def choose_turn(game: Game, difficulty: int,
     return choose_turn_at(game, LEVELS[difficulty], weights)
 
 
-def choose_move_at(game: Game, level: Level,
-                   weights: Weights = DEFAULT_WEIGHTS) -> Move:
+def choose_move_at(game: Game, level: Level, weights: Weights = DEFAULT_WEIGHTS) -> Move:
     """Like :func:`choose_move`, but for a ``Level`` of your own choosing
     rather than one of the 10 player-facing rungs — for internal callers
     that want the real engine at a fast profile detached from the
@@ -132,8 +137,7 @@ def choose_move_at(game: Game, level: Level,
     return choose_turn_at(game, level, weights)[:2]
 
 
-def choose_turn_at(game: Game, level: Level,
-                   weights: Weights = DEFAULT_WEIGHTS) -> Ply:
+def choose_turn_at(game: Game, level: Level, weights: Weights = DEFAULT_WEIGHTS) -> Ply:
     """The whole-turn version of :func:`choose_move_at`."""
     moves = game.all_legal_moves(game.current)
     if not moves:
@@ -146,8 +150,7 @@ def choose_turn_at(game: Game, level: Level,
     return _choose_level(game, moves, weights, level)
 
 
-def apply_move(game: Game, move: Move,
-               weights: Weights = DEFAULT_WEIGHTS) -> Game:
+def apply_move(game: Game, move: Move, weights: Weights = DEFAULT_WEIGHTS) -> Game:
     """Return a copy of ``game`` with ``move`` played and any bonus points
     it earns spent greedily (see :mod:`spokebound.ai.upgrade`), with the
     turn closed. Search itself uses :func:`_children`, which searches the
@@ -160,8 +163,7 @@ def apply_move(game: Game, move: Move,
     return clone
 
 
-def _children(game: Game, move: Move,
-              weights: Weights) -> list[tuple[Ply, Game]]:
+def _children(game: Game, move: Move, weights: Weights) -> list[tuple[Ply, Game]]:
     """Return every ``(ply, position)`` that playing ``move`` can lead to.
 
     A move that earns a bounty or promotion opens an upgrade, and each
@@ -186,14 +188,12 @@ def _default_ply(game: Game, move: Move, weights: Weights) -> Ply:
     return _children(game, move, weights)[0][0]
 
 
-def _successor_pairs(game: Game, moves: list[Move],
-                     weights: Weights) -> Iterator[tuple[Ply, Game]]:
+def _successor_pairs(game: Game, moves: list[Move], weights: Weights) -> Iterator[tuple[Ply, Game]]:
     for move in moves:
         yield from _children(game, move, weights)
 
 
-def play_ply(game: Game, ply: Ply | Move,
-             weights: Weights = DEFAULT_WEIGHTS) -> None:
+def play_ply(game: Game, ply: Ply | Move, weights: Weights = DEFAULT_WEIGHTS) -> None:
     """Play ``ply`` for the current player, including the upgrade spend it
     carries. A bare move (no spend) has its upgrade spent greedily with
     ``weights`` instead, as the fixed benchmark bots do."""
@@ -208,27 +208,47 @@ def play_ply(game: Game, ply: Ply | Move,
     game.finish_turn()
 
 
-def _choose_level(game: Game, moves: list[Move], weights: Weights,
-                  level: Level) -> Ply:
+def _choose_level(game: Game, moves: list[Move], weights: Weights, level: Level) -> Ply:
     """A rung of the 10-level ladder — the shared engine, handed that
     level's own depth/time/feature profile."""
-    features = _Features(level.use_quiescence, QUIESCENCE_MAX_PLIES,
-                         level.use_move_ordering, level.use_pvs,
-                         level.use_reductions, level.use_aspiration,
-                         level.use_iid, level.use_see,
-                         level.check_extensions,
-                         level.use_quiescence_pruning, level.use_futility,
-                         level.use_history_pruning)
-    return _run_search(game, moves, weights, level.min_depth,
-                       level.max_depth, level.time_limit,
-                       level.critical_time_limit, features,
-                       level.use_transposition_table)
+    features = _Features(
+        level.use_quiescence,
+        QUIESCENCE_MAX_PLIES,
+        level.use_move_ordering,
+        level.use_pvs,
+        level.use_reductions,
+        level.use_aspiration,
+        level.use_iid,
+        level.use_see,
+        level.check_extensions,
+        level.use_quiescence_pruning,
+        level.use_futility,
+        level.use_history_pruning,
+    )
+    return _run_search(
+        game,
+        moves,
+        weights,
+        level.min_depth,
+        level.max_depth,
+        level.time_limit,
+        level.critical_time_limit,
+        features,
+        level.use_transposition_table,
+    )
 
 
-def _run_search(game: Game, moves: list[Move], weights: Weights,
-                min_depth: int, max_depth: int, time_limit: float,
-                critical_time_limit: float, features: _Features,
-                use_transposition_table: bool) -> Move:
+def _run_search(
+    game: Game,
+    moves: list[Move],
+    weights: Weights,
+    min_depth: int,
+    max_depth: int,
+    time_limit: float,
+    critical_time_limit: float,
+    features: _Features,
+    use_transposition_table: bool,
+) -> Move:
     """Iterative-deepening alpha-beta: search ``min_depth`` plies (a
     guaranteed result), then try one ply deeper at a time up to
     ``max_depth`` as long as time remains, keeping the deepest result
@@ -247,8 +267,7 @@ def _run_search(game: Game, moves: list[Move], weights: Weights,
     budget, can find anything better than a proven win, so there's no
     reason to keep the clock running once one's in hand.
     """
-    deadline = time.monotonic() + (critical_time_limit
-                                   if is_critical(game) else time_limit)
+    deadline = time.monotonic() + (critical_time_limit if is_critical(game) else time_limit)
     table: dict[tuple, _TTEntry] = {} if use_transposition_table else None
     killers: _KillerTable | None = {} if features.move_ordering else None
     history: _HistoryTable | None = {} if features.move_ordering else None
@@ -257,8 +276,8 @@ def _run_search(game: Game, moves: list[Move], weights: Weights,
     for depth in range(min_depth, max_depth + 1):
         try:
             best_ply, best_score = _root_with_aspiration(
-                game, moves, weights, depth, deadline, table, features,
-                killers, history, previous)
+                game, moves, weights, depth, deadline, table, features, killers, history, previous
+            )
         except _TimeUp:
             break
         previous = best_score
@@ -269,52 +288,72 @@ def _run_search(game: Game, moves: list[Move], weights: Weights,
     return best_ply
 
 
-def _root_with_aspiration(game: Game, moves: list[Move], weights: Weights,
-                         depth: int, deadline: float,
-                         table: dict[tuple, _TTEntry] | None,
-                         features: _Features,
-                         killers: _KillerTable | None,
-                         history: _HistoryTable | None,
-                         previous: float | None) -> tuple[Ply, float]:
+def _root_with_aspiration(
+    game: Game,
+    moves: list[Move],
+    weights: Weights,
+    depth: int,
+    deadline: float,
+    table: dict[tuple, _TTEntry] | None,
+    features: _Features,
+    killers: _KillerTable | None,
+    history: _HistoryTable | None,
+    previous: float | None,
+) -> tuple[Ply, float]:
     """Search the root with a narrow window around the previous iteration's
     score; if the true score falls outside it, search again with the full
     window. The window only saves work — the answer is the same either way.
     """
-    if (features.aspiration and previous is not None
-            and abs(previous) < DECISIVE_SCORE):
+    if features.aspiration and previous is not None and abs(previous) < DECISIVE_SCORE:
         low, high = previous - _ASPIRATION_WINDOW, previous + _ASPIRATION_WINDOW
-        ply, score = _alpha_beta_root(game, moves, weights, depth, deadline,
-                                      table, features, killers, history,
-                                      low, high)
+        ply, score = _alpha_beta_root(
+            game, moves, weights, depth, deadline, table, features, killers, history, low, high
+        )
         if low < score < high:
             return ply, score
-    return _alpha_beta_root(game, moves, weights, depth, deadline, table,
-                            features, killers, history)
+    return _alpha_beta_root(game, moves, weights, depth, deadline, table, features, killers, history)
 
 
-def _alpha_beta_root(game: Game, moves: list[Move], weights: Weights,
-                     depth: int, deadline: float,
-                     table: dict[tuple, _TTEntry] | None,
-                     features: _Features,
-                     killers: _KillerTable | None = None,
-                     history: _HistoryTable | None = None,
-                     low: float = float("-inf"),
-                     high: float = float("inf"),
-                     ) -> tuple[Ply, float]:
+def _alpha_beta_root(
+    game: Game,
+    moves: list[Move],
+    weights: Weights,
+    depth: int,
+    deadline: float,
+    table: dict[tuple, _TTEntry] | None,
+    features: _Features,
+    killers: _KillerTable | None = None,
+    history: _HistoryTable | None = None,
+    low: float = float("-inf"),
+    high: float = float("inf"),
+) -> tuple[Ply, float]:
     player = game.current
     tt_move = _tt_move(table, game)
     if features.move_ordering:
-        moves = _order_moves(game, moves, tt_move,
-                             killers.get(depth) if killers is not None
-                             else None, history, features.see)
+        moves = _order_moves(
+            game, moves, tt_move, killers.get(depth) if killers is not None else None, history, features.see
+        )
     alpha, beta = low, high
     best_ply, best_score = None, float("-inf")
     for index, (ply, child) in enumerate(_successor_pairs(game, moves, weights)):
-        child_depth, child_extensions = _extended_depth(
-            child, depth - 1, features.check_extensions)
-        score = _child_value(child, child_depth, child_extensions, alpha, beta,
-                             True, index == 0, False, player, weights,
-                             deadline, table, features, killers, history)
+        child_depth, child_extensions = _extended_depth(child, depth - 1, features.check_extensions)
+        score = _child_value(
+            child,
+            child_depth,
+            child_extensions,
+            alpha,
+            beta,
+            True,
+            index == 0,
+            False,
+            player,
+            weights,
+            deadline,
+            table,
+            features,
+            killers,
+            history,
+        )
         if best_ply is None or score > best_score:
             best_score, best_ply = score, ply
         alpha = max(alpha, best_score)
@@ -325,8 +364,7 @@ def _alpha_beta_root(game: Game, moves: list[Move], weights: Weights,
     return best_ply, best_score
 
 
-def _extended_depth(child: Game, depth: int,
-                    extensions_left: int) -> tuple[int, int]:
+def _extended_depth(child: Game, depth: int, extensions_left: int) -> tuple[int, int]:
     """Return ``depth`` for ``child``'s subtree, extended by one extra
     ply (with ``extensions_left`` reduced by one) if ``child`` is a
     forcing check on whoever's about to move there and the line hasn't
@@ -336,8 +374,7 @@ def _extended_depth(child: Game, depth: int,
     return depth, extensions_left
 
 
-def _terminal_score(game: Game, player: Player, weights: Weights,
-                    plies_in_hand: int) -> float:
+def _terminal_score(game: Game, player: Player, weights: Weights, plies_in_hand: int) -> float:
     """Return ``game``'s terminal score, nudged by ``plies_in_hand`` —
     however much search budget was still unspent at the node the outcome
     was found on, a stand-in for how few plies it took to get there —
@@ -367,12 +404,23 @@ _LMR_FIRST_MOVE = 3
 _LMR_MIN_DEPTH = 3
 
 
-def _child_value(child: Game, depth: int, extensions: int, alpha: float,
-                 beta: float, maximizing: bool, first: bool, reducible: bool,
-                 player: Player, weights: Weights, deadline: float,
-                 table: dict[tuple, _TTEntry] | None, features: _Features,
-                 killers: _KillerTable | None,
-                 history: _HistoryTable | None) -> float:
+def _child_value(
+    child: Game,
+    depth: int,
+    extensions: int,
+    alpha: float,
+    beta: float,
+    maximizing: bool,
+    first: bool,
+    reducible: bool,
+    player: Player,
+    weights: Weights,
+    deadline: float,
+    table: dict[tuple, _TTEntry] | None,
+    features: _Features,
+    killers: _KillerTable | None,
+    history: _HistoryTable | None,
+) -> float:
     """Score one child of a node, with principal variation search and late
     move reductions layered on the plain alpha-beta window.
 
@@ -383,13 +431,25 @@ def _child_value(child: Game, depth: int, extensions: int, alpha: float,
     A ``reducible`` child is searched a ply shallower first, and only
     searched at full depth if that already beats the bound.
     """
+
     def improves(score: float) -> bool:
         return score > alpha if maximizing else score < beta
 
     def search(depth_left: int, lo: float, hi: float) -> float:
-        return _alpha_beta(child, depth_left, lo, hi, player, weights,
-                           deadline, table, features, killers, history,
-                           extensions)
+        return _alpha_beta(
+            child,
+            depth_left,
+            lo,
+            hi,
+            player,
+            weights,
+            deadline,
+            table,
+            features,
+            killers,
+            history,
+            extensions,
+        )
 
     if reducible:
         reduced = search(depth - 1, alpha, beta)
@@ -409,21 +469,29 @@ def _child_value(child: Game, depth: int, extensions: int, alpha: float,
     return probe
 
 
-def _alpha_beta(game: Game, depth: int, alpha: float, beta: float,
-                player: Player, weights: Weights, deadline: float,
-                table: dict[tuple, _TTEntry] | None,
-                features: _Features,
-                killers: _KillerTable | None = None,
-                history: _HistoryTable | None = None,
-                extensions_left: int = _MAX_CHECK_EXTENSIONS) -> float:
+def _alpha_beta(
+    game: Game,
+    depth: int,
+    alpha: float,
+    beta: float,
+    player: Player,
+    weights: Weights,
+    deadline: float,
+    table: dict[tuple, _TTEntry] | None,
+    features: _Features,
+    killers: _KillerTable | None = None,
+    history: _HistoryTable | None = None,
+    extensions_left: int = _MAX_CHECK_EXTENSIONS,
+) -> float:
     if time.monotonic() >= deadline:
         raise _TimeUp
     if game.is_over:
         return _terminal_score(game, player, weights, depth)
     if depth <= 0:
         if features.quiescence:
-            return _quiescence(game, alpha, beta, player, weights, deadline,
-                               features.quiescence_max_plies, features)
+            return _quiescence(
+                game, alpha, beta, player, weights, deadline, features.quiescence_max_plies, features
+            )
         return evaluate(game, player, weights)
 
     key = _state_key(game) if table is not None else None
@@ -443,47 +511,82 @@ def _alpha_beta(game: Game, depth: int, alpha: float, beta: float,
                 if alpha >= beta:
                     return entry_score
 
-    if (features.iid and key is not None and tt_move is None
-            and depth >= _IID_MIN_DEPTH):
-        _alpha_beta(game, depth - _IID_REDUCTION, alpha, beta, player,
-                    weights, deadline, table, features, killers, history,
-                    extensions_left)
+    if features.iid and key is not None and tt_move is None and depth >= _IID_MIN_DEPTH:
+        _alpha_beta(
+            game,
+            depth - _IID_REDUCTION,
+            alpha,
+            beta,
+            player,
+            weights,
+            deadline,
+            table,
+            features,
+            killers,
+            history,
+            extensions_left,
+        )
         stored = table.get(key)
         tt_move = stored[3] if stored is not None else None
     moves = game.all_legal_moves(game.current)
     if features.move_ordering:
-        moves = _order_moves(game, moves, tt_move,
-                             killers.get(depth) if killers is not None
-                             else None, history, features.see)
+        moves = _order_moves(
+            game, moves, tt_move, killers.get(depth) if killers is not None else None, history, features.see
+        )
 
     maximizing = game.current is player
-    static_eval = (evaluate(game, player, weights)
-                   if features.futility and depth == 1 else 0.0)
+    static_eval = evaluate(game, player, weights) if features.futility and depth == 1 else 0.0
     best = float("-inf") if maximizing else float("inf")
     best_move = None
     for index, (ply, child) in enumerate(_successor_pairs(game, moves, weights)):
         move = ply[:2]
         quiet = _is_quiet(game, ply, child)
         killer_moves = killers.get(depth, []) if killers is not None else []
-        if (index > 0 and features.futility and depth == 1 and quiet
-                and _futile(static_eval, alpha if maximizing else beta,
-                            maximizing,
-                            weights.material * _FUTILITY_MARGIN)):
+        if (
+            index > 0
+            and features.futility
+            and depth == 1
+            and quiet
+            and _futile(
+                static_eval, alpha if maximizing else beta, maximizing, weights.material * _FUTILITY_MARGIN
+            )
+        ):
             continue
-        if (features.history_pruning and history is not None
-                and index >= _LMP_FIRST_MOVE and depth <= _LMP_MAX_DEPTH
-                and quiet and history.get(move, 0) == 0
-                and move not in killer_moves):
+        if (
+            features.history_pruning
+            and history is not None
+            and index >= _LMP_FIRST_MOVE
+            and depth <= _LMP_MAX_DEPTH
+            and quiet
+            and history.get(move, 0) == 0
+            and move not in killer_moves
+        ):
             continue
-        child_depth, child_extensions = _extended_depth(
-            child, depth - 1, extensions_left)
-        reducible = (features.reductions and index >= _LMR_FIRST_MOVE
-                     and child_depth >= _LMR_MIN_DEPTH and quiet
-                     and move not in killer_moves)
-        score = _child_value(child, child_depth, child_extensions, alpha, beta,
-                             maximizing, index == 0, reducible, player,
-                             weights, deadline, table, features, killers,
-                             history)
+        child_depth, child_extensions = _extended_depth(child, depth - 1, extensions_left)
+        reducible = (
+            features.reductions
+            and index >= _LMR_FIRST_MOVE
+            and child_depth >= _LMR_MIN_DEPTH
+            and quiet
+            and move not in killer_moves
+        )
+        score = _child_value(
+            child,
+            child_depth,
+            child_extensions,
+            alpha,
+            beta,
+            maximizing,
+            index == 0,
+            reducible,
+            player,
+            weights,
+            deadline,
+            table,
+            features,
+            killers,
+            history,
+        )
         if maximizing:
             if score > best:
                 best, best_move = score, move
@@ -509,12 +612,10 @@ def _alpha_beta(game: Game, depth: int, alpha: float, beta: float,
 
 def _is_quiet(game: Game, ply: Ply, child: Game) -> bool:
     """Return True for a plain move: no upgrade, no capture, no check."""
-    return (ply[2] is None and game.board.get(ply[1]) is None
-            and not child.in_check(child.current))
+    return ply[2] is None and game.board.get(ply[1]) is None and not child.in_check(child.current)
 
 
-def _futile(static_eval: float, bound: float, maximizing: bool,
-            margin: float) -> bool:
+def _futile(static_eval: float, bound: float, maximizing: bool, margin: float) -> bool:
     """Return True if even a quiet move's static score plus ``margin``
     cannot reach ``bound``, so searching it is wasted work."""
     if maximizing:
@@ -522,9 +623,9 @@ def _futile(static_eval: float, bound: float, maximizing: bool,
     return static_eval - margin >= bound
 
 
-def _record_cutoff(game: Game, move: Move, depth: int,
-                   killers: _KillerTable | None,
-                   history: _HistoryTable | None) -> None:
+def _record_cutoff(
+    game: Game, move: Move, depth: int, killers: _KillerTable | None, history: _HistoryTable | None
+) -> None:
     """Remember ``move`` as having caused a beta cutoff at ``depth``, so
     sibling branches try it early too — only for quiet (non-capture)
     moves, the same as real engines: a cutoff caused by a capture is
@@ -541,9 +642,16 @@ def _record_cutoff(game: Game, move: Move, depth: int,
         history[move] = history.get(move, 0) + depth * depth
 
 
-def _quiescence(game: Game, alpha: float, beta: float, player: Player,
-                weights: Weights, deadline: float, plies_left: int,
-                features: _Features) -> float:
+def _quiescence(
+    game: Game,
+    alpha: float,
+    beta: float,
+    player: Player,
+    weights: Weights,
+    deadline: float,
+    plies_left: int,
+    features: _Features,
+) -> float:
     """Keep following forcing moves — captures and checks — past the
     main search's depth limit until either none are left or
     ``plies_left`` runs out, then score the (hopefully now-quiet)
@@ -569,13 +677,20 @@ def _quiescence(game: Game, alpha: float, beta: float, player: Player,
     if plies_left <= 0:
         return stand_pat
     board = game.board
-    forcing = [move for move in game.all_legal_moves(game.current)
-              if board.get(move[1]) is not None
-              or _gives_check(board, move, game.current)]
+    forcing = [
+        move
+        for move in game.all_legal_moves(game.current)
+        if board.get(move[1]) is not None or _gives_check(board, move, game.current)
+    ]
     if features.quiescence_pruning:
-        forcing = prune_quiescence(board, forcing, stand_pat,
-                                   alpha if game.current is player else beta,
-                                   weights, game.current is player)
+        forcing = prune_quiescence(
+            board,
+            forcing,
+            stand_pat,
+            alpha if game.current is player else beta,
+            weights,
+            game.current is player,
+        )
     if not forcing:
         return stand_pat
     if features.move_ordering:
@@ -588,8 +703,7 @@ def _quiescence(game: Game, alpha: float, beta: float, player: Player,
         best = stand_pat
         alpha = max(alpha, stand_pat)
         for _, child in _successor_pairs(game, forcing, weights):
-            score = _quiescence(child, alpha, beta, player, weights,
-                               deadline, plies_left - 1, features)
+            score = _quiescence(child, alpha, beta, player, weights, deadline, plies_left - 1, features)
             if score > best:
                 best = score
             alpha = max(alpha, best)
@@ -602,8 +716,7 @@ def _quiescence(game: Game, alpha: float, beta: float, player: Player,
         best = stand_pat
         beta = min(beta, stand_pat)
         for _, child in _successor_pairs(game, forcing, weights):
-            score = _quiescence(child, alpha, beta, player, weights,
-                               deadline, plies_left - 1, features)
+            score = _quiescence(child, alpha, beta, player, weights, deadline, plies_left - 1, features)
             if score < best:
                 best = score
             beta = min(beta, best)
@@ -612,11 +725,14 @@ def _quiescence(game: Game, alpha: float, beta: float, player: Player,
         return best
 
 
-def _order_moves(game: Game, moves: list[Move],
-                 tt_move: Move | None,
-                 killer_moves: list[Move] | None = None,
-                 history: _HistoryTable | None = None,
-                 use_see: bool = True) -> list[Move]:
+def _order_moves(
+    game: Game,
+    moves: list[Move],
+    tt_move: Move | None,
+    killer_moves: list[Move] | None = None,
+    history: _HistoryTable | None = None,
+    use_see: bool = True,
+) -> list[Move]:
     """Sort ``moves`` so the ones most likely to cause an alpha-beta
     cutoff are tried first: the transposition table's remembered best
     move for this exact position (if given and still legal here), then
@@ -627,18 +743,19 @@ def _order_moves(game: Game, moves: list[Move],
     across every depth rather than one) instead of all_legal_moves'
     arbitrary order."""
     killer_set = killer_moves or ()
+
     def priority(move: Move) -> tuple[int, int]:
         if move == tt_move:
             return (4, 0)
         if game.board.get(move[1]) is not None:
             victim = game.board.get(move[1])
-            return (3, see(game.board, move) if use_see
-                    else victim.cost)
+            return (3, see(game.board, move) if use_see else victim.cost)
         if move in killer_set:
             return (2, 0)
         if _gives_check(game.board, move, game.current):
             return (1, 0)
         return (0, history.get(move, 0) if history else 0)
+
     return sorted(moves, key=priority, reverse=True)
 
 
@@ -650,12 +767,10 @@ def _gives_check(board: Board, move: Move, mover: Player) -> bool:
     src, dst = move
     captured = board.move(src, dst)
     opponent = mover.opponent
-    captain_square = next(
-        (square for square, piece in board.pieces(opponent)
-        if piece.is_captain), None)
-    check = (captain_square is not None
-            and any(captain_square in board.legal_moves(square)
-                   for square, _ in board.pieces(mover)))
+    captain_square = next((square for square, piece in board.pieces(opponent) if piece.is_captain), None)
+    check = captain_square is not None and any(
+        captain_square in board.legal_moves(square) for square, _ in board.pieces(mover)
+    )
     board.move(dst, src)
     if captured is not None:
         board.place(dst, captured)
@@ -678,6 +793,7 @@ def _state_key(game: Game) -> tuple:
     pieces = []
     for side in Player:
         for square, piece in game.board.pieces(side):
-            pieces.append((square, piece.owner, tuple(piece.spokes),
-                          piece.is_captain, piece.bounty, piece.promoted))
+            pieces.append(
+                (square, piece.owner, tuple(piece.spokes), piece.is_captain, piece.bounty, piece.promoted)
+            )
     return (tuple(sorted(pieces)), game.current)

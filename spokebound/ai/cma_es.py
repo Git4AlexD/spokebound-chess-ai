@@ -62,6 +62,7 @@ Matrix = list[list[float]]
 
 # --- plain linear algebra (10x10 vectors/matrices — no need for numpy) ------
 
+
 def _zeros(n: int) -> Vector:
     return [0.0] * n
 
@@ -106,8 +107,7 @@ def _mat_vec(A: Matrix, v: Vector) -> Vector:
     return [_dot(row, v) for row in A]
 
 
-def jacobi_eigh(A: Matrix, sweeps: int = 100,
-               tol: float = 1e-12) -> tuple[Vector, Matrix]:
+def jacobi_eigh(A: Matrix, sweeps: int = 100, tol: float = 1e-12) -> tuple[Vector, Matrix]:
     """Return ``(eigenvalues, eigenvectors)`` for symmetric ``A``, via
     the classic cyclic Jacobi rotation method — eigenvectors as the
     *columns* of the returned matrix (``eigenvectors[i][k]`` is the
@@ -121,8 +121,7 @@ def jacobi_eigh(A: Matrix, sweeps: int = 100,
     a = [row[:] for row in A]
     v = _identity(n)
     for _ in range(sweeps):
-        off_diagonal = sum(a[i][j] * a[i][j]
-                          for i in range(n) for j in range(n) if i != j)
+        off_diagonal = sum(a[i][j] * a[i][j] for i in range(n) for j in range(n) if i != j)
         if off_diagonal < tol:
             break
         for p in range(n - 1):
@@ -154,6 +153,7 @@ def jacobi_eigh(A: Matrix, sweeps: int = 100,
 
 # --- CMA-ES itself ------------------------------------------------------------
 
+
 @dataclass
 class _Params:
     n: int
@@ -182,8 +182,7 @@ def _default_params(n: int, population_size: int | None = None) -> _Params:
     c_1 = 2 / ((n + 1.3) ** 2 + mu_eff)
     c_mu = min(1 - c_1, 2 * (mu_eff - 2 + 1 / mu_eff) / ((n + 2) ** 2 + mu_eff))
     chi_n = math.sqrt(n) * (1 - 1 / (4 * n) + 1 / (21 * n * n))
-    return _Params(n, lam, mu, weights, mu_eff, c_sigma, d_sigma, c_c, c_1,
-                  c_mu, chi_n)
+    return _Params(n, lam, mu, weights, mu_eff, c_sigma, d_sigma, c_c, c_1, c_mu, chi_n)
 
 
 class CMAES:
@@ -192,9 +191,13 @@ class CMAES:
     pattern and why this algorithm over a genetic one.
     """
 
-    def __init__(self, mean0: Vector, sigma0: float,
-                population_size: int | None = None,
-                rng: random.Random | None = None) -> None:
+    def __init__(
+        self,
+        mean0: Vector,
+        sigma0: float,
+        population_size: int | None = None,
+        rng: random.Random | None = None,
+    ) -> None:
         self.params = _default_params(len(mean0), population_size)
         self.mean = list(mean0)
         self.sigma = sigma0
@@ -230,10 +233,9 @@ class CMAES:
         does its own ranking)."""
         p = self.params
         ranked = sorted(zip(fitnesses, candidates, strict=True), key=lambda fc: -fc[0])
-        selected = [genome for _, genome in ranked[:p.mu]]
+        selected = [genome for _, genome in ranked[: p.mu]]
         old_mean = self.mean
-        y_selected = [_vec_scale(_vec_sub(x, old_mean), 1 / self.sigma)
-                     for x in selected]
+        y_selected = [_vec_scale(_vec_sub(x, old_mean), 1 / self.sigma) for x in selected]
         y_w = _zeros(p.n)
         for w, y in zip(p.weights, y_selected, strict=True):
             y_w = _vec_add(y_w, _vec_scale(y, w))
@@ -241,22 +243,21 @@ class CMAES:
 
         b, d = self._eigen_b, self._eigen_d
         # C^{-1/2} = B diag(1/D) B^T
-        inv_sqrt_c_y = _mat_vec(b, [_dot([b[i][k] for i in range(p.n)], y_w) / d[k]
-                                    for k in range(p.n)])
+        inv_sqrt_c_y = _mat_vec(b, [_dot([b[i][k] for i in range(p.n)], y_w) / d[k] for k in range(p.n)])
         self.p_sigma = _vec_add(
             _vec_scale(self.p_sigma, 1 - p.c_sigma),
-            _vec_scale(inv_sqrt_c_y,
-                      math.sqrt(p.c_sigma * (2 - p.c_sigma) * p.mu_eff)))
+            _vec_scale(inv_sqrt_c_y, math.sqrt(p.c_sigma * (2 - p.c_sigma) * p.mu_eff)),
+        )
         p_sigma_norm = _norm(self.p_sigma)
         self.sigma *= math.exp((p.c_sigma / p.d_sigma) * (p_sigma_norm / p.chi_n - 1))
 
         self.generation += 1
         expected_norm = math.sqrt(1 - (1 - p.c_sigma) ** (2 * self.generation))
-        h_sigma = 1.0 if (p_sigma_norm / expected_norm
-                         < (1.4 + 2 / (p.n + 1)) * p.chi_n) else 0.0
+        h_sigma = 1.0 if (p_sigma_norm / expected_norm < (1.4 + 2 / (p.n + 1)) * p.chi_n) else 0.0
         self.p_c = _vec_add(
             _vec_scale(self.p_c, 1 - p.c_c),
-            _vec_scale(y_w, h_sigma * math.sqrt(p.c_c * (2 - p.c_c) * p.mu_eff)))
+            _vec_scale(y_w, h_sigma * math.sqrt(p.c_c * (2 - p.c_c) * p.mu_eff)),
+        )
 
         rank_one = _outer(self.p_c, self.p_c)
         delta_h = (1 - h_sigma) * p.c_c * (2 - p.c_c)
@@ -264,21 +265,22 @@ class CMAES:
         for w, y in zip(p.weights, y_selected, strict=True):
             rank_mu = _mat_add(rank_mu, _mat_scale(_outer(y, y), w))
         self.C = _mat_add(
-            _mat_add(_mat_scale(self.C, 1 - p.c_1 - p.c_mu),
-                    _mat_scale(_mat_add(rank_one, _mat_scale(self.C, delta_h)),
-                              p.c_1)),
-            _mat_scale(rank_mu, p.c_mu))
+            _mat_add(
+                _mat_scale(self.C, 1 - p.c_1 - p.c_mu),
+                _mat_scale(_mat_add(rank_one, _mat_scale(self.C, delta_h)), p.c_1),
+            ),
+            _mat_scale(rank_mu, p.c_mu),
+        )
         # Keep C symmetric — accumulated float error can drift it
         # slightly asymmetric over many generations, and jacobi_eigh
         # assumes a genuinely symmetric matrix.
-        self.C = [[(self.C[i][j] + self.C[j][i]) / 2 for j in range(p.n)]
-                 for i in range(p.n)]
+        self.C = [[(self.C[i][j] + self.C[j][i]) / 2 for j in range(p.n)] for i in range(p.n)]
 
 
 # --- crash resumability: save/restore the whole search distribution --------
 
-def save_state(path: Path, es: CMAES, field_names: tuple[str, ...],
-               label: str, seed: int | None) -> None:
+
+def save_state(path: Path, es: CMAES, field_names: tuple[str, ...], label: str, seed: int | None) -> None:
     """Persist everything needed to reconstruct ``es`` exactly (mean,
     sigma, covariance, both evolution paths, generation number, and the
     population size its own params were derived from) — called after
@@ -292,10 +294,16 @@ def save_state(path: Path, es: CMAES, field_names: tuple[str, ...],
     when a crash makes that most likely to matter.
     """
     state = {
-        "label": label, "field_names": list(field_names), "seed": seed,
+        "label": label,
+        "field_names": list(field_names),
+        "seed": seed,
         "population_size": es.params.population_size,
-        "generation": es.generation, "sigma": es.sigma, "mean": es.mean,
-        "C": es.C, "p_sigma": es.p_sigma, "p_c": es.p_c,
+        "generation": es.generation,
+        "sigma": es.sigma,
+        "mean": es.mean,
+        "C": es.C,
+        "p_sigma": es.p_sigma,
+        "p_c": es.p_c,
     }
     tmp_path = path.with_name(path.name + ".tmp")
     with tmp_path.open("w", encoding="utf-8") as f:
@@ -326,6 +334,7 @@ def _restore(state: dict, rng: random.Random) -> CMAES:
 
 # --- generic driver: genome <-> vector, generation loop, reporting ----------
 
+
 def _to_vector(genome, field_names: tuple[str, ...]) -> Vector:
     return [getattr(genome, field) for field in field_names]
 
@@ -335,11 +344,19 @@ def _from_vector(cls: type, field_names: tuple[str, ...], vector: Vector):
 
 
 def run_cma_es(
-       *, label: str, seed_genome, sigma0: float,
-       evaluate_population: Callable[[list, object], list[float]],
-       generations: int, population_size: int | None = None,
-       results_path=None, log_path=None, state_path: Path | None = None,
-       resume: bool = True, seed: int | None = None):
+    *,
+    label: str,
+    seed_genome,
+    sigma0: float,
+    evaluate_population: Callable[[list, object], list[float]],
+    generations: int,
+    population_size: int | None = None,
+    results_path=None,
+    log_path=None,
+    state_path: Path | None = None,
+    resume: bool = True,
+    seed: int | None = None,
+):
     """Run CMA-ES for ``generations`` generations, starting the search
     distribution at ``seed_genome`` (any Weights/FleetRules-shaped
     frozen dataclass, converted to/from a plain vector via its own
@@ -385,23 +402,23 @@ def run_cma_es(
                 f"Saved state at {state_path} was written for fields "
                 f"{state['field_names']}, not {list(field_names)} — looks "
                 f"like it belongs to a different run. Delete it or pass "
-                f"resume=False to start fresh instead.")
+                f"resume=False to start fresh instead."
+            )
         es = _restore(state, random.Random(seed))
         resumed_from = state["generation"]
     else:
-        es = CMAES(_to_vector(seed_genome, field_names), sigma0, population_size,
-                  rng=random.Random(seed))
+        es = CMAES(_to_vector(seed_genome, field_names), sigma0, population_size, rng=random.Random(seed))
 
     if resumed_from:
-        header = (f"\nResuming CMA-ES — {label} from generation "
-                 f"{resumed_from} (of {generations} total)\n")
+        header = f"\nResuming CMA-ES — {label} from generation {resumed_from} (of {generations} total)\n"
     else:
         header = (
             f"{'#' * 60}\n"
             f"  CMA-ES — {label}\n"
             f"  {es.params.population_size} candidates/generation, "
             f"{generations} generations, sigma0={sigma0}\n"
-            f"{'#' * 60}\n")
+            f"{'#' * 60}\n"
+        )
     print(header, flush=True)
     if results_path is not None:
         mode = "a" if resumed_from else "w"
@@ -426,12 +443,13 @@ def run_cma_es(
         best_index = max(range(len(fitnesses)), key=fitnesses.__getitem__)
         avg_generation = sum(generation_seconds) / len(generation_seconds)
         remaining = generations - generation
-        eta_text = (f" — ~{format_duration(avg_generation * remaining)} left"
-                   if remaining else " — done")
-        line = (f"Generation {generation}/{generations}: "
-               f"best this gen scored {fitnesses[best_index]:.2f}, "
-               f"sigma={es.sigma:.4f} "
-               f"({format_duration(elapsed)}{eta_text})")
+        eta_text = f" — ~{format_duration(avg_generation * remaining)} left" if remaining else " — done"
+        line = (
+            f"Generation {generation}/{generations}: "
+            f"best this gen scored {fitnesses[best_index]:.2f}, "
+            f"sigma={es.sigma:.4f} "
+            f"({format_duration(elapsed)}{eta_text})"
+        )
         print(line, flush=True)
         if results_path is not None:
             with results_path.open("a", encoding="utf-8") as f:
@@ -439,7 +457,8 @@ def run_cma_es(
         if log_path is not None:
             record = {
                 "time": time.strftime("%Y-%m-%d %H:%M:%S"),
-                "generation": generation, "sigma": es.sigma,
+                "generation": generation,
+                "sigma": es.sigma,
                 "mean": dict(zip(field_names, es.mean, strict=True)),
                 "fitnesses": fitnesses,
                 "candidates": [dict(zip(field_names, v, strict=True)) for v in vectors],

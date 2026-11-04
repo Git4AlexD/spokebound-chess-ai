@@ -16,34 +16,44 @@ class ModeCard(tk.Frame):
     "Coming soon." under its own blurb, and stays inert to clicks.
     """
 
-    def __init__(self, parent: tk.Misc, title: str, blurb: str,
-                 command: Callable[[], None] | None,
-                 width: int, height: int) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        title: str,
+        blurb: str,
+        command: Callable[[], None] | None,
+        width: int,
+        height: int,
+    ) -> None:
         enabled = command is not None
         bg = theme.ACCENT if enabled else theme.PANEL
         fg = theme.ON_ACCENT if enabled else theme.TEXT
         sub_fg = theme.ON_ACCENT if enabled else theme.MUTED_TEXT
-        super().__init__(parent, bg=bg, width=width, height=height,
-                         highlightthickness=1,
-                         highlightbackground=(theme.ACCENT_DARK if enabled
-                                              else theme.DISABLED))
+        super().__init__(
+            parent,
+            bg=bg,
+            width=width,
+            height=height,
+            highlightthickness=1,
+            highlightbackground=(theme.ACCENT_DARK if enabled else theme.DISABLED),
+        )
         self.pack_propagate(False)
         self._bg = bg
         self._hover_bg = theme.ACCENT_DARK if enabled else bg
 
-        title_label = theme.make_label(self, title, theme.FONT_HEADING,
-                                       fg=fg, bg=bg, wraplength=width - 32,
-                                       justify=tk.LEFT)
+        title_label = theme.make_label(
+            self, title, theme.FONT_HEADING, fg=fg, bg=bg, wraplength=width - 32, justify=tk.LEFT
+        )
         title_label.pack(anchor=tk.W, padx=18, pady=(18, 6))
         blurb_text = blurb if enabled else f"{blurb}\nComing soon."
-        blurb_label = theme.make_label(self, blurb_text, theme.FONT_SMALL,
-                                       fg=sub_fg, bg=bg,
-                                       wraplength=width - 32,
-                                       justify=tk.LEFT)
+        blurb_label = theme.make_label(
+            self, blurb_text, theme.FONT_SMALL, fg=sub_fg, bg=bg, wraplength=width - 32, justify=tk.LEFT
+        )
         blurb_label.pack(anchor=tk.W, padx=18)
 
         widgets = (self, title_label, blurb_label)
         if enabled:
+
             def on_click(_event: tk.Event) -> None:
                 sound.play_button_click()
                 command()

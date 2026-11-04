@@ -53,13 +53,10 @@ def rusher_move(game: Game) -> Move:
     opponent in its own right.
     """
     player = game.current
-    captain_square = next(
-        (square for square, piece in game.board.pieces(player)
-        if piece.is_captain), None)
+    captain_square = next((square for square, piece in game.board.pieces(player) if piece.is_captain), None)
     if captain_square is not None:
         here = _distance_to_goal(captain_square)
-        closer = [dst for dst in game.legal_moves(captain_square)
-                 if _distance_to_goal(dst) < here]
+        closer = [dst for dst in game.legal_moves(captain_square) if _distance_to_goal(dst) < here]
         if closer:
             return (captain_square, min(closer, key=_distance_to_goal))
     return choose_move_at(game, SELF_PLAY_LEVEL, BENCHMARK_WEIGHTS)
@@ -81,8 +78,9 @@ def grabber_move(game: Game) -> Move:
     bounty_risk terms in evaluate.py), not a strong opponent in its own
     right.
     """
-    captures = [(src, dst) for src, dst in game.all_legal_moves(game.current)
-               if game.board.get(dst) is not None]
+    captures = [
+        (src, dst) for src, dst in game.all_legal_moves(game.current) if game.board.get(dst) is not None
+    ]
     if captures:
         return max(captures, key=lambda move: game.board.get(move[1]).cost)
     return choose_move_at(game, SELF_PLAY_LEVEL, BENCHMARK_WEIGHTS)
@@ -101,9 +99,7 @@ def turtle_move(game: Game) -> Move:
     race, rather than only ever having faced one in a hurry?
     """
     player = game.current
-    captain_square = next(
-        (square for square, piece in game.board.pieces(player)
-        if piece.is_captain), None)
+    captain_square = next((square for square, piece in game.board.pieces(player) if piece.is_captain), None)
     moves = game.all_legal_moves(player)
     screened = [move for move in moves if move[0] != captain_square]
     if not screened:
@@ -146,9 +142,10 @@ def opportunist_move(game: Game) -> Move:
     """
     player = game.current
     free_captures = [
-        (src, dst) for src, dst in game.all_legal_moves(player)
-        if game.board.get(dst) is not None
-        and not _is_defended(game.board, dst)]
+        (src, dst)
+        for src, dst in game.all_legal_moves(player)
+        if game.board.get(dst) is not None and not _is_defended(game.board, dst)
+    ]
     if free_captures:
         return max(free_captures, key=lambda move: game.board.get(move[1]).cost)
     return rusher_move(game)
@@ -172,25 +169,65 @@ BENCHMARKS: dict[str, Bot] = {
 # guesses for each strategy and should be checked in play.
 BENCHMARK_FLEET_RULES: dict[str, FleetRules] = {
     "rusher": FleetRules(
-        bias_n=6.0, bias_ne=2.0, bias_nw=2.0, bias_e=0.5, bias_w=0.5,
-        bias_s=0.3, bias_se=0.3, bias_sw=0.3,
-        concentration=1.5, variety=0.1),
+        bias_n=6.0,
+        bias_ne=2.0,
+        bias_nw=2.0,
+        bias_e=0.5,
+        bias_w=0.5,
+        bias_s=0.3,
+        bias_se=0.3,
+        bias_sw=0.3,
+        concentration=1.5,
+        variety=0.1,
+    ),
     "grabber": FleetRules(
-        bias_n=3.0, bias_ne=2.5, bias_nw=2.5, bias_e=2.0, bias_w=2.0,
-        bias_s=1.0, bias_se=1.0, bias_sw=1.0,
-        concentration=2.0, variety=0.2),
+        bias_n=3.0,
+        bias_ne=2.5,
+        bias_nw=2.5,
+        bias_e=2.0,
+        bias_w=2.0,
+        bias_s=1.0,
+        bias_se=1.0,
+        bias_sw=1.0,
+        concentration=2.0,
+        variety=0.2,
+    ),
     "turtle": FleetRules(
-        bias_n=0.5, bias_ne=0.5, bias_nw=0.5, bias_e=2.0, bias_w=2.0,
-        bias_s=3.0, bias_se=2.5, bias_sw=2.5,
-        concentration=1.0, variety=0.1),
+        bias_n=0.5,
+        bias_ne=0.5,
+        bias_nw=0.5,
+        bias_e=2.0,
+        bias_w=2.0,
+        bias_s=3.0,
+        bias_se=2.5,
+        bias_sw=2.5,
+        concentration=1.0,
+        variety=0.1,
+    ),
     "hoarder": FleetRules(
-        bias_n=1.0, bias_ne=1.0, bias_nw=1.0, bias_e=1.0, bias_w=1.0,
-        bias_s=1.0, bias_se=1.0, bias_sw=1.0,
-        concentration=2.5, variety=0.1),
+        bias_n=1.0,
+        bias_ne=1.0,
+        bias_nw=1.0,
+        bias_e=1.0,
+        bias_w=1.0,
+        bias_s=1.0,
+        bias_se=1.0,
+        bias_sw=1.0,
+        concentration=2.5,
+        variety=0.1,
+    ),
     "opportunist": FleetRules(
-        bias_n=5.0, bias_ne=3.0, bias_nw=3.0, bias_e=1.5, bias_w=1.5,
-        bias_s=0.5, bias_se=0.8, bias_sw=0.8,
-        concentration=1.5, variety=0.15),
+        bias_n=5.0,
+        bias_ne=3.0,
+        bias_nw=3.0,
+        bias_e=1.5,
+        bias_w=1.5,
+        bias_s=0.5,
+        bias_se=0.8,
+        bias_sw=0.8,
+        concentration=1.5,
+        variety=0.15,
+    ),
 }
 
 # The same profiles keyed by the bot callable itself, for code that only

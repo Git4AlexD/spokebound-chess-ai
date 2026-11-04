@@ -34,6 +34,7 @@ except ImportError:  # not on Windows
 
 try:
     import ctypes
+
     _winmm = ctypes.windll.winmm
 except (ImportError, AttributeError, OSError):  # not on Windows
     _winmm = None
@@ -64,8 +65,7 @@ def _play(filename: str) -> None:
     if not _effects_enabled or winsound is None:
         return
     with contextlib.suppress(RuntimeError):  # no audio device, headless CI, etc.
-        winsound.PlaySound(str(ASSETS / filename),
-                           winsound.SND_FILENAME | winsound.SND_ASYNC)
+        winsound.PlaySound(str(ASSETS / filename), winsound.SND_FILENAME | winsound.SND_ASYNC)
 
 
 def _mci_command(command: str) -> None:
@@ -165,8 +165,7 @@ def keep_output_awake() -> None:
     if _keepalive_playing:
         return
     _keepalive_playing = True
-    _mci_command(f'open "{_KEEPALIVE_FILE}" type mpegvideo '
-                 f'alias {_KEEPALIVE_ALIAS}')
+    _mci_command(f'open "{_KEEPALIVE_FILE}" type mpegvideo alias {_KEEPALIVE_ALIAS}')
     _mci_command(f"play {_KEEPALIVE_ALIAS} repeat")
 
 

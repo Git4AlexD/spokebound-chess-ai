@@ -41,9 +41,14 @@ TITLE = "Spokebound"
 class HandoverScreen(tk.Frame):
     """A blank screen shown while the device is passed between players."""
 
-    def __init__(self, parent: tk.Misc, message: str, button_text: str,
-                 on_ready: Callable[[], None],
-                 on_main_menu: Callable[[], None]) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        message: str,
+        button_text: str,
+        on_ready: Callable[[], None],
+        on_main_menu: Callable[[], None],
+    ) -> None:
         super().__init__(parent, bg=theme.BACKGROUND)
         self._message = message
         self._button_text = button_text
@@ -61,15 +66,13 @@ class HandoverScreen(tk.Frame):
             child.destroy()
         starfield.add_starfield(self)
         scale = window_scale(self)
-        theme.make_button(self, "Main Menu", self._on_main_menu,
-                          secondary=True).pack(anchor=tk.NW, padx=16,
-                                               pady=16)
-        theme.make_label(self, "Spokebound",
-                         theme.scaled_font(theme.FONT_TITLE, scale),
-                         fg=theme.ACCENT).pack(pady=(round(100 * scale), 4))
-        theme.make_label(self, self._message,
-                         theme.scaled_font(theme.FONT_HEADING, scale)
-                         ).pack(pady=16)
+        theme.make_button(self, "Main Menu", self._on_main_menu, secondary=True).pack(
+            anchor=tk.NW, padx=16, pady=16
+        )
+        theme.make_label(
+            self, "Spokebound", theme.scaled_font(theme.FONT_TITLE, scale), fg=theme.ACCENT
+        ).pack(pady=(round(100 * scale), 4))
+        theme.make_label(self, self._message, theme.scaled_font(theme.FONT_HEADING, scale)).pack(pady=16)
         theme.make_button(self, self._button_text, self._on_ready).pack()
         add_gear(self)
 
@@ -111,13 +114,18 @@ class SpokeboundApp(tk.Tk):
         # through every pre-game screen (difficulty, build, deploy),
         # since none of those touch it; only _start_deploy stops it.
         sound.play_menu_music()
-        self._show(WelcomeScreen(self, {
-            "local": self.start_new_game,
-            "ai": self.start_ai_game,
-            "tutorial": self.show_tutorial,
-            "custom_fleets": self.show_custom_fleets,
-            "online": self.show_online_menu,
-        }))
+        self._show(
+            WelcomeScreen(
+                self,
+                {
+                    "local": self.start_new_game,
+                    "ai": self.start_ai_game,
+                    "tutorial": self.show_tutorial,
+                    "custom_fleets": self.show_custom_fleets,
+                    "online": self.show_online_menu,
+                },
+            )
+        )
 
     def show_tutorial(self) -> None:
         """Show the rules reference screen. Nothing's in progress to
@@ -135,16 +143,13 @@ class SpokeboundApp(tk.Tk):
     def show_online_menu(self) -> None:
         """Show the Online Match sub-menu: invite a friend directly, or
         (once it exists) a matched competitive game."""
-        self._show(OnlineMenuScreen(
-            self, {"invite": self.show_network_lobby}, self.show_welcome))
+        self._show(OnlineMenuScreen(self, {"invite": self.show_network_lobby}, self.show_welcome))
 
     def show_network_lobby(self) -> None:
         """Show the host-or-join screen for inviting a friend."""
-        self._show(NetworkLobbyScreen(
-            self, self._network_connected, self.show_welcome))
+        self._show(NetworkLobbyScreen(self, self._network_connected, self.show_welcome))
 
-    def _network_connected(self, session: NetworkSession,
-                           is_host: bool) -> None:
+    def _network_connected(self, session: NetworkSession, is_host: bool) -> None:
         """A friend just connected — the host always plays Orange (and
         so moves first), matching who's "in charge" of the match.
         Everything from here on is the same build/deploy/play flow as
@@ -157,9 +162,7 @@ class SpokeboundApp(tk.Tk):
         self._fleets = {}
         self._ai_player = None
         self._ai_difficulty = None
-        self._show(BuildScreen(
-            self, self._local_player, self._network_fleet_done,
-            self._network_main_menu))
+        self._show(BuildScreen(self, self._local_player, self._network_fleet_done, self._network_main_menu))
 
     def _network_fleet_done(self, fleet: list[Piece]) -> None:
         """Send the local fleet to the opponent, then wait for theirs
@@ -167,11 +170,16 @@ class SpokeboundApp(tk.Tk):
         where White simply builds after Orange on the same device."""
         self._fleets[self._local_player] = fleet
         self._session.send(protocol.fleet(fleet))
-        self._show(NetworkWaitScreen(
-            self, self._session,
-            "Waiting for your friend to finish building their fleet…",
-            protocol.FLEET, self._network_fleet_received,
-            self._network_disconnected))
+        self._show(
+            NetworkWaitScreen(
+                self,
+                self._session,
+                "Waiting for your friend to finish building their fleet…",
+                protocol.FLEET,
+                self._network_fleet_received,
+                self._network_disconnected,
+            )
+        )
 
     def _network_fleet_received(self, message: dict) -> None:
         """The opponent's fleet arrived — both are locked in, so reveal
@@ -182,8 +190,7 @@ class SpokeboundApp(tk.Tk):
     def _network_disconnected(self) -> None:
         """The opponent left before a network match properly began —
         while still building, or waiting on their fleet."""
-        messagebox.showwarning(
-            "Connection Lost", "Your opponent disconnected.", parent=self)
+        messagebox.showwarning("Connection Lost", "Your opponent disconnected.", parent=self)
         self._network_main_menu()
 
     def _network_main_menu(self) -> None:
@@ -207,9 +214,8 @@ class SpokeboundApp(tk.Tk):
         returning to the main menu — every screen's "Main menu" button
         goes through here rather than calling show_welcome directly."""
         if messagebox.askyesno(
-                "Return to Main Menu?",
-                "This will discard the current game. Are you sure?",
-                parent=self):
+            "Return to Main Menu?", "This will discard the current game. Are you sure?", parent=self
+        ):
             self._end_network_session()
             self.show_welcome()
 
@@ -268,8 +274,7 @@ class SpokeboundApp(tk.Tk):
         """Discard any current game and ask which difficulty to play."""
         self._fleets = {}
         self._end_network_session()
-        self._show(AIMenuScreen(self, self._ai_difficulty_chosen,
-                                self._confirm_main_menu))
+        self._show(AIMenuScreen(self, self._ai_difficulty_chosen, self._confirm_main_menu))
 
     def _ai_difficulty_chosen(self, difficulty: int) -> None:
         """Start building the human's fleet now that a difficulty is
@@ -277,10 +282,14 @@ class SpokeboundApp(tk.Tk):
         No handover screen first — there's only one device in play."""
         self._ai_difficulty = difficulty
         self._ai_player = HUMAN_PLAYER.opponent
-        self._show(BuildScreen(
-            self, HUMAN_PLAYER,
-            lambda fleet: self._fleet_done(HUMAN_PLAYER, fleet),
-            self._confirm_main_menu))
+        self._show(
+            BuildScreen(
+                self,
+                HUMAN_PLAYER,
+                lambda fleet: self._fleet_done(HUMAN_PLAYER, fleet),
+                self._confirm_main_menu,
+            )
+        )
 
     def _show(self, screen: tk.Frame) -> None:
         """Replace the current screen with ``screen``.
@@ -305,14 +314,23 @@ class SpokeboundApp(tk.Tk):
 
     def _handover_to_builder(self, player: Player) -> None:
         """Ask for the device to be passed to ``player`` before they build."""
-        def open_builder() -> None:
-            self._show(BuildScreen(
-                self, player, lambda fleet: self._fleet_done(player, fleet),
-                self._confirm_main_menu))
 
-        self._show(HandoverScreen(
-            self, f"Pass the Device to {player.label}",
-            "Start Building", open_builder, self._confirm_main_menu))
+        def open_builder() -> None:
+            self._show(
+                BuildScreen(
+                    self, player, lambda fleet: self._fleet_done(player, fleet), self._confirm_main_menu
+                )
+            )
+
+        self._show(
+            HandoverScreen(
+                self,
+                f"Pass the Device to {player.label}",
+                "Start Building",
+                open_builder,
+                self._confirm_main_menu,
+            )
+        )
 
     def _fleet_done(self, player: Player, fleet: list[Piece]) -> None:
         """Store a finished fleet and move to the next step."""
@@ -321,16 +339,21 @@ class SpokeboundApp(tk.Tk):
             # An AI game: only the human builds; the computer's fleet is
             # generated on the spot, entirely blind to what the human
             # just built — see spokebound.ai.build.
-            self._fleets[self._ai_player] = build_fleet(
-                self._ai_difficulty, self._ai_player)
+            self._fleets[self._ai_player] = build_fleet(self._ai_difficulty, self._ai_player)
             self._start_deploy()
             return
         if player is Player.ORANGE:
             self._handover_to_builder(Player.WHITE)
             return
-        self._show(HandoverScreen(
-            self, "Both Fleets Are Locked In.", "Reveal and Deploy",
-            self._start_deploy, self._confirm_main_menu))
+        self._show(
+            HandoverScreen(
+                self,
+                "Both Fleets Are Locked In.",
+                "Reveal and Deploy",
+                self._start_deploy,
+                self._confirm_main_menu,
+            )
+        )
 
     def _start_deploy(self) -> None:
         """Reveal both fleets and let them alternate placing pieces —
@@ -342,11 +365,19 @@ class SpokeboundApp(tk.Tk):
         # the board's about to matter, so the music stops here rather
         # than waiting for the first move.
         sound.stop()
-        self._show(DeployScreen(
-            self, self._fleets[Player.ORANGE], self._fleets[Player.WHITE],
-            self._play_again, self._confirm_main_menu,
-            ai_player=self._ai_player, ai_difficulty=self._ai_difficulty,
-            session=self._session, remote_player=self._remote_player))
+        self._show(
+            DeployScreen(
+                self,
+                self._fleets[Player.ORANGE],
+                self._fleets[Player.WHITE],
+                self._play_again,
+                self._confirm_main_menu,
+                ai_player=self._ai_player,
+                ai_difficulty=self._ai_difficulty,
+                session=self._session,
+                remote_player=self._remote_player,
+            )
+        )
 
 
 def main() -> None:

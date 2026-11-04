@@ -63,11 +63,15 @@ COST_HELP = (
 class BuildScreen(tk.Frame):
     """Lets one player spend the build budget on their fleet."""
 
-    def __init__(self, parent: tk.Misc, player: Player,
-                 on_done: Callable[[list[Piece]], None],
-                 on_main_menu: Callable[[], None],
-                 session: NetworkSession | None = None,
-                 on_disconnected: Callable[[], None] | None = None) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        player: Player,
+        on_done: Callable[[list[Piece]], None],
+        on_main_menu: Callable[[], None],
+        session: NetworkSession | None = None,
+        on_disconnected: Callable[[], None] | None = None,
+    ) -> None:
         super().__init__(parent, bg=theme.BACKGROUND)
         self._builder = FleetBuilder(player)
         self._on_done = on_done
@@ -130,8 +134,7 @@ class BuildScreen(tk.Frame):
         self._build_content(available_width, available_height)
         add_gear(self)
 
-    def _build_content(self, available_width: int,
-                       available_height: int) -> None:
+    def _build_content(self, available_width: int, available_height: int) -> None:
         """Build the whole screen's content, packed straight into self,
         to fit exactly ``available_width`` x ``available_height``."""
         # Fonts/padding still scale with the window, capped like every
@@ -141,32 +144,29 @@ class BuildScreen(tk.Frame):
         half_pady = max(2, pady // 2)
 
         preset_scale = min(scale, MAX_PRESET_SCALE)
-        preset_width = max(MIN_PRESET_WIDTH,
-                          round(BASE_PRESET_WIDTH * preset_scale))
-        preset_height = max(MIN_PRESET_HEIGHT,
-                           round(BASE_PRESET_HEIGHT * preset_scale))
+        preset_width = max(MIN_PRESET_WIDTH, round(BASE_PRESET_WIDTH * preset_scale))
+        preset_height = max(MIN_PRESET_HEIGHT, round(BASE_PRESET_HEIGHT * preset_scale))
         preset_gap = max(2, round(BASE_PRESET_GAP * preset_scale))
 
-        theme.make_button(self, "Main Menu", self._on_main_menu,
-                          secondary=True).pack(
-            anchor=tk.W, padx=SIDE_MARGIN_X,
-            pady=(SIDE_MARGIN_Y + pady, half_pady))
+        theme.make_button(self, "Main Menu", self._on_main_menu, secondary=True).pack(
+            anchor=tk.W, padx=SIDE_MARGIN_X, pady=(SIDE_MARGIN_Y + pady, half_pady)
+        )
         theme.make_label(
-            self, f"{self._player.label}: Build Your Fleet",
-            theme.FONT_TITLE, fg=theme.PLAYER_TEXT[self._player]).pack(
-            pady=(0, pady))
+            self,
+            f"{self._player.label}: Build Your Fleet",
+            theme.FONT_TITLE,
+            fg=theme.PLAYER_TEXT[self._player],
+        ).pack(pady=(0, pady))
 
         # Packed to the bottom before the columns row below, so its real
         # height is already known (not guessed) once it's time to work
         # out how much room the editor has left to grow into.
         bottom = tk.Frame(self, bg=theme.BACKGROUND)
-        bottom.pack(side=tk.BOTTOM, fill=tk.X, padx=SIDE_MARGIN_X,
-                   pady=(0, SIDE_MARGIN_Y))
-        theme.make_label(bottom, COST_HELP, theme.FONT_SMALL,
-                         fg=theme.MUTED_TEXT,
-                         wraplength=available_width).pack(pady=half_pady)
-        self._confirm = theme.make_button(bottom, "Lock In Fleet",
-                                          self._lock_in)
+        bottom.pack(side=tk.BOTTOM, fill=tk.X, padx=SIDE_MARGIN_X, pady=(0, SIDE_MARGIN_Y))
+        theme.make_label(
+            bottom, COST_HELP, theme.FONT_SMALL, fg=theme.MUTED_TEXT, wraplength=available_width
+        ).pack(pady=half_pady)
+        self._confirm = theme.make_button(bottom, "Lock In Fleet", self._lock_in)
         self._confirm.pack(pady=pady)
 
         self.update_idletasks()
@@ -185,43 +185,48 @@ class BuildScreen(tk.Frame):
         # same-coloured rectangle silently covering it.
         custom = custom_fleets.load_all()
         preset_column = build_preset_column(
-            self, "Preset Fleets",
-            [(name, lambda name=name: self._load_preset(PRESETS[name]))
-             for name in PRESETS],
-            preset_width, preset_height, preset_gap)
-        preset_column.pack(side=tk.LEFT, expand=True, anchor=tk.N,
-                           padx=(SIDE_MARGIN_X, 0))
+            self,
+            "Preset Fleets",
+            [(name, lambda name=name: self._load_preset(PRESETS[name])) for name in PRESETS],
+            preset_width,
+            preset_height,
+            preset_gap,
+        )
+        preset_column.pack(side=tk.LEFT, expand=True, anchor=tk.N, padx=(SIDE_MARGIN_X, 0))
 
         editor_width_budget = available_width * (1 - 2 * SIDE_WIDTH_FRACTION)
         editor_area = tk.Frame(self, bg=theme.BACKGROUND)
         editor_area.pack(side=tk.LEFT, expand=True, anchor=tk.N)
 
         custom_column = build_preset_column(
-            self, "Your Custom Fleets",
-            [(name, lambda fleet=fleet: self._load_preset(fleet))
-             for name, fleet in custom.items()],
-            preset_width, preset_height, preset_gap,
-            empty_text="No Custom Fleets Built Yet")
-        custom_column.pack(side=tk.LEFT, expand=True, anchor=tk.N,
-                           padx=(0, SIDE_MARGIN_X))
+            self,
+            "Your Custom Fleets",
+            [(name, lambda fleet=fleet: self._load_preset(fleet)) for name, fleet in custom.items()],
+            preset_width,
+            preset_height,
+            preset_gap,
+            empty_text="No Custom Fleets Built Yet",
+        )
+        custom_column.pack(side=tk.LEFT, expand=True, anchor=tk.N, padx=(0, SIDE_MARGIN_X))
 
         def build_editor(editor_scale: float) -> tk.Frame:
             frame = tk.Frame(editor_area, bg=theme.BACKGROUND)
-            editor_size = max(MIN_EDITOR_SIZE,
-                             round(BASE_EDITOR_SIZE * editor_scale))
-            thumb_size = max(MIN_THUMB_SIZE,
-                            round(BASE_THUMB_SIZE * editor_scale))
-            self._fleet_editor = FleetEditor(frame, self._builder,
-                                            thumb_size, editor_size, pady,
-                                            on_change=self._refresh)
+            editor_size = max(MIN_EDITOR_SIZE, round(BASE_EDITOR_SIZE * editor_scale))
+            thumb_size = max(MIN_THUMB_SIZE, round(BASE_THUMB_SIZE * editor_scale))
+            self._fleet_editor = FleetEditor(
+                frame, self._builder, thumb_size, editor_size, pady, on_change=self._refresh
+            )
             self._fleet_editor.pack()
             return frame
 
-        fit_to_window(editor_area, build_editor,
-                      max(MIN_EDITOR_SIZE, editor_width_budget),
-                      max(MIN_EDITOR_SIZE, editor_height_budget),
-                      min_scale=MIN_EDITOR_SIZE / BASE_EDITOR_SIZE,
-                      max_scale=MAX_EDITOR_SCALE)
+        fit_to_window(
+            editor_area,
+            build_editor,
+            max(MIN_EDITOR_SIZE, editor_width_budget),
+            max(MIN_EDITOR_SIZE, editor_height_budget),
+            min_scale=MIN_EDITOR_SIZE / BASE_EDITOR_SIZE,
+            max_scale=MAX_EDITOR_SCALE,
+        )
 
         self._refresh()
 
@@ -232,5 +237,4 @@ class BuildScreen(tk.Frame):
         self._on_done(self._fleet_editor.pieces)
 
     def _refresh(self) -> None:
-        self._confirm.state(
-            ["!disabled"] if self._fleet_editor.is_valid() else ["disabled"])
+        self._confirm.state(["!disabled"] if self._fleet_editor.is_valid() else ["disabled"])

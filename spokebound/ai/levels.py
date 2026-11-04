@@ -93,96 +93,146 @@ class Level:
 LEVELS: dict[int, Level] = {}
 
 
-def _add(*, number: int, name: str, min_depth: int, max_depth: int,
-        time_limit: float, critical_time_limit: float,
-        use_quiescence: bool, use_move_ordering: bool,
-        use_transposition_table: bool, pregame_skill: float) -> None:
+def _add(
+    *,
+    number: int,
+    name: str,
+    min_depth: int,
+    max_depth: int,
+    time_limit: float,
+    critical_time_limit: float,
+    use_quiescence: bool,
+    use_move_ordering: bool,
+    use_transposition_table: bool,
+    pregame_skill: float,
+) -> None:
     LEVELS[number] = Level(
-        number=number, name=name,
-        min_depth=min_depth, max_depth=max_depth, time_limit=time_limit,
+        number=number,
+        name=name,
+        min_depth=min_depth,
+        max_depth=max_depth,
+        time_limit=time_limit,
         critical_time_limit=critical_time_limit,
-        use_quiescence=use_quiescence, use_move_ordering=use_move_ordering,
+        use_quiescence=use_quiescence,
+        use_move_ordering=use_move_ordering,
         use_transposition_table=use_transposition_table,
-        pregame_skill=pregame_skill)
+        pregame_skill=pregame_skill,
+    )
 
 
 _add(
-    number=1, name="Beginner",
-    min_depth=1, max_depth=1,
-    time_limit=0.20, critical_time_limit=0.30,
-    use_quiescence=False, use_move_ordering=False,
+    number=1,
+    name="Beginner",
+    min_depth=1,
+    max_depth=1,
+    time_limit=0.20,
+    critical_time_limit=0.30,
+    use_quiescence=False,
+    use_move_ordering=False,
     use_transposition_table=False,
     pregame_skill=0.00,
 )
 
 _add(
-    number=2, name="Novice",
-    min_depth=1, max_depth=2,
-    time_limit=0.30, critical_time_limit=0.45,
-    use_quiescence=False, use_move_ordering=False,
+    number=2,
+    name="Novice",
+    min_depth=1,
+    max_depth=2,
+    time_limit=0.30,
+    critical_time_limit=0.45,
+    use_quiescence=False,
+    use_move_ordering=False,
     use_transposition_table=False,
     pregame_skill=0.12,
 )
 
 _add(
-    number=3, name="Casual",
-    min_depth=1, max_depth=2,
-    time_limit=0.45, critical_time_limit=0.65,
-    use_quiescence=False, use_move_ordering=True,
+    number=3,
+    name="Casual",
+    min_depth=1,
+    max_depth=2,
+    time_limit=0.45,
+    critical_time_limit=0.65,
+    use_quiescence=False,
+    use_move_ordering=True,
     use_transposition_table=False,
     pregame_skill=0.25,
 )
 
 _add(
-    number=4, name="Club Player",
-    min_depth=2, max_depth=3,
-    time_limit=0.65, critical_time_limit=0.90,
-    use_quiescence=False, use_move_ordering=True,
+    number=4,
+    name="Club Player",
+    min_depth=2,
+    max_depth=3,
+    time_limit=0.65,
+    critical_time_limit=0.90,
+    use_quiescence=False,
+    use_move_ordering=True,
     use_transposition_table=False,
     pregame_skill=0.40,
 )
 
 _add(
-    number=5, name="Solid",
-    min_depth=2, max_depth=3,
-    time_limit=0.90, critical_time_limit=1.30,
-    use_quiescence=True, use_move_ordering=True,
+    number=5,
+    name="Solid",
+    min_depth=2,
+    max_depth=3,
+    time_limit=0.90,
+    critical_time_limit=1.30,
+    use_quiescence=True,
+    use_move_ordering=True,
     use_transposition_table=False,
     pregame_skill=0.55,
 )
 
 _add(
-    number=6, name="Sharp",
-    min_depth=2, max_depth=3,
-    time_limit=1.30, critical_time_limit=1.90,
-    use_quiescence=True, use_move_ordering=True,
+    number=6,
+    name="Sharp",
+    min_depth=2,
+    max_depth=3,
+    time_limit=1.30,
+    critical_time_limit=1.90,
+    use_quiescence=True,
+    use_move_ordering=True,
     use_transposition_table=True,
     pregame_skill=0.68,
 )
 
 _add(
-    number=7, name="Strong",
-    min_depth=2, max_depth=4,
-    time_limit=1.80, critical_time_limit=2.70,
-    use_quiescence=True, use_move_ordering=True,
+    number=7,
+    name="Strong",
+    min_depth=2,
+    max_depth=4,
+    time_limit=1.80,
+    critical_time_limit=2.70,
+    use_quiescence=True,
+    use_move_ordering=True,
     use_transposition_table=True,
     pregame_skill=0.80,
 )
 
 _add(
-    number=8, name="Expert",
-    min_depth=2, max_depth=4,
-    time_limit=2.50, critical_time_limit=4.00,
-    use_quiescence=True, use_move_ordering=True,
+    number=8,
+    name="Expert",
+    min_depth=2,
+    max_depth=4,
+    time_limit=2.50,
+    critical_time_limit=4.00,
+    use_quiescence=True,
+    use_move_ordering=True,
     use_transposition_table=True,
     pregame_skill=0.90,
 )
 
 _add(
-    number=9, name="Master",
-    min_depth=2, max_depth=4,
-    time_limit=4.00, critical_time_limit=6.50,
-    use_quiescence=True, use_move_ordering=True,
+    number=9,
+    name="Master",
+    min_depth=2,
+    max_depth=4,
+    time_limit=4.00,
+    critical_time_limit=6.50,
+    use_quiescence=True,
+    use_move_ordering=True,
     use_transposition_table=True,
     pregame_skill=0.96,
 )
@@ -195,10 +245,14 @@ _add(
 # beat it, but this is the ceiling — nothing plays stronger, at a wait
 # still reasonable for one move.
 _add(
-    number=10, name="Impossible",
-    min_depth=2, max_depth=5,
-    time_limit=8.00, critical_time_limit=12.00,
-    use_quiescence=True, use_move_ordering=True,
+    number=10,
+    name="Impossible",
+    min_depth=2,
+    max_depth=5,
+    time_limit=8.00,
+    critical_time_limit=12.00,
+    use_quiescence=True,
+    use_move_ordering=True,
     use_transposition_table=True,
     pregame_skill=1.00,
 )

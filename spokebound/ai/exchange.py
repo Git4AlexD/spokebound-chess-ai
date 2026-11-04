@@ -19,8 +19,7 @@ Move = tuple[Square, Square]
 DELTA_MARGIN = 1.0
 
 
-def attacker_costs(board: Board, square: Square, owner: Player,
-                   ignore: Square) -> list[int]:
+def attacker_costs(board: Board, square: Square, owner: Player, ignore: Square) -> list[int]:
     """Return the costs of ``owner``'s pieces that can reach ``square``,
     cheapest first, leaving out the piece standing on ``ignore``."""
     costs = []
@@ -37,9 +36,11 @@ def attacker_costs(board: Board, square: Square, owner: Player,
             occupant = board.get((row, col))
             if occupant is None:
                 continue
-            if (occupant.owner is owner and (row, col) != ignore
-                    and (occupant.spokes[spoke] >= UNLIMITED
-                         or distance <= occupant.spokes[spoke])):
+            if (
+                occupant.owner is owner
+                and (row, col) != ignore
+                and (occupant.spokes[spoke] >= UNLIMITED or distance <= occupant.spokes[spoke])
+            ):
                 costs.append(occupant.cost)
             break
     return sorted(costs)
@@ -69,9 +70,9 @@ def see(board: Board, move: Move) -> int:
     return gains[0]
 
 
-def prune_quiescence(board: Board, forcing: list[Move], stand_pat: float,
-                     bound: float, weights: Weights,
-                     maximizing: bool) -> list[Move]:
+def prune_quiescence(
+    board: Board, forcing: list[Move], stand_pat: float, bound: float, weights: Weights, maximizing: bool
+) -> list[Move]:
     """Drop the captures in ``forcing`` that cannot change the outcome:
     exchanges that lose material (see :func:`see`), and captures too small
     to lift the score past ``bound`` even if they win the piece outright.

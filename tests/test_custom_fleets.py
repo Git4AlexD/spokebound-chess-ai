@@ -43,8 +43,7 @@ class CustomFleetsTests(unittest.TestCase):
     def test_multiple_fleets_coexist(self) -> None:
         custom_fleets.save("Rushers", FLEET)
         custom_fleets.save("Turtles", [[0, 1, 0, 0, 0, 0, 0, 0]] * 6)
-        self.assertEqual(set(custom_fleets.load_all()),
-                         {"Rushers", "Turtles"})
+        self.assertEqual(set(custom_fleets.load_all()), {"Rushers", "Turtles"})
 
     def test_delete_removes_a_saved_fleet(self) -> None:
         custom_fleets.save("Rushers", FLEET)
@@ -75,12 +74,12 @@ class DefaultStoreLocationTests(unittest.TestCase):
         self.assertEqual(store.parent.name, "data")
 
     def test_frozen_uses_appdata_not_the_temp_bundle(self) -> None:
-        with patch.object(custom_fleets.sys, "frozen", True, create=True), \
-                patch.dict("os.environ", {"APPDATA": r"C:\Users\Test\AppData\Roaming"}):
+        with (
+            patch.object(custom_fleets.sys, "frozen", True, create=True),
+            patch.dict("os.environ", {"APPDATA": r"C:\Users\Test\AppData\Roaming"}),
+        ):
             store = custom_fleets._default_store()
-        self.assertEqual(
-            store, Path(r"C:\Users\Test\AppData\Roaming") / "Spokebound"
-                  / "custom_fleets.json")
+        self.assertEqual(store, Path(r"C:\Users\Test\AppData\Roaming") / "Spokebound" / "custom_fleets.json")
 
 
 if __name__ == "__main__":

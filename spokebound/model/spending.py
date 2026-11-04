@@ -38,20 +38,17 @@ class FleetBuilder:
             cost = sum(LEVEL_COSTS[level] for level in piece)
             if not 0 <= cost <= PIECE_CAP:
                 raise ValueError(f"Preset piece costs {cost}, over the cap")
-        if sum(sum(LEVEL_COSTS[level] for level in piece)
-              for piece in fleet) > BUILD_BUDGET:
+        if sum(sum(LEVEL_COSTS[level] for level in piece) for piece in fleet) > BUILD_BUDGET:
             raise ValueError("Preset costs more than the build budget")
         for piece, levels in zip(self.pieces, fleet, strict=True):
             piece.spokes = list(levels)
 
     def problems(self) -> list[str]:
         """Return reasons the fleet can't be locked in yet (empty if valid)."""
-        weak = [str(i + 1) for i, piece in enumerate(self.pieces)
-                if piece.cost < MIN_PIECE_COST]
+        weak = [str(i + 1) for i, piece in enumerate(self.pieces) if piece.cost < MIN_PIECE_COST]
         if not weak:
             return []
-        return [f"Piece {', '.join(weak)} needs at least "
-                f"{MIN_PIECE_COST} point to move."]
+        return [f"Piece {', '.join(weak)} needs at least {MIN_PIECE_COST} point to move."]
 
 
 class PendingUpgrade:
@@ -68,8 +65,7 @@ class PendingUpgrade:
 
     def adjust(self, spoke: int, step: int) -> bool:
         """Change one spoke of the upgrading piece; return True if accepted."""
-        spent = self.piece.try_adjust(
-            spoke, step, self.points, floor=self._floors[spoke])
+        spent = self.piece.try_adjust(spoke, step, self.points, floor=self._floors[spoke])
         if spent is None:
             return False
         self.points -= spent

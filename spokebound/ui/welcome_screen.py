@@ -45,17 +45,12 @@ TITLE_ICON_GAP = 14
 # (title, description, key). Only a key present in the callbacks dict
 # passed to WelcomeScreen is clickable; the rest show as coming soon.
 MODES = [
-    ("2-Player Local", "Build, deploy and play against a friend on this "
-                       "device.", "local"),
-    ("Instructions", "Learn the rules.",
-     "tutorial"),
-    ("Online Match", "Challenge another player over the network.",
-     "online"),
+    ("2-Player Local", "Build, deploy and play against a friend on this device.", "local"),
+    ("Instructions", "Learn the rules.", "tutorial"),
+    ("Online Match", "Challenge another player over the network.", "online"),
     ("Play vs AI", "Play against an AI opponent.", "ai"),
-    ("Custom Fleets", "Build and save your own fleets to use later.",
-     "custom_fleets"),
-    ("Story Mode", "A guided campaign against a series of opponents.",
-     "story"),
+    ("Custom Fleets", "Build and save your own fleets to use later.", "custom_fleets"),
+    ("Story Mode", "A guided campaign against a series of opponents.", "story"),
 ]
 
 
@@ -83,8 +78,7 @@ class WelcomeScreen(tk.Frame):
     """A grid of game-mode cards, proportioned to fill the window at
     whatever size it currently is; unimplemented modes show disabled."""
 
-    def __init__(self, parent: tk.Misc,
-                 callbacks: dict[str, Callable[[], None]]) -> None:
+    def __init__(self, parent: tk.Misc, callbacks: dict[str, Callable[[], None]]) -> None:
         super().__init__(parent, bg=theme.BACKGROUND)
         starfield.add_starfield(self)
         self._callbacks = callbacks
@@ -121,8 +115,7 @@ class WelcomeScreen(tk.Frame):
         width = self.winfo_width()
         height = self.winfo_height()
         if width <= 1 or height <= 1:
-            self._rebuild_job = self.after(REBUILD_DEBOUNCE_MS,
-                                           self._rebuild)
+            self._rebuild_job = self.after(REBUILD_DEBOUNCE_MS, self._rebuild)
             return
         if (width, height) == self._last_size:
             return
@@ -147,8 +140,7 @@ class WelcomeScreen(tk.Frame):
         if needed > available > 0:
             shrink = available / needed
             layout = dict(layout)
-            layout["card_width"] = max(
-                MIN_CARD_WIDTH, round(layout["card_width"] * shrink))
+            layout["card_width"] = max(MIN_CARD_WIDTH, round(layout["card_width"] * shrink))
             layout["card_height"] = round(layout["card_width"] / CARD_ASPECT)
             layout["gap"] = max(4, round(layout["gap"] * shrink))
 
@@ -170,39 +162,37 @@ class WelcomeScreen(tk.Frame):
         # window this app allows, so the text shrinks to the room that's
         # actually there rather than running off both sides.
         family, size, weight = theme.FONT_HERO
-        room = round(self.winfo_width() * (1 - 2 * WIDTH_MARGIN_FRACTION)
-                     - 2 * (CAPTAIN_ICON_SIZE + TITLE_ICON_GAP))
-        title_font = (family, fit_font_size(self, GAME_TITLE, family, size,
-                                            room, weight=weight), weight)
+        room = round(
+            self.winfo_width() * (1 - 2 * WIDTH_MARGIN_FRACTION) - 2 * (CAPTAIN_ICON_SIZE + TITLE_ICON_GAP)
+        )
+        title_font = (family, fit_font_size(self, GAME_TITLE, family, size, room, weight=weight), weight)
         self._draw_captain_icon(title_row, Player.ORANGE, rotated=False).pack(
-            side=tk.LEFT, padx=(0, TITLE_ICON_GAP))
-        theme.make_label(title_row, GAME_TITLE, title_font,
-                         fg=theme.ACCENT).pack(side=tk.LEFT)
+            side=tk.LEFT, padx=(0, TITLE_ICON_GAP)
+        )
+        theme.make_label(title_row, GAME_TITLE, title_font, fg=theme.ACCENT).pack(side=tk.LEFT)
         self._draw_captain_icon(title_row, Player.WHITE, rotated=True).pack(
-            side=tk.LEFT, padx=(TITLE_ICON_GAP, 0))
+            side=tk.LEFT, padx=(TITLE_ICON_GAP, 0)
+        )
         theme.make_label(
-            centre, "Build Your Fleet, Push Your Captain To The Core",
-            theme.FONT_BODY, fg=theme.MUTED_TEXT).pack(pady=(0, 24))
+            centre, "Build Your Fleet, Push Your Captain To The Core", theme.FONT_BODY, fg=theme.MUTED_TEXT
+        ).pack(pady=(0, 24))
 
         grid = tk.Frame(centre, bg=theme.BACKGROUND)
         grid.pack()
         columns = layout["columns"]
         pad = max(4, layout["gap"] // 2)
         for index, (title, blurb, key) in enumerate(MODES):
-            card = ModeCard(grid, title, blurb, self._callbacks.get(key),
-                            layout["card_width"], layout["card_height"])
-            card.grid(row=index // columns, column=index % columns,
-                      padx=pad, pady=pad)
+            card = ModeCard(
+                grid, title, blurb, self._callbacks.get(key), layout["card_width"], layout["card_height"]
+            )
+            card.grid(row=index // columns, column=index % columns, padx=pad, pady=pad)
         return centre
 
-    def _draw_captain_icon(self, parent: tk.Misc, owner: Player,
-                           rotated: bool) -> tk.Canvas:
+    def _draw_captain_icon(self, parent: tk.Misc, owner: Player, rotated: bool) -> tk.Canvas:
         """Return a small canvas drawing ``owner``'s Captain — purely
         decorative, flanking the title with the two sides' own pieces
         rather than a generic logo."""
         size = CAPTAIN_ICON_SIZE
-        canvas = tk.Canvas(parent, width=size, height=size,
-                           bg=theme.BACKGROUND, highlightthickness=0)
-        drawing.draw_star(canvas, (size / 2, size / 2), size * 0.42,
-                          make_captain(owner), rotated=rotated)
+        canvas = tk.Canvas(parent, width=size, height=size, bg=theme.BACKGROUND, highlightthickness=0)
+        drawing.draw_star(canvas, (size / 2, size / 2), size * 0.42, make_captain(owner), rotated=rotated)
         return canvas

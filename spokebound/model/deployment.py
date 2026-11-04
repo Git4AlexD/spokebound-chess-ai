@@ -25,14 +25,12 @@ class Deployment:
     so the second mover (White) places last.
     """
 
-    def __init__(self, orange_fleet: list[Piece],
-                 white_fleet: list[Piece]) -> None:
+    def __init__(self, orange_fleet: list[Piece], white_fleet: list[Piece]) -> None:
         self.board = Board()
         self.current = Player.ORANGE
         for fleet in (orange_fleet, white_fleet):
             assign_bounties(fleet)
-        self._fleets = {Player.ORANGE: _bounty_first(orange_fleet),
-                        Player.WHITE: _bounty_first(white_fleet)}
+        self._fleets = {Player.ORANGE: _bounty_first(orange_fleet), Player.WHITE: _bounty_first(white_fleet)}
         self._placed = {Player.ORANGE: 0, Player.WHITE: 0}
         self.captains = {
             Player.ORANGE: make_captain(Player.ORANGE),
@@ -77,8 +75,7 @@ class Deployment:
         """Return the empty squares in the current player's sanctuary."""
         if self.is_done:
             return []
-        return [sq for sq in sanctuary_squares(self.current)
-               if self.board.get(sq) is None]
+        return [sq for sq in sanctuary_squares(self.current) if self.board.get(sq) is None]
 
     def place(self, square: Square) -> None:
         """Deploy the current player's next piece to ``square``."""

@@ -138,8 +138,7 @@ class RoomHost:
     connect it to.
     """
 
-    def __init__(self, room_code: str, game_port: int,
-                 discovery_port: int = DISCOVERY_PORT) -> None:
+    def __init__(self, room_code: str, game_port: int, discovery_port: int = DISCOVERY_PORT) -> None:
         """Raises OSError if ``discovery_port`` can't be bound. On
         Windows that includes a port inside a range Hyper-V, WSL or
         Docker has reserved (WinError 10013), which varies from machine
@@ -176,13 +175,14 @@ class RoomHost:
                 message = json.loads(data.decode("utf-8"))
             except ValueError:
                 continue
-            if (message.get("type") == _DISCOVER
-                   and message.get("room_code") == self._room_code):
-                reply = json.dumps({
-                    "type": _HERE,
-                    "room_code": self._room_code,
-                    "port": self._game_port,
-                }).encode("utf-8")
+            if message.get("type") == _DISCOVER and message.get("room_code") == self._room_code:
+                reply = json.dumps(
+                    {
+                        "type": _HERE,
+                        "room_code": self._room_code,
+                        "port": self._game_port,
+                    }
+                ).encode("utf-8")
                 with contextlib.suppress(OSError):
                     self._socket.sendto(reply, addr)
 
@@ -194,8 +194,9 @@ class RoomHost:
             self._socket.close()
 
 
-def find_room(room_code: str, timeout: float = 4.0,
-              discovery_port: int = DISCOVERY_PORT) -> tuple[str, int] | None:
+def find_room(
+    room_code: str, timeout: float = 4.0, discovery_port: int = DISCOVERY_PORT
+) -> tuple[str, int] | None:
     """Broadcast a discovery request for ``room_code`` on the LAN and
     wait up to ``timeout`` seconds for its host to answer on
     ``discovery_port``, the port its :class:`RoomHost` listens on.
@@ -209,17 +210,19 @@ def find_room(room_code: str, timeout: float = 4.0,
     calling thread for up to ``timeout`` seconds, so only ever call
     this from a background one, never Tk's own.
     """
-    request = json.dumps({"type": _DISCOVER,
-                          "room_code": room_code}).encode("utf-8")
+    request = json.dumps({"type": _DISCOVER, "room_code": room_code}).encode("utf-8")
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
         probe.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        destinations = ["255.255.255.255", *_local_broadcast_addresses(),
-                       # A broadcast doesn't reliably reach the sender's
-                       # own machine on every OS/network stack — worth
-                       # also trying loopback directly, both for local
-                       # testing and for two instances genuinely on the
-                       # same machine.
-                       "127.0.0.1"]
+        destinations = [
+            "255.255.255.255",
+            *_local_broadcast_addresses(),
+            # A broadcast doesn't reliably reach the sender's
+            # own machine on every OS/network stack — worth
+            # also trying loopback directly, both for local
+            # testing and for two instances genuinely on the
+            # same machine.
+            "127.0.0.1",
+        ]
         sent = False
         for destination in destinations:
             try:
@@ -244,6 +247,5 @@ def find_room(room_code: str, timeout: float = 4.0,
                 message = json.loads(data.decode("utf-8"))
             except ValueError:
                 continue
-            if (message.get("type") == _HERE
-                   and message.get("room_code") == room_code):
+            if message.get("type") == _HERE and message.get("room_code") == room_code:
                 return addr[0], message["port"]

@@ -38,10 +38,15 @@ class FleetPanel(tk.Frame):
     by a screen that's fitting its whole layout to a smaller window.
     """
 
-    def __init__(self, parent: tk.Misc, rosters: dict[Player, list[Piece]],
-                 board: Board, track_losses: bool = True,
-                 thumb_size: int = THUMB_SIZE,
-                 next_index: dict[Player, int] | None = None) -> None:
+    def __init__(
+        self,
+        parent: tk.Misc,
+        rosters: dict[Player, list[Piece]],
+        board: Board,
+        track_losses: bool = True,
+        thumb_size: int = THUMB_SIZE,
+        next_index: dict[Player, int] | None = None,
+    ) -> None:
         super().__init__(parent, bg=theme.PANEL)
         self._rosters = rosters
         self._board = board
@@ -57,10 +62,9 @@ class FleetPanel(tk.Frame):
         self._rows: dict[Player, tk.Canvas] = {}
         self._labels: dict[Player, tk.Label] = {}
         for player in Player:
-            label = theme.make_label(self, f"{player.label} Fleet",
-                                     theme.FONT_BODY,
-                                     fg=theme.PLAYER_TEXT[player],
-                                     bg=theme.PANEL)
+            label = theme.make_label(
+                self, f"{player.label} Fleet", theme.FONT_BODY, fg=theme.PLAYER_TEXT[player], bg=theme.PANEL
+            )
             label.pack(anchor=tk.W, pady=LABEL_PADY)
             self._labels[player] = label
             count = len(rosters[player])
@@ -69,8 +73,7 @@ class FleetPanel(tk.Frame):
             cell_height = thumb_size + 4 + NUMBER_HEIGHT
             width = columns * (thumb_size + THUMB_GAP) - THUMB_GAP
             height = row_count * cell_height + (row_count - 1) * ROW_GAP
-            canvas = tk.Canvas(self, width=width, height=height,
-                               bg=theme.PANEL, highlightthickness=0)
+            canvas = tk.Canvas(self, width=width, height=height, bg=theme.PANEL, highlightthickness=0)
             canvas.pack(anchor=tk.W)
             self._rows[player] = canvas
         # Not drawn here: every real call site (DeployScreen's own
@@ -127,10 +130,8 @@ class FleetPanel(tk.Frame):
             canvas.delete("all")
             roster = self._rosters[player]
             columns = self._columns(len(roster))
-            alive = ({id(piece) for _, piece in self._board.pieces(player)}
-                    if self.track_losses else None)
-            next_index = (self.next_index.get(player)
-                         if self.next_index else None)
+            alive = {id(piece) for _, piece in self._board.pieces(player)} if self.track_losses else None
+            next_index = self.next_index.get(player) if self.next_index else None
             for index, piece in enumerate(roster):
                 col, grid_row = index % columns, index // columns
                 left = col * (size + THUMB_GAP)
@@ -141,9 +142,9 @@ class FleetPanel(tk.Frame):
                 # neutral backdrop instead of the board's own colours.
                 outline = theme.ACCENT if is_next else CARD_OUTLINE
                 width = 3 if is_next else 1
-                canvas.create_rectangle(left, top + 2, left + size,
-                                        top + size + 2, fill=CARD_FILL,
-                                        outline=outline, width=width)
+                canvas.create_rectangle(
+                    left, top + 2, left + size, top + size + 2, fill=CARD_FILL, outline=outline, width=width
+                )
                 centre = (left + size / 2, top + size / 2 + 2)
                 lost = alive is not None and id(piece) not in alive
                 # Always upright, regardless of owner: this is a list to
@@ -152,10 +153,11 @@ class FleetPanel(tk.Frame):
                 # the way the actual board does (see BoardView) just
                 # makes half the tracker awkward to read for no benefit
                 # on a single shared screen.
-                drawing.draw_star(canvas, centre, size * 0.42, piece,
-                                  rotated=False, lost=lost)
+                drawing.draw_star(canvas, centre, size * 0.42, piece, rotated=False, lost=lost)
                 canvas.create_text(
-                    left + size / 2, top + size + 4 + NUMBER_HEIGHT / 2,
-                    text=str(index + 1), font=theme.FONT_SMALL,
-                    fill=(theme.ACCENT_DARK if is_next
-                         else theme.MUTED_TEXT))
+                    left + size / 2,
+                    top + size + 4 + NUMBER_HEIGHT / 2,
+                    text=str(index + 1),
+                    font=theme.FONT_SMALL,
+                    fill=(theme.ACCENT_DARK if is_next else theme.MUTED_TEXT),
+                )

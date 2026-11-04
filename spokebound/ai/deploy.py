@@ -13,9 +13,9 @@ from spokebound.model.game import Game
 from spokebound.model.pieces import Player
 
 
-def choose_deploy_square(deployment: Deployment, player: Player,
-                         weights: Weights = DEFAULT_WEIGHTS,
-                         skill: float = 1.0) -> Square:
+def choose_deploy_square(
+    deployment: Deployment, player: Player, weights: Weights = DEFAULT_WEIGHTS, skill: float = 1.0
+) -> Square:
     """Return the square the AI should place its next piece on.
 
     Both Captains, and everything either side has placed so far, are

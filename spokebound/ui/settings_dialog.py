@@ -23,9 +23,9 @@ class SettingsDialog(tk.Toplevel):
         self.resizable(False, False)
         self.transient(parent.winfo_toplevel())
 
-        theme.make_label(self, "Settings", theme.FONT_TITLE,
-                         fg=theme.ACCENT, bg=theme.BACKGROUND).pack(
-            padx=24, pady=(24, 16))
+        theme.make_label(self, "Settings", theme.FONT_TITLE, fg=theme.ACCENT, bg=theme.BACKGROUND).pack(
+            padx=24, pady=(24, 16)
+        )
 
         # Rebuilt on every toggle rather than having its two buttons'
         # own text updated in place — each one is still pinned to the
@@ -36,9 +36,7 @@ class SettingsDialog(tk.Toplevel):
         self._buttons_row.pack(padx=24, pady=(0, 16))
         self._refresh()
 
-        theme.make_button(self, "Close", self.destroy,
-                          secondary=True).pack(padx=24, pady=(0, 24),
-                                               fill=tk.X)
+        theme.make_button(self, "Close", self.destroy, secondary=True).pack(padx=24, pady=(0, 24), fill=tk.X)
 
         # A real popup, not just another screen: grabs input until
         # closed, and centred over the window that opened it.
@@ -62,11 +60,10 @@ class SettingsDialog(tk.Toplevel):
         for child in self._buttons_row.winfo_children():
             child.destroy()
         music_text = "Unmute Music" if sound.is_music_muted() else "Mute Music"
-        effects_text = ("Unmute Sound" if sound.is_effects_muted()
-                        else "Mute Sound")
+        effects_text = "Unmute Sound" if sound.is_effects_muted() else "Mute Sound"
         theme.make_fixed_button(
-            self._buttons_row, music_text, self._toggle_music,
-            BUTTON_WIDTH, BUTTON_HEIGHT).pack(side=tk.LEFT, padx=(0, 8))
+            self._buttons_row, music_text, self._toggle_music, BUTTON_WIDTH, BUTTON_HEIGHT
+        ).pack(side=tk.LEFT, padx=(0, 8))
         theme.make_fixed_button(
-            self._buttons_row, effects_text, self._toggle_effects,
-            BUTTON_WIDTH, BUTTON_HEIGHT).pack(side=tk.LEFT)
+            self._buttons_row, effects_text, self._toggle_effects, BUTTON_WIDTH, BUTTON_HEIGHT
+        ).pack(side=tk.LEFT)

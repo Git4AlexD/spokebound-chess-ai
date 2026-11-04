@@ -44,14 +44,11 @@ def draw_stars(canvas: tk.Canvas, stars: list[Star]) -> None:
     brightest tier also gets a small plus-shaped sparkle, not just a
     bigger dot."""
     for x, y, r, colour, sparkle in stars:
-        canvas.create_oval(x - r, y - r, x + r, y + r, fill=colour,
-                           outline="")
+        canvas.create_oval(x - r, y - r, x + r, y + r, fill=colour, outline="")
         if sparkle:
             span = r * 2.6
-            canvas.create_line(x - span, y, x + span, y, fill=colour,
-                               width=1)
-            canvas.create_line(x, y - span, x, y + span, fill=colour,
-                               width=1)
+            canvas.create_line(x - span, y, x + span, y, fill=colour, width=1)
+            canvas.create_line(x, y - span, x, y + span, fill=colour, width=1)
 
 
 class _StarfieldCanvas(tk.Canvas):
@@ -61,8 +58,7 @@ class _StarfieldCanvas(tk.Canvas):
     <Configure> event a resize fires in a burst."""
 
     def __init__(self, parent: tk.Misc) -> None:
-        super().__init__(parent, bg=theme.BACKGROUND, highlightthickness=0,
-                         bd=0)
+        super().__init__(parent, bg=theme.BACKGROUND, highlightthickness=0, bd=0)
         self._last_size: tuple[int, int] | None = None
         self.bind("<Configure>", self._on_configure)
         # Stars only ever actually get drawn in response to a real

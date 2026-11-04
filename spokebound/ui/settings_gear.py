@@ -22,7 +22,6 @@ def add_gear(widget: tk.Misc) -> tk.Widget:
     ``.lift()`` on it once the new content is up, so it stays on top
     instead of behind whatever was just rebuilt.
     """
-    gear = theme.make_button(widget, "⚙", lambda: SettingsDialog(widget),
-                             secondary=True, compact=True)
+    gear = theme.make_button(widget, "⚙", lambda: SettingsDialog(widget), secondary=True, compact=True)
     gear.place(relx=1.0, rely=0.0, x=-16, y=16, anchor=tk.NE)
     return gear

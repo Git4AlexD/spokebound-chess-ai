@@ -56,18 +56,14 @@ def register(role: str, room_code: str) -> socket.socket:
     if RELAY_ADDRESS is None:
         raise RelayError("No relay server is configured.")
     try:
-        sock = socket.create_connection(RELAY_ADDRESS,
-                                        timeout=_CONNECT_TIMEOUT)
-        sock.sendall((json.dumps({"role": role, "room_code": room_code})
-                     + "\n").encode("utf-8"))
+        sock = socket.create_connection(RELAY_ADDRESS, timeout=_CONNECT_TIMEOUT)
+        sock.sendall((json.dumps({"role": role, "room_code": room_code}) + "\n").encode("utf-8"))
     except OSError as exc:
         raise RelayError(str(exc)) from exc
     return sock
 
 
-def await_pairing(sock: socket.socket, role: str,
-                  should_continue: Callable[[], bool] = lambda: True
-                  ) -> None:
+def await_pairing(sock: socket.socket, role: str, should_continue: Callable[[], bool] = lambda: True) -> None:
     """Block until the relay pairs ``sock`` with the other side of the
     room code just registered on it — raises RelayError if the relay
     says no one's there (only ever reachable for a joiner; a host just
@@ -106,5 +102,4 @@ def await_pairing(sock: socket.socket, role: str,
     except ValueError as exc:
         raise RelayError("The relay sent something unexpected.") from exc
     if message.get("type") != "paired":
-        raise RelayError(
-            message.get("message", "The relay couldn't connect you."))
+        raise RelayError(message.get("message", "The relay couldn't connect you."))

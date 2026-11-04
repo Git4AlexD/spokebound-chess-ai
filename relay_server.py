@@ -110,10 +110,12 @@ def _handle(conn: socket.socket, rooms: _Rooms) -> None:
 
         host_conn = rooms.claim(room_code)
         if host_conn is None:
-            conn.sendall(json.dumps(
-                {"type": "error",
-                 "message": "No one is hosting that room code right now."}
-            ).encode("utf-8") + b"\n")
+            conn.sendall(
+                json.dumps(
+                    {"type": "error", "message": "No one is hosting that room code right now."}
+                ).encode("utf-8")
+                + b"\n"
+            )
             conn.close()
             return
 
@@ -127,8 +129,7 @@ def _handle(conn: socket.socket, rooms: _Rooms) -> None:
                     sock.close()
             return
 
-        threading.Thread(target=_relay, args=(host_conn, conn),
-                         daemon=True).start()
+        threading.Thread(target=_relay, args=(host_conn, conn), daemon=True).start()
         _relay(conn, host_conn)
     except (OSError, ValueError, ConnectionError):
         with contextlib.suppress(OSError):
@@ -148,8 +149,7 @@ def main() -> None:
     try:
         while True:
             conn, _addr = listener.accept()
-            threading.Thread(target=_handle, args=(conn, rooms),
-                             daemon=True).start()
+            threading.Thread(target=_handle, args=(conn, rooms), daemon=True).start()
     except KeyboardInterrupt:
         pass
     finally:
